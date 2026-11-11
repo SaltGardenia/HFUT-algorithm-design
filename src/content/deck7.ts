@@ -1,0 +1,2234 @@
+/* 由 scripts/migrate.mjs 自动生成 —— 内容事实源，手工修改后请勿重跑迁移覆盖 */
+import type { DeckData } from './types';
+
+const deck: DeckData = {
+  id: 'deck7',
+  no: "",
+  title: "L6 · 动态规划",
+  subtitle: "第 6 讲 · 动态规划",
+  lede: `
+  本讲对应课程 PPT 第 15 章（97 页，全书内容最多的一讲）。核心是一条主线：<b>动态规划 = 分治思想 + 解决冗余</b>，靠<b>表格</b>把重复子问题的解存起来，用<b>逆拓扑序</b>把表填满。围绕这条主线依次解决五个问题：<b>钢条切割</b>（<span class="m">r<sub>4</sub> = 10</span>）、<b>矩阵链乘法</b>（<span class="m">m(1,6) = 15125</span>）、<b>最长公共子序列</b>（<span class="m">c[7,6] = 4</span>，LCS 为 <code>BCBA</code>）、<b>装配线调度</b>（<span class="m">f* = 38</span>）、<b>最优二叉搜索树</b>（<span class="m">e(1,5) = 2.75</span>）。五个问题的递归式、算例表格全部按 PPT 原图还原，并对每一格做了独立复算。
+`,
+  toc: [
+    { id: 'sec-basic', text: "1. 动态规划的基本思想：一张表解决重复子问题", level: 2 },
+    { id: 'sec-basic-h1', text: "1.1 programming 是\"表格法\"，不是\"写程序\"", level: 3 },
+    { id: 'sec-basic-h2', text: "1.2 实质：分治思想 + 解决冗余", level: 3 },
+    { id: 'sec-basic-h3', text: "1.3 四个设计步骤（必背）", level: 3 },
+    { id: 'sec-basic-h4', text: "1.4 两种等价的实现：带备忘的自顶向下 vs 自底向上", level: 3 },
+    { id: 'sec-principle', text: "2. 动态规划原理：两个要素与适用性", level: 2 },
+    { id: 'sec-principle-h1', text: "2.1 两个要素：最优子结构 + 重叠子问题", level: 3 },
+    { id: 'sec-principle-h2', text: "2.2 DP 与分治的对比", level: 3 },
+    { id: 'sec-principle-h3', text: "2.3 什么时候使用动态规划（DP 的适用性讨论）", level: 3 },
+    { id: 'sec-principle-h4', text: "2.4 两种 DP 方法的取舍（PPT 第 38 页）", level: 3 },
+    { id: 'sec-rod', text: "3. 习题 1：钢条切割（rod cutting）", level: 2 },
+    { id: 'sec-rod-h1', text: "3.1 问题描述", level: 3 },
+    { id: 'sec-rod-h2', text: "3.2 切割方案举例：n = 4 的 8 种方案", level: 3 },
+    { id: 'sec-rod-h3', text: "3.3 步骤一：刻画最优解的结构（最优子结构）", level: 3 },
+    { id: 'sec-rod-h4', text: "3.4 步骤二：递归地定义最优解的值（朴素递归）", level: 3 },
+    { id: 'sec-rod-h5', text: "3.5 效率分析：递归树与重叠子问题", level: 3 },
+    { id: 'sec-rod-h6', text: "3.6 步骤三：计算最优解的值（两种实现）", level: 3 },
+    { id: 'sec-rod-h7', text: "3.7 步骤四：构造最优解（保存切割方案）", level: 3 },
+    { id: 'sec-rod-h8', text: "3.8 动画：自底向上填表与回溯方案", level: 3 },
+    { id: 'sec-rod-h9', text: "3.9 完整结果：r[1..10] 与最优方案", level: 3 },
+    { id: 'sec-matrix', text: "4. 习题 2：矩阵链乘法（matrix-chain multiplication）", level: 2 },
+    { id: 'sec-matrix-h1', text: "4.1 问题描述", level: 3 },
+    { id: 'sec-matrix-h2', text: "4.2 问题分析：两个矩阵相乘的代价", level: 3 },
+    { id: 'sec-matrix-h3', text: "4.3 步骤一：分析最优解的结构（反证法）", level: 3 },
+    { id: 'sec-matrix-h4', text: "4.4 步骤二：建立递归关系", level: 3 },
+    { id: 'sec-matrix-h5', text: "4.5 步骤三：计算最优解（自底向上）", level: 3 },
+    { id: 'sec-matrix-h6', text: "4.6 PPT 算例：m 表与 s 表（n = 6）", level: 3 },
+    { id: 'sec-matrix-h7', text: "4.7 课堂练习：m(2, 5) 的三次断点计算", level: 3 },
+    { id: 'sec-matrix-h8', text: "4.8 步骤四：构造最优解", level: 3 },
+    { id: 'sec-matrix-h9', text: "4.9 复杂度与\"思路扩展\"", level: 3 },
+    { id: 'sec-lcs', text: "5. 习题 3：最长公共子序列（LCS）", level: 2 },
+    { id: 'sec-lcs-h1', text: "5.1 定义与两个例子", level: 3 },
+    { id: 'sec-lcs-h2', text: "5.2 野蛮算法：为什么必须换思路", level: 3 },
+    { id: 'sec-lcs-h3', text: "5.3 向更好的算法努力：只先算\"长度\"", level: 3 },
+    { id: 'sec-lcs-h4', text: "5.4 最优子结构：三条定理与证明", level: 3 },
+    { id: 'sec-lcs-h5', text: "5.5 递归公式", level: 3 },
+    { id: 'sec-lcs-h6', text: "5.6 递归算法、递归树与重叠子问题", level: 3 },
+    { id: 'sec-lcs-h7', text: "5.7 备忘录算法：只在表里没有时递归", level: 3 },
+    { id: 'sec-lcs-h8', text: "5.8 自底向上：LCS-LENGTH 与 c / b 两张表", level: 3 },
+    { id: 'sec-lcs-h9', text: "5.9 延伸一：关于最优子结构的判定（无权最长路径没有最优子结构）", level: 3 },
+    { id: 'sec-lcs-h10', text: "5.10 延伸二：最长上升子序列（LIS）", level: 3 },
+    { id: 'sec-assembly', text: "6. 习题 4：装配线调度（assembly-line scheduling）", level: 2 },
+    { id: 'sec-assembly-h1', text: "6.1 问题模型", level: 3 },
+    { id: 'sec-assembly-h2', text: "6.2 步骤一：最优子结构", level: 3 },
+    { id: 'sec-assembly-h3', text: "6.3 步骤二：递归式（重叠子问题）", level: 3 },
+    { id: 'sec-assembly-h4', text: "6.4 FASTEST-WAY 伪代码 + C++", level: 3 },
+    { id: 'sec-assembly-h5', text: "6.5 PRINT-STATION 伪代码 + C++", level: 3 },
+    { id: 'sec-assembly-h6', text: "6.6 PPT 算例：f 表与 l 表", level: 3 },
+    { id: 'sec-assembly-h7', text: "6.7 复杂度", level: 3 },
+    { id: 'sec-obst', text: "7. 习题 5：最优二叉搜索树（OBST）", level: 2 },
+    { id: 'sec-obst-h1', text: "7.1 定义与记号", level: 3 },
+    { id: 'sec-obst-h2', text: "7.2 PPT 的算例：两棵候选树，2.75 vs 2.80", level: 3 },
+    { id: 'sec-obst-h3', text: "7.3 步骤一：最优子结构", level: 3 },
+    { id: 'sec-obst-h4', text: "7.4 步骤二：递归式", level: 3 },
+    { id: 'sec-obst-h5', text: "7.5 OPTIMAL-BST 伪代码 + C++", level: 3 },
+    { id: 'sec-obst-h6', text: "7.6 完整 e 表、w 表与 root 表", level: 3 },
+    { id: 'sec-obst-h7', text: "7.7 复杂度", level: 3 },
+    { id: 'sec-extra', text: "8. 思路扩展与课堂练习", level: 2 },
+    { id: 'sec-extra-h1', text: "8.1 同一个问题的多种算法：以矩阵链乘法为例", level: 3 },
+    { id: 'sec-extra-h2', text: "8.2 课堂练习 1：用动态规划计算斐波那契数列", level: 3 },
+    { id: 'sec-extra-h3', text: "8.3 课堂练习 2：给出计算 m[2, 5] 的步骤", level: 3 },
+    { id: 'sec-summary', text: "9. 小结：五个问题一张表", level: 2 },
+    { id: 'sec-summary-h1', text: "9.1 五个问题的递归式、复杂度与表格规模", level: 3 },
+    { id: 'sec-summary-h2', text: "9.2 一页速记", level: 3 },
+    { id: 'sec-summary-h3', text: "9.3 常见错误清单", level: 3 },
+    { id: 'sec-quiz', text: "本节自测（课件配套测验）", level: 2 },
+    { id: 'sec-quiz-h1', text: "一、多项选择题", level: 3 },
+    { id: 'sec-quiz-h2', text: "二、填空题", level: 3 },
+  ],
+  sections: [
+    {
+      id: 'sec-basic',
+      heading: "1. 动态规划的基本思想：一张表解决重复子问题",
+      blocks: [
+        { type: 'html', html: `
+          <h3 id="sec-basic-h1">1.1 programming 是"表格法"，不是"写程序"</h3>
+          
+                <p>动态规划（Dynamic Programming, DP）这个名字里的 <b>programming</b>，指的是一种<b>表格法</b>（tabular method）—— 把子问题的答案填进一张表里，而<b>不是</b>"编写计算机程序"。这一点 PPT 第 3 页专门点出，考试里也常作为概念题出现。</p>
+          
+                <div class="callout key">
+                  <p class="callout-h">基本思想（PPT 第 3 页原文）</p>
+                  <ul>
+                    <li>和<b>分治法</b>类似，都是通过<b>组合子问题的解</b>而得到整个问题的解；</li>
+                    <li>所不同的是，动态规划法适用于<b>子问题重叠</b>的情况 —— 也就是不同的子问题具有<b>公共的子问题</b>；</li>
+                    <li>子问题的求解递归进行，将其划分为更小的子子问题；</li>
+                    <li>通常用来求解<b>最优化问题</b>（max / min）。</li>
+                  </ul>
+                </div>
+          
+                <p>为什么"子问题重叠"是关键？因为一旦不同的子问题共用同一个更小的子问题，朴素的递归就会把同一个子问题算很多遍。看一个最熟悉的例子：</p>
+          
+                <pre class="code"><code>FIB(n)                          // 朴素递归求斐波那契第 n 项
+          1  if n ≤ 1                      // 边界：F(0) = 0、F(1) = 1
+          2      return n                 // 直接返回
+          3  return FIB(n−1) + FIB(n−2)    // 递归：同一子问题被反复展开</code></pre>
+          
+                <p>计算 <span class="m">F(5)</span> 时 <span class="m">F(3)</span> 会被算 2 次、<span class="m">F(2)</span> 会被算 3 次、<span class="m">F(1)</span> 会被算 5 次，递归树节点数随 <span class="m">n</span> 指数增长；而不同子问题其实只有 <span class="m">n+1</span> 个。把这 <span class="m">n+1</span> 个答案存进一张表，时间立刻从指数降到 <span class="m">O(n)</span> —— 这就是动态规划要干的事（斐波那契的 DP 写法见 <a href="#sec-extra">第 8 节</a>）。</p>
+          
+                <h3 id="sec-basic-h2">1.2 实质：分治思想 + 解决冗余</h3>
+          
+                <div class="callout">
+                  <p class="callout-h">动态规划的实质（PPT 第 4 页）</p>
+                  <p><b>分治</b>：将问题实例分解为更小的、相似的子问题。<br>
+                  <b>解决冗余</b>：存储子问题的解而避免计算重复的子问题，以解决最优化问题的算法策略。</p>
+                </div>
+          
+                <ul>
+                  <li><b>所解决问题的特征</b>：子问题呈现<b>大量的重复</b>；</li>
+                  <li><b>动态规划法的关键</b>：对于重复出现的子问题，只在<b>第一次遇到时</b>加以求解，并把答案<b>保存</b>起来；以后再遇到时<b>直接引用</b>，不必重新求解；</li>
+                  <li><b>代价</b>：付出额外的<b>内存空间</b>来节省时间（时空权衡 time-space tradeoff）。在钢条切割这样的例子里，"时间上的节省是巨大的"—— 从 <span class="m">2<sup>n−1</sup></span> 降到 <span class="m">n<sup>2</sup></span>。</li>
+                </ul>
+          
+                <h3 id="sec-basic-h3">1.3 四个设计步骤（必背）</h3>
+          
+                <p>PPT 第 19 页把前四个习题里反复出现的套路总结成四步。这四步是本讲唯一需要"逐字背下来"的东西：</p>
+          
+                <table class="tbl">
+                  <thead><tr><th>步骤</th><th>做什么</th><th>对应说法</th></tr></thead>
+                  <tbody>
+                    <tr><td><b>① 刻画结构特征</b></td><td>刻画一个最优解的<b>结构特征</b>：寻找<b>最优子结构</b>，从子问题的最优解构造出原问题的最优解</td><td>optimal substructure</td></tr>
+                    <tr><td><b>② 递归定义最优值</b></td><td>递归地定义最优解的<b>值</b>：用子问题的最优解递归地定义原问题最优解的代价</td><td>递归式 / 状态转移方程</td></tr>
+                    <tr><td><b>③ 计算最优值</b></td><td>计算最优解的值，<b>通常采用自底向上</b>方法（也可带备忘自顶向下）</td><td>填表</td></tr>
+                    <tr><td><b>④ 构造最优解</b></td><td>利用计算出的信息<b>构造</b>一个最优解（只要求最优值时这一步可省略）</td><td>用 <span class="m">s[]</span> / <span class="m">b[]</span> / <span class="m">root[]</span> 回溯</td></tr>
+                  </tbody>
+                </table>
+          
+                <p>这四步在五个习题里的"落地形式"完全同构，复习时可以横向记忆：</p>
+          
+                <table class="tbl">
+                  <thead><tr><th>问题</th><th>① 最优子结构</th><th>② 递归式</th><th>③ 表格</th><th>④ 构造解用的辅助表</th></tr></thead>
+                  <tbody>
+                    <tr><td>钢条切割</td><td>最优方案的首段切法 + 余下部分最优</td><td><span class="m">r<sub>n</sub> = max(p<sub>i</sub> + r<sub>n−i</sub>)</span></td><td><span class="m">r[0..n]</span> 一维</td><td><span class="m">s[j]</span> = 首段最优长度</td></tr>
+                    <tr><td>矩阵链乘法</td><td>最优断点 k 两侧的子链也最优</td><td><span class="m">m(i,j) = min{m(i,k)+m(k+1,j)+p<sub>i−1</sub>p<sub>k</sub>p<sub>j</sub>}</span></td><td><span class="m">m[1..n][1..n]</span> 上三角</td><td><span class="m">s[i,j]</span> = 最优断点 k</td></tr>
+                    <tr><td>最长公共子序列</td><td>末字符相同则去掉末字符仍最优（三条定理）</td><td><span class="m">c[i,j]</span> = 左上 +1 或 max(上, 左)</td><td><span class="m">c[0..m][0..n]</span></td><td><span class="m">b[i,j]</span> = 回溯箭头</td></tr>
+                    <tr><td>装配线调度</td><td>经 <span class="m">S<sub>1,j</sub></span> 的最快路线必经过前一站的最快路线</td><td><span class="m">f<sub>1</sub>[j] = min(f<sub>1</sub>[j−1]+a<sub>1j</sub>, f<sub>2</sub>[j−1]+t<sub>2,j−1</sub>+a<sub>1j</sub>)</span></td><td><span class="m">f<sub>1</sub>[1..n]</span>、<span class="m">f<sub>2</sub>[1..n]</span></td><td><span class="m">l<sub>i</sub>[j]</span> = 前驱线号</td></tr>
+                    <tr><td>最优二叉搜索树</td><td>最优 BST 的子树也是相应子问题的最优解</td><td><span class="m">e[i,j] = min{e[i,r−1]+e[r+1,j]+w(i,j)}</span></td><td><span class="m">e[1..n+1][0..n]</span></td><td><span class="m">root[i,j]</span> = 子树根</td></tr>
+                  </tbody>
+                </table>
+          
+                <h3 id="sec-basic-h4">1.4 两种等价的实现：带备忘的自顶向下 vs 自底向上</h3>
+          
+                <p>PPT 第 10~11 页把"如何安排子问题的求解顺序"拆成两条路，并强调二者<b>等价</b>：</p>
+          
+                <table class="tbl">
+                  <thead><tr><th>对比项</th><th>带备忘的自顶向下（记忆化 memoization）</th><th>自底向上（bottom-up）</th></tr></thead>
+                  <tbody>
+                    <tr><td>写法</td><td>仍按<b>自然的递归形式</b>编写，只是过程会保存每个子问题的解（数组或散列表）；需要时先查表，有就返回，没有才计算</td><td>恰当定义子问题"<b>规模</b>"，使任何子问题只依赖"更小的"子问题；按规模<b>由小至大</b>顺序求解</td></tr>
+                    <tr><td>求解顺序</td><td>由递归调用自然决定（"用到才算"）</td><td><b>逆拓扑序</b>（反序的拓扑序）：对于任何子问题，直至它依赖的所有子问题都已求解完成，才会求解它</td></tr>
+                    <tr><td>优点</td><td>只有<b>用到</b>的子问题才被计算</td><td>没有递归调用的开销，也不用查表判断"算过没有"</td></tr>
+                    <tr><td>缺点</td><td>需要保存全部已算表项，递归栈有开销</td><td>即使某些子问题用不到，也必须全部算一遍</td></tr>
+                    <tr><td>什么时候选它</td><td><b>很多子问题不需要计算</b>时更好 —— 只有用到的项被计算</td><td><b>所有子问题都必须计算至少一次</b>时更好 —— 减少了递归和维护表的负担</td></tr>
+                  </tbody>
+                </table>
+          
+                <p>"逆拓扑序"这个词来自<b>子问题图</b>（subproblem graph）：把每个子问题看成一个顶点，若求解子问题 <span class="m">x</span> 时需要子问题 <span class="m">y</span> 的解，就画一条有向边 <span class="m">(x, y)</span>。下图就是 PPT 第 12 页的 <span class="m">n = 4</span> 钢条切割子问题图，它其实是第 9 页递归调用树的"简化版" —— 树中标号相同的结点收缩成单一顶点。</p>
+          
+                <svg class="fig" viewBox="0 0 720 400" role="img" aria-label="n 等于 4 时钢条切割问题的子问题图：顶点 4、3、2、1、0，有向边 x 指向 y 表示求子问题 x 时需要子问题 y 的解">
+                  <text x="24" y="26" class="tx-b">n = 4 时钢条切割的子问题图（有向边 x → y：解 x 需要 y 的解）</text>
+                  <text x="24" y="46" class="tx-sm">顶点标号 = 子问题的规模；求解顺序取逆拓扑序 0 → 1 → 2 → 3 → 4</text>
+                  <!-- 长程边：x → y，y ≤ x−2 -->
+                  <path d="M 282 78 Q 210 96 282 138" fill="none" stroke="var(--c-line)" stroke-width="1.5"></path>
+                  <path d="M 282 78 Q 176 152 282 198" fill="none" stroke="var(--c-line)" stroke-width="1.5"></path>
+                  <path d="M 282 78 Q 146 208 282 258" fill="none" stroke="var(--c-line)" stroke-width="1.5"></path>
+                  <path d="M 282 138 Q 200 158 282 198" fill="none" stroke="var(--c-line)" stroke-width="1.5"></path>
+                  <path d="M 282 138 Q 168 214 282 258" fill="none" stroke="var(--c-line)" stroke-width="1.5"></path>
+                  <path d="M 282 198 Q 190 218 282 258" fill="none" stroke="var(--c-line)" stroke-width="1.5"></path>
+                  <!-- 相邻边：x → x−1 -->
+                  <line x1="300" y1="84" x2="300" y2="132" stroke="var(--c-accent)" stroke-width="2.2"></line>
+                  <polygon points="294,128 306,128 300,138" fill="var(--c-accent)"></polygon>
+                  <line x1="300" y1="144" x2="300" y2="192" stroke="var(--c-accent)" stroke-width="2.2"></line>
+                  <polygon points="294,188 306,188 300,198" fill="var(--c-accent)"></polygon>
+                  <line x1="300" y1="204" x2="300" y2="252" stroke="var(--c-accent)" stroke-width="2.2"></line>
+                  <polygon points="294,248 306,248 300,258" fill="var(--c-accent)"></polygon>
+                  <line x1="300" y1="264" x2="300" y2="312" stroke="var(--c-accent)" stroke-width="2.2"></line>
+                  <polygon points="294,308 306,308 300,318" fill="var(--c-accent)"></polygon>
+                  <!-- 顶点 -->
+                  <circle cx="300" cy="72" r="22" fill="var(--c-key-bg)" stroke="var(--c-accent)" stroke-width="2.2"></circle>
+                  <text x="300" y="78" class="tx tx-b" text-anchor="middle">4</text>
+                  <circle cx="300" cy="138" r="22" fill="var(--c-panel-2)" stroke="var(--c-line)" stroke-width="1.6"></circle>
+                  <text x="300" y="144" class="tx" text-anchor="middle">3</text>
+                  <circle cx="300" cy="198" r="22" fill="var(--c-panel-2)" stroke="var(--c-line)" stroke-width="1.6"></circle>
+                  <text x="300" y="204" class="tx" text-anchor="middle">2</text>
+                  <circle cx="300" cy="258" r="22" fill="var(--c-panel-2)" stroke="var(--c-line)" stroke-width="1.6"></circle>
+                  <text x="300" y="264" class="tx" text-anchor="middle">1</text>
+                  <circle cx="300" cy="318" r="22" fill="var(--c-tip-bg)" stroke="var(--c-ok)" stroke-width="2.2"></circle>
+                  <text x="300" y="324" class="tx tx-b" text-anchor="middle">0</text>
+                  <!-- 右侧说明 -->
+                  <text x="420" y="70" class="tx">4 → 3, 2, 1, 0</text>
+                  <text x="420" y="92" class="tx-sm">求 r₄ = max(p₁+r₃, p₂+r₂, p₃+r₁, p₄+r₀)</text>
+                  <text x="420" y="136" class="tx">3 → 2, 1, 0</text>
+                  <text x="420" y="158" class="tx-sm">求 r₃ 需要 r₂、r₁、r₀</text>
+                  <text x="420" y="196" class="tx">2 → 1, 0</text>
+                  <text x="420" y="218" class="tx-sm">求 r₂ 需要 r₁、r₀</text>
+                  <text x="420" y="256" class="tx">1 → 0</text>
+                  <text x="420" y="278" class="tx-sm">求 r₁ 只需要 r₀</text>
+                  <text x="24" y="368" class="tx-sm">逆拓扑序：r₀ → r₁ → r₂ → r₃ → r₄。按这个顺序填表，每个子问题恰好算一次，共 5 个子问题；</text>
+                  <text x="24" y="388" class="tx-sm">而朴素递归的调用树有 2⁴ = 16 个结点、2³ = 8 个叶结点，同一个子问题被反复展开。</text>
+                </svg>
+                <p class="fig-cap">图 1 &nbsp;<span class="m">n = 4</span> 钢条切割的子问题图（PPT 第 12 页原图）—— 10 条边对应 10 次"用到更小子问题"</p>
+          
+                <div class="callout warn">
+                  <p class="callout-h">易错：DP 不是"递归 + 一张表"就算完</p>
+                  <p>如果子问题<b>根本不重叠</b>（分治的典型情形，如归并排序的两个半区），存表只会白白多花 <span class="m">Θ(n)</span> 甚至 <span class="m">Θ(n<sup>2</sup>)</span> 的空间而一点时间也省不下。判断能不能用 DP，第一步永远是问：<b>递归展开后有没有同一个子问题被算多次？</b></p>
+                </div>
+          
+                <div class="callout key">
+                  <p class="callout-h">本节考点</p>
+                  <p>① programming = <b>表格法</b>；② 与分治的<b>相同点</b>是"组合子问题的解"，<b>不同点</b>是"适用于子问题重叠"；③ 实质 = <b>分治 + 解决冗余</b>；④ 四个设计步骤（刻画结构 → 递归定义值 → 计算值 → 构造解）；⑤ 两种实现（备忘 / 自底向上）等价，自底向上按<b>逆拓扑序</b>填表；⑥ 时空权衡：用内存换时间。</p>
+                </div>
+        ` },
+      ],
+    },
+    {
+      id: 'sec-principle',
+      heading: "2. 动态规划原理：两个要素与适用性",
+      blocks: [
+        { type: 'html', html: `
+          <h3 id="sec-principle-h1">2.1 两个要素：最优子结构 + 重叠子问题</h3>
+          
+                <p>PPT 第 39 页：动态规划算法的<b>有效性</b>依赖于两个重要性质，这是采用动态规划算法的<b>基本要素</b>。</p>
+          
+                <div class="callout key">
+                  <p class="callout-h">要素 1：最优子结构（optimal substructure）—— "动态规划标志 #1"</p>
+                  <p>当问题的<b>最优解包含其子问题的最优解</b>时，称该问题具有最优子结构性质。它提供了"可以用动态规划算法求解"的<b>线索</b>。</p>
+                  <p>例：矩阵连乘问题，把 <span class="m">A<sub>1</sub>A<sub>2</sub>…A<sub>n</sub></span> 在第 <span class="m">k</span> 个位置断开，分解为两个子问题（加括号方式求解）；于是可以采用自底向上的方式求解，并且可以在相对较小的子问题空间中考虑问题。</p>
+                </div>
+          
+                <div class="callout key">
+                  <p class="callout-h">要素 2：重叠子问题（overlapping subproblems）—— "动态规划标志 #2"</p>
+                  <p>子问题的<b>重叠性质</b>：每次产生的子问题并不总是新问题，有些子问题被<b>反复计算</b>。因此采用动态规划法<b>只计算每个子问题一次</b>，并放到表中，需要时再查表即可。</p>
+                  <p>例：矩阵连乘计算问题中，子问题只有 <span class="m">Θ(n<sup>2</sup>)</span> 数量级（不同的 <span class="m">(i, j)</span> 对共 <span class="m">n(n+1)/2</span> 个），而朴素递归的调用次数是指数的。</p>
+                </div>
+          
+                <p>这两个要素在证明题里的用法不同：<b>最优子结构</b>用<b>反证法 / 剪贴法</b>（cut &amp; paste）证明；<b>重叠子问题</b>用"数一数不同子问题的个数"来论证。两件事都成立，才能把指数时间压成多项式时间。</p>
+          
+                <h3 id="sec-principle-h2">2.2 DP 与分治的对比</h3>
+          
+                <p>PPT 第 35 页把两者摆在一起对照，结论只有一句话：<b>两者都是合并子问题的解来解决问题</b>，区别在于子问题是否独立。</p>
+          
+                <table class="tbl">
+                  <thead><tr><th>对比项</th><th>分而治之（divide &amp; conquer）</th><th>动态规划（DP）</th></tr></thead>
+                  <tbody>
+                    <tr><td>子问题关系</td><td>把问题划分为<b>独立的</b>子问题</td><td>子问题<b>重叠</b>（不同子问题有公共的子问题）</td></tr>
+                    <tr><td>求解方式</td><td>递归地解决子问题，然后把它们的解<b>组合</b>得到原问题的解</td><td>每个子问题<b>仅仅解决一次</b>，结果存表，以后查表</td></tr>
+                    <tr><td>效率隐患</td><td>如果相同的子问题出现<b>多于一次</b>，算法效率不高（指数级重复）</td><td>适合子问题重叠的情况，重复被"查表"消掉</td></tr>
+                    <tr><td>典型例子</td><td>归并排序、二分查找、Hanoi 塔</td><td>钢条切割、矩阵链、LCS、装配线、OBST</td></tr>
+                    <tr><td>共同点</td><td colspan="2">都需要<b>最优子结构</b>（或可分性）：原问题的解由子问题的解组合而成</td></tr>
+                  </tbody>
+                </table>
+          
+                <p>PPT 第 36 页还给了一份"通用方法 + 开发 DP"的清单，可以当成四步的另一种说法：</p>
+          
+                <ul>
+                  <li><b>典型应用</b>为最优化问题；</li>
+                  <li><b>通用方法</b>：计算所有子问题的解 → 利用小的子问题来解决大的子问题 → 子问题的计算基于以前计算的更小的子问题的结果 → 将子问题的结果存储在表中，不再重新计算；</li>
+                  <li><b>开发 DP</b>：研究最优方案的结构 → 递归定义最优方案的值 → 从底向上计算最优方案的值 → 从计算的结果创建最优方案（如果仅仅需要最优值，此步可以忽略）。</li>
+                </ul>
+          
+                <h3 id="sec-principle-h3">2.3 什么时候使用动态规划（DP 的适用性讨论）</h3>
+          
+                <p>PPT 第 37 页的说法很干脆：<b>DP 通过存储部分结果来进行高效的递归计算，所以它仅仅在"部分结果的数目比较小"的时候才好用。</b>这句话是判断适用性的总纲。</p>
+          
+                <table class="tbl">
+                  <thead><tr><th>情形</th><th>子问题 / 部分结果的规模</th><th>能否用 DP</th></tr></thead>
+                  <tbody>
+                    <tr><td><b>无望</b>：n 个元素集合的排列组合</td><td><span class="m">n!</span></td><td>不能 —— 表根本装不下</td></tr>
+                    <tr><td><b>无望</b>：n 个元素的全部子集</td><td><span class="m">2<sup>n</sup></span></td><td>不能 —— 指数个表项</td></tr>
+                    <tr><td><b>有希望</b>：n 个字符的字符串的连续子串</td><td><span class="m">Θ(n<sup>2</sup>)</span></td><td>可以（如 LCS 的 <span class="m">mn</span> 个子问题）</td></tr>
+                    <tr><td><b>有希望</b>：二叉搜索树的可能子树</td><td><span class="m">Θ(n<sup>2</sup>)</span></td><td>可以（OBST 的 <span class="m">e[i,j]</span> 共 <span class="m">n(n+1)/2</span> 项）</td></tr>
+                  </tbody>
+                </table>
+          
+                <div class="callout tip">
+                  <p class="callout-h">记忆：DP 的最佳应用是"线性有序、但却不能排序"的对象</p>
+                  <p>典型清单（PPT 第 37 页）：<b>矩阵链</b>（矩阵的顺序不能重排）、<b>字符串中的字符</b>（字符顺序不能动）、<b>多边形边界周围的点</b>、<b>圆上的点</b>、<b>搜索树中叶子从左到右的顺序</b>。</p>
+                  <p>共同特征：对象<b>从左到右有序</b>，但这个顺序<b>不能</b>通过排序改变 —— 于是子问题天然落在"区间 <span class="m">[i, j]</span>"上，表也就是二维区间表。</p>
+                </div>
+          
+                <h3 id="sec-principle-h4">2.4 两种 DP 方法的取舍（PPT 第 38 页）</h3>
+          
+                <table class="tbl">
+                  <thead><tr><th></th><th>从下向上迭代方法</th><th>从上到下递归方法（记忆）</th></tr></thead>
+                  <tbody>
+                    <tr><td>起点</td><td>从递归的分而治之算法开始</td><td>保持原始算法从上到下的方法</td></tr>
+                    <tr><td>关键动作</td><td>找到子问题之间的<b>依赖关系</b>（计算子问题需要什么样的解），按照<b>正确的顺序</b>解决子问题</td><td>将子问题的解<b>保存在表中</b>（可能需要很多存储空间），只有当子问题的解在表中<b>没有</b>的时候才进行递归</td></tr>
+                    <tr><td>更优的场合</td><td>如果<b>所有</b>的子问题都必须计算至少一次</td><td>如果<b>很多</b>子问题不需要计算</td></tr>
+                    <tr><td>原因</td><td>减少了递归和维护表的负担</td><td>只有用到的项被计算</td></tr>
+                  </tbody>
+                </table>
+          
+                <div class="callout warn">
+                  <p class="callout-h">易错：把"重叠子问题"和"子问题无关"混为一谈</p>
+                  <p>这两个词描述的是<b>相反</b>的两件事，而且都和"能否用 DP"直接相关：<b>重叠子问题</b>是"同一个子问题被多个父问题共用"，这是 DP 的<b>机会</b>（可以省时间）；<b>子问题无关</b>是"同一个原问题的两个子问题的解互不影响、不争用资源"，这是最优子结构能成立的<b>前提</b>。最短路径的子问题相互不共享顶点（子问题无关）→ 有最优子结构；最长路径的子问题会争用顶点（子问题相关）→ <b>没有</b>最优子结构。详见 <a href="#sec-lcs">第 5 节</a>的延伸。</p>
+                </div>
+          
+                <div class="callout key">
+                  <p class="callout-h">本节考点</p>
+                  <p>① 两个要素：<b>最优子结构</b> + <b>重叠子问题</b>（"标志 #1 / #2"）；② DP 与分治：相同 = 组合子问题的解，不同 = 子问题是否重叠；③ 适用性：无望（<span class="m">n!</span>、<span class="m">2<sup>n</sup></span>）vs 有希望（连续子串、子树）；④ 最佳应用 = <b>线性有序但不能排序</b>的对象；⑤ 两种方法的选择口诀：<b>子问题全要算 → 自底向上；只需一部分 → 自顶向下</b>。</p>
+                </div>
+        ` },
+      ],
+    },
+    {
+      id: 'sec-rod',
+      heading: "3. 习题 1：钢条切割（rod cutting）",
+      blocks: [
+        { type: 'html', html: `
+          <h3 id="sec-rod-h1">3.1 问题描述</h3>
+          
+                <p>Serling 公司购买长钢条，将其切割为短钢条出售。<b>切割工序本身没有成本支出</b>。公司管理层希望知道<b>最佳的切割方案</b>。假定我们知道 Serling 公司出售一段长为 <span class="m">i</span> 英寸的钢条的价格为 <span class="m">p<sub>i</sub></span>（<span class="m">i = 1, 2, …</span>，单位为美元），钢条的长度均为<b>整英寸</b>。</p>
+          
+                <div class="callout key">
+                  <p class="callout-h">钢条切割问题</p>
+                  <p>给定一段长度为 <span class="m">n</span> 英寸的钢条和一个价格表 <span class="m">p<sub>i</sub></span>（<span class="m">i = 1, 2, … n</span>），求<b>切割钢条方案</b>，使得销售收益 <span class="m">r<sub>n</sub></span> 最大。</p>
+                  <p>注意：如果长度为 <span class="m">n</span> 英寸的钢条的价格 <span class="m">p<sub>n</sub></span> <b>足够大</b>，最优解可能就是<b>完全不需要切割</b>。</p>
+                </div>
+          
+                <p>PPT 图 15-1 给出的价格表样例（已逐格核对 PPT 第 5 页的图片 <code>image5.png</code>）：</p>
+          
+                <table class="tbl">
+                  <thead><tr><th>长度 <span class="m">i</span></th><th class="num">1</th><th class="num">2</th><th class="num">3</th><th class="num">4</th><th class="num">5</th><th class="num">6</th><th class="num">7</th><th class="num">8</th><th class="num">9</th><th class="num">10</th></tr></thead>
+                  <tbody>
+                    <tr><td>价格 <span class="m">p<sub>i</sub></span></td><td class="num">1</td><td class="num">5</td><td class="num">8</td><td class="num">9</td><td class="num">10</td><td class="num">17</td><td class="num">17</td><td class="num">20</td><td class="num">24</td><td class="num">30</td></tr>
+                  </tbody>
+                </table>
+          
+                <h3 id="sec-rod-h2">3.2 切割方案举例：n = 4 的 8 种方案</h3>
+          
+                <p>长度为 <span class="m">n</span> 英寸的钢条共有 <b><span class="m">2<sup>n−1</sup></span></b> 种不同的切割方案 —— 因为在距离钢条左端 <span class="m">i</span>（<span class="m">i = 1, 2, … n−1</span>）英寸处，总是可以选择<b>切割</b>或<b>不切割</b>。所以 <span class="m">n = 4</span> 时有 <span class="m">2<sup>3</sup> = 8</span> 种方案（PPT 第 6 页的图，已核对 <code>image6.png</code>）：</p>
+          
+                <table class="tbl">
+                  <thead><tr><th>方案</th><th>切割</th><th>收益计算</th><th class="num">总收益</th></tr></thead>
+                  <tbody>
+                    <tr><td>(a)</td><td>4（不切）</td><td><span class="m">p<sub>4</sub></span></td><td class="num">9</td></tr>
+                    <tr><td>(b)</td><td>1 + 3</td><td><span class="m">p<sub>1</sub> + p<sub>3</sub> = 1 + 8</span></td><td class="num">9</td></tr>
+                    <tr><td>(c)</td><td><b>2 + 2</b></td><td><span class="m">p<sub>2</sub> + p<sub>2</sub> = 5 + 5</span></td><td class="num"><b>10</b></td></tr>
+                    <tr><td>(d)</td><td>3 + 1</td><td><span class="m">p<sub>3</sub> + p<sub>1</sub> = 8 + 1</span></td><td class="num">9</td></tr>
+                    <tr><td>(e)</td><td>1 + 1 + 2</td><td><span class="m">1 + 1 + 5</span></td><td class="num">7</td></tr>
+                    <tr><td>(f)</td><td>1 + 2 + 1</td><td><span class="m">1 + 5 + 1</span></td><td class="num">7</td></tr>
+                    <tr><td>(g)</td><td>2 + 1 + 1</td><td><span class="m">5 + 1 + 1</span></td><td class="num">7</td></tr>
+                    <tr><td>(h)</td><td>1 + 1 + 1 + 1</td><td><span class="m">1 + 1 + 1 + 1</span></td><td class="num">4</td></tr>
+                  </tbody>
+                </table>
+          
+                <p>最优方案是 <b>2 + 2</b>，收益 <span class="m">r<sub>4</sub> = p<sub>2</sub> + p<sub>2</sub> = 5 + 5 = 10</span>。注意方案 (c) 的收益比方案 (a) 的 <span class="m">p<sub>4</sub> = 9</span> 更大 —— <b>切反而比不切更赚钱</b>。</p>
+          
+                <svg class="fig" viewBox="0 0 900 400" role="img" aria-label="n 等于 4 的钢条八种切割方案：不切、1+3、2+2、3+1、1+1+2、1+2+1、2+1+1、1+1+1+1，其中 2+2 收益 10 最大">
+                  <text x="24" y="24" class="tx-b">n = 4 的八种切割方案（每格 = 1 英寸，格内数字 = 该段长度，右侧 = 收益）</text>
+                  <text x="24" y="44" class="tx-sm">价格：p1 = 1、p2 = 5、p3 = 8、p4 = 9；最优方案 2 + 2 收益 10</text>
+                  <!-- (a) 4 -->
+                  <text x="30" y="82" class="tx">(a)</text>
+                  <rect x="70" y="66" width="120" height="22" rx="3" fill="var(--c-panel-2)" stroke="var(--c-line)" stroke-width="1.4"></rect>
+                  <text x="130" y="82" class="tx" text-anchor="middle">4</text>
+                  <text x="212" y="82" class="tx-sm">p4 = 9</text>
+                  <text x="330" y="82" class="tx">收益 9</text>
+                  <!-- (b) 1+3 -->
+                  <text x="30" y="124" class="tx">(b)</text>
+                  <rect x="70" y="108" width="30" height="22" rx="3" fill="var(--c-panel-2)" stroke="var(--c-line)" stroke-width="1.4"></rect>
+                  <text x="85" y="124" class="tx" text-anchor="middle">1</text>
+                  <rect x="100" y="108" width="90" height="22" rx="3" fill="var(--c-panel-2)" stroke="var(--c-line)" stroke-width="1.4"></rect>
+                  <text x="145" y="124" class="tx" text-anchor="middle">3</text>
+                  <text x="212" y="124" class="tx-sm">p1 + p3 = 1 + 8</text>
+                  <text x="330" y="124" class="tx">收益 9</text>
+                  <!-- (c) 2+2 最优 -->
+                  <text x="30" y="166" class="tx tx-b">(c)</text>
+                  <rect x="70" y="150" width="60" height="22" rx="3" fill="var(--c-tip-bg)" stroke="var(--c-ok)" stroke-width="2"></rect>
+                  <text x="100" y="166" class="tx tx-b" text-anchor="middle">2</text>
+                  <rect x="130" y="150" width="60" height="22" rx="3" fill="var(--c-tip-bg)" stroke="var(--c-ok)" stroke-width="2"></rect>
+                  <text x="160" y="166" class="tx tx-b" text-anchor="middle">2</text>
+                  <text x="212" y="166" class="tx-sm">p2 + p2 = 5 + 5</text>
+                  <text x="330" y="166" class="tx tx-b" fill="var(--c-ok)">收益 10 ← 最优</text>
+                  <!-- (d) 3+1 -->
+                  <text x="30" y="208" class="tx">(d)</text>
+                  <rect x="70" y="192" width="90" height="22" rx="3" fill="var(--c-panel-2)" stroke="var(--c-line)" stroke-width="1.4"></rect>
+                  <text x="115" y="208" class="tx" text-anchor="middle">3</text>
+                  <rect x="160" y="192" width="30" height="22" rx="3" fill="var(--c-panel-2)" stroke="var(--c-line)" stroke-width="1.4"></rect>
+                  <text x="175" y="208" class="tx" text-anchor="middle">1</text>
+                  <text x="212" y="208" class="tx-sm">p3 + p1 = 8 + 1</text>
+                  <text x="330" y="208" class="tx">收益 9</text>
+                  <!-- (e) 1+1+2 -->
+                  <text x="30" y="250" class="tx">(e)</text>
+                  <rect x="70" y="234" width="30" height="22" rx="3" fill="var(--c-panel-2)" stroke="var(--c-line)" stroke-width="1.4"></rect>
+                  <text x="85" y="250" class="tx" text-anchor="middle">1</text>
+                  <rect x="100" y="234" width="30" height="22" rx="3" fill="var(--c-panel-2)" stroke="var(--c-line)" stroke-width="1.4"></rect>
+                  <text x="115" y="250" class="tx" text-anchor="middle">1</text>
+                  <rect x="130" y="234" width="60" height="22" rx="3" fill="var(--c-panel-2)" stroke="var(--c-line)" stroke-width="1.4"></rect>
+                  <text x="160" y="250" class="tx" text-anchor="middle">2</text>
+                  <text x="212" y="250" class="tx-sm">1 + 1 + 5</text>
+                  <text x="330" y="250" class="tx">收益 7</text>
+                  <!-- (f) 1+2+1 -->
+                  <text x="30" y="292" class="tx">(f)</text>
+                  <rect x="70" y="276" width="30" height="22" rx="3" fill="var(--c-panel-2)" stroke="var(--c-line)" stroke-width="1.4"></rect>
+                  <text x="85" y="292" class="tx" text-anchor="middle">1</text>
+                  <rect x="100" y="276" width="60" height="22" rx="3" fill="var(--c-panel-2)" stroke="var(--c-line)" stroke-width="1.4"></rect>
+                  <text x="130" y="292" class="tx" text-anchor="middle">2</text>
+                  <rect x="160" y="276" width="30" height="22" rx="3" fill="var(--c-panel-2)" stroke="var(--c-line)" stroke-width="1.4"></rect>
+                  <text x="175" y="292" class="tx" text-anchor="middle">1</text>
+                  <text x="212" y="292" class="tx-sm">1 + 5 + 1</text>
+                  <text x="330" y="292" class="tx">收益 7</text>
+                  <!-- (g) 2+1+1 -->
+                  <text x="30" y="334" class="tx">(g)</text>
+                  <rect x="70" y="318" width="60" height="22" rx="3" fill="var(--c-panel-2)" stroke="var(--c-line)" stroke-width="1.4"></rect>
+                  <text x="100" y="334" class="tx" text-anchor="middle">2</text>
+                  <rect x="130" y="318" width="30" height="22" rx="3" fill="var(--c-panel-2)" stroke="var(--c-line)" stroke-width="1.4"></rect>
+                  <text x="145" y="334" class="tx" text-anchor="middle">1</text>
+                  <rect x="160" y="318" width="30" height="22" rx="3" fill="var(--c-panel-2)" stroke="var(--c-line)" stroke-width="1.4"></rect>
+                  <text x="175" y="334" class="tx" text-anchor="middle">1</text>
+                  <text x="212" y="334" class="tx-sm">5 + 1 + 1</text>
+                  <text x="330" y="334" class="tx">收益 7</text>
+                  <!-- (h) 1+1+1+1 -->
+                  <text x="30" y="376" class="tx">(h)</text>
+                  <rect x="70" y="360" width="30" height="22" rx="3" fill="var(--c-panel-2)" stroke="var(--c-line)" stroke-width="1.4"></rect>
+                  <text x="85" y="376" class="tx" text-anchor="middle">1</text>
+                  <rect x="100" y="360" width="30" height="22" rx="3" fill="var(--c-panel-2)" stroke="var(--c-line)" stroke-width="1.4"></rect>
+                  <text x="115" y="376" class="tx" text-anchor="middle">1</text>
+                  <rect x="130" y="360" width="30" height="22" rx="3" fill="var(--c-panel-2)" stroke="var(--c-line)" stroke-width="1.4"></rect>
+                  <text x="145" y="376" class="tx" text-anchor="middle">1</text>
+                  <rect x="160" y="360" width="30" height="22" rx="3" fill="var(--c-panel-2)" stroke="var(--c-line)" stroke-width="1.4"></rect>
+                  <text x="175" y="376" class="tx" text-anchor="middle">1</text>
+                  <text x="212" y="376" class="tx-sm">1 + 1 + 1 + 1</text>
+                  <text x="330" y="376" class="tx">收益 4</text>
+                  <!-- 右侧结论 -->
+                  <rect x="470" y="60" width="400" height="130" rx="8" fill="var(--c-key-bg)" stroke="var(--c-accent)" stroke-width="1.6"></rect>
+                  <text x="490" y="86" class="tx tx-b">为什么暴力枚举不可行？</text>
+                  <text x="490" y="110" class="tx-sm">方案数 = 2^(n−1)，n = 4 时 8 种；n = 30 时 2^29 ≈ 5.4 亿种。</text>
+                  <text x="490" y="132" class="tx-sm">而"最优子结构"告诉我们：最优方案的第一段切法确定后，</text>
+                  <text x="490" y="152" class="tx-sm">剩下的 n−i 英寸必然取最优（r_{n−i}），不必枚举所有方案。</text>
+                  <text x="490" y="176" class="tx-sm">于是 r_n = max_{1≤i≤n}(p_i + r_{n−i})，只要 n 个子问题。</text>
+                </svg>
+                <p class="fig-cap">图 2 &nbsp;<span class="m">n = 4</span> 的八种切割方案与收益（PPT 第 6 页原图）：最优方案 2 + 2 收益 10</p>
+          
+                <h3 id="sec-rod-h3">3.3 步骤一：刻画最优解的结构（最优子结构）</h3>
+          
+                <p>PPT 第 7 页的推理是这样的：如果一个最优解将钢条切割为 <span class="m">k</span> 段（对某个 <span class="m">1 ≤ k ≤ n</span>），那么最优切割方案</p>
+          
+                <p class="formula">n = i<sub>1</sub> + i<sub>2</sub> + … + i<sub>k</sub></p>
+          
+                <p>将钢条切割为长度分别为 <span class="m">i<sub>1</sub>, i<sub>2</sub>, …, i<sub>k</sub></span> 的小段，得到最大收益</p>
+          
+                <p class="formula">r<sub>n</sub> = p<sub>i<sub>1</sub></sub> + p<sub>i<sub>2</sub></sub> + … + p<sub>i<sub>k</sub></sub></p>
+          
+                <div class="callout key">
+                  <p class="callout-h">最优子结构（PPT 第 7 页）</p>
+                  <p>更一般地，对于 <span class="m">r<sub>n</sub></span>（<span class="m">n ≥ 1</span>），我们可以用<b>更短的钢条的最优切割收益</b>来描述它：</p>
+                  <p class="formula">r<sub>n</sub> = max( p<sub>n</sub>, r<sub>1</sub> + r<sub>n−1</sub>, r<sub>2</sub> + r<sub>n−2</sub>, …, r<sub>n−1</sub> + r<sub>1</sub> )</p>
+                  <p>第一个参数 <span class="m">p<sub>n</sub></span> 对应<b>不切割</b>；其余每个参数对应"切下第一段长度为 <span class="m">i</span>、剩下长度 <span class="m">n−i</span> 再取最优"的方案。等价的标准写法是：</p>
+                  <p class="formula">r<sub>n</sub> = max<sub>1 ≤ i ≤ n</sub> ( p<sub>i</sub> + r<sub>n−i</sub> ) &nbsp;&nbsp;，&nbsp;&nbsp; r<sub>0</sub> = 0</p>
+                  <p>（PPT 第 8 页给出了这个"只含一个 <span class="m">r</span>"的形式 <span class="m">r<sub>n</sub> = max<sub>1≤i≤n</sub>(p<sub>i</sub> + r<sub>n−i</sub>)</span>，已核对图片 <code>image9.png</code>。）</p>
+                </div>
+          
+                <p><b>为什么这是最优子结构？</b>用剪贴法（cut &amp; paste）：设最优方案把钢条切成长度 <span class="m">i<sub>1</sub>, i<sub>2</sub>, …, i<sub>k</sub></span> 的段，总收益 <span class="m">p<sub>i<sub>1</sub></sub> + … + p<sub>i<sub>k</sub></sub></span>。若剩下的 <span class="m">n − i<sub>1</sub></span> 英寸存在收益更高的方案，把它<b>粘</b>上去就得到比"最优"更高的收益，矛盾。</p>
+          
+                <p>注意一个细节：<span class="m">r<sub>n</sub> = max(p<sub>i</sub> + r<sub>n−i</sub>)</span> 里的 <span class="m">r<sub>n−i</sub></span> <b>本身就允许继续切</b>，所以第一段切 <span class="m">i</span> 之后右边那一部分的最优方案已经"递归地"包含了所有可能的切法 —— <b>不需要</b>再讨论右边怎么切。这正是 DP 与"枚举 <span class="m">2<sup>n−1</sup></span> 种方案"的区别。</p>
+          
+                <h3 id="sec-rod-h4">3.4 步骤二：递归地定义最优解的值（朴素递归）</h3>
+          
+                <p>PPT 第 8 页给出的递归过程 <code>CUT-ROD(p, n)</code>（<code>p</code> 价格数组、<code>n</code> 钢条长度、<code>q</code> 最大收益）：</p>
+          
+                <div class="code-pair">
+                  <div class="code-col">
+                    <p class="code-h">伪代码（PPT 第 8 页原图）</p>
+                    <pre class="code"><code>CUT-ROD(p, n)                        // p 为价格数组，n 为钢条长度
+          1  if n == 0                         // 边界：长度为 0 的钢条
+          2      return 0                     // 收益为 0
+          3  q = −∞                            // q 保存当前找到的最大收益
+          4  for i = 1 to n                    // 枚举第一段切下的长度 i
+          5      q = max(q, p[i] + CUT-ROD(p, n − i))   // 首段收益 + 剩余部分递归
+          6  return q                          // 返回最大收益</code></pre>
+                  </div>
+                  <div class="code-col">
+                    <p class="code-h">C++</p>
+                    <pre class="code cpp"><code>int cutRod(int p[], int n) {                  // p[1..n] 为价格表，n 为钢条长度
+              if (n == 0) { return 0; }                 // 边界：长度为 0 时不产生收益
+              int q = -1000000000;                      // 用很小的数表示"负无穷"
+              for (int i = 1; i &lt;= n; ++i) {            // 枚举第一段切下的长度 i
+                  int v = p[i] + cutRod(p, n - i);      // 首段 p[i] 加上剩余 n-i 的最优收益
+                  if (v &gt; q) { q = v; }                 // 更大就更新最大收益
+              }                                         // 结束枚举
+              return q;                                 // 返回长度 n 的最大收益
+          }                                             // 结束 cutRod 函数</code></pre>
+                  </div>
+                </div>
+          
+                <p>这个递归程序的运行时间随 <span class="m">n</span> <b>指数增长</b>：每当 <span class="m">n</span> 增大 1，程序运行时间差不多就会<b>增加 1 倍</b>。</p>
+          
+                <h3 id="sec-rod-h5">3.5 效率分析：递归树与重叠子问题</h3>
+          
+                <p>PPT 第 9 页给出 <span class="m">n = 4</span> 时的递归调用树（已核对 <code>image11.png</code>）：根结点标号 4，它的 4 个孩子分别是 3、2、1、0；标号 3 的结点又有 3 个孩子 2、1、0 …… 每个结点的标号就是对应<b>子问题的规模</b>，从父结点 <span class="m">s</span> 到子结点 <span class="m">t</span> 的边表示"从钢条左端切下长度为 <span class="m">s − t</span> 的一段"。</p>
+          
+                <ul>
+                  <li>从根结点到叶结点的一条路径 = 长度 <span class="m">n</span> 的钢条的 <b><span class="m">2<sup>n−1</sup></span> 种切割方案之一</b>；</li>
+                  <li>这棵递归调用树共有 <b><span class="m">2<sup>n</sup></span></b> 个结点，其中有 <b><span class="m">2<sup>n−1</sup></span></b> 个叶结点；<span class="m">n = 4</span> 时是 16 个结点、8 个叶结点；</li>
+                  <li>所以朴素递归的调用次数 <span class="m">T(n) = 2<sup>n</sup> = &Theta;(2<sup>n</sup>)</span> —— <b>指数时间</b>。</li>
+                </ul>
+          
+                <p><b>罪魁祸首是"反复求解相同的子问题"</b>：树中标号相同的结点被展开了一次又一次（标号 2 的结点出现 3 次、标号 1 的 5 次、标号 0 的 8 次）。而不同子问题<b>只有 <span class="m">n+1</span> 个</b>（规模 <span class="m">0, 1, …, n</span>）。把 5 个答案存进表，就得到下一小节的 <span class="m">&Theta;(n<sup>2</sup>)</span> 算法。</p>
+          
+                <h3 id="sec-rod-h6">3.6 步骤三：计算最优解的值（两种实现）</h3>
+          
+                <p>基本思路：<b>仔细安排求解顺序，对每个子问题只求解一次，并将结果保存下来</b>；如果随后再次需要此子问题的解，只需<b>查找</b>保存的结果。常用的算法设计思想：付出额外的<b>内存空间</b>来节省时间（时空权衡）。</p>
+          
+                <h4>(1) 带备忘的自顶向下法</h4>
+          
+                <p>PPT 第 14 页的 <code>MEMOIZED-CUT-ROD</code> + <code>MEMOIZED-CUT-ROD-AUX</code>（已核对 <code>image13.png</code>、<code>image14.png</code>、<code>image15.png</code>）：</p>
+          
+                <div class="code-pair">
+                  <div class="code-col">
+                    <p class="code-h">伪代码（PPT 第 14 页原图）</p>
+                    <pre class="code"><code>MEMOIZED-CUT-ROD(p, n)               // 带备忘的自顶向下主过程
+          1  let r[0..n] be a new array         // 新建备忘数组 r
+          2  for i = 0 to n                     // 逐个初始化
+          3      r[i] = −∞                      // −∞ 表示"该子问题还没算过"
+          4  return MEMOIZED-CUT-ROD-AUX(p, n, r)   // 调用递归辅助过程
+          
+          MEMOIZED-CUT-ROD-AUX(p, n, r)        // 递归辅助过程
+          1  if r[n] ≥ 0                        // 表里已有答案（查表命中）
+          2      return r[n]                    // 直接返回，省掉重复计算
+          3  if n == 0                          // 边界：长度为 0
+          4      q = 0                          // 收益为 0
+          5  else q = −∞                        // 否则先把最优值置为负无穷
+          6      for i = 1 to n                 // 枚举第一段长度 i
+          7          q = max(q, p[i] + MEMOIZED-CUT-ROD-AUX(p, n−i, r))   // 递归求解 n−i
+          8  r[n] = q                           // 把本次结果写回表中
+          9  return q                           // 返回本子问题的最优值</code></pre>
+                  </div>
+                  <div class="code-col">
+                    <p class="code-h">C++</p>
+                    <pre class="code cpp"><code>const int NEG = -1000000000;                   // 用很小的整数表示"负无穷"
+          int memo[11];                                  // 备忘数组，memo[i] 存长度 i 的最优收益
+          
+          int memoizedCutRodAux(int p[], int n) {        // 递归辅助过程：求解长度 n
+              if (memo[n] &gt;= 0) { return memo[n]; }      // 查表命中就直接返回，避免重复计算
+              int q;                                     // q 保存本规模的最优收益
+              if (n == 0) { q = 0; }                     // 边界：长度为 0 时收益为 0
+              else {                                     // 长度大于 0 时枚举第一段
+                  q = NEG;                               // 先把最优值置为负无穷
+                  for (int i = 1; i &lt;= n; ++i) {         // 第一段切 i 英寸
+                      int v = p[i] + memoizedCutRodAux(p, n - i);   // 首段收益 + 剩余部分
+                      if (v &gt; q) { q = v; }              // 更新最大值
+                  }                                      // 结束枚举
+              }                                          // 结束 else 分支
+              memo[n] = q;                               // 结果写回表中
+              return q;                                  // 返回最优收益
+          }                                              // 结束 memoizedCutRodAux
+          
+          int memoizedCutRod(int p[], int n) {           // 带备忘的自顶向下驱动
+              for (int i = 0; i &lt;= n; ++i) { memo[i] = NEG; }   // 表项初始化为"未计算"
+              return memoizedCutRodAux(p, n);            // 从规模 n 开始递归
+          }                                              // 结束 memoizedCutRod</code></pre>
+                  </div>
+                </div>
+          
+                <h4>(2) 自底向上法</h4>
+          
+                <p>PPT 第 15 页的 <code>BOTTOM-UP-CUT-ROD</code>（已核对 <code>image16.png</code>）—— 按 <span class="m">j = 1, 2, …, n</span> 的<b>规模递增顺序</b>（逆拓扑序）填表：</p>
+          
+                <div class="code-pair">
+                  <div class="code-col">
+                    <p class="code-h">伪代码（PPT 第 15 页原图）</p>
+                    <pre class="code"><code>BOTTOM-UP-CUT-ROD(p, n)              // 自底向上求解
+          1  let r[0..n] be a new array         // 新建收益数组 r
+          2  r[0] = 0                           // 边界：长度 0 的收益为 0
+          3  for j = 1 to n                     // 按长度从小到大求解每个子问题
+          4      q = −∞                          // 当前长度 j 的最优收益
+          5      for i = 1 to j                 // 枚举第一段长度 i
+          6          q = max(q, p[i] + r[j−i])  // 注意：这里查表 r[j−i]，不再递归
+          7      r[j] = q                       // 保存长度 j 的最优收益
+          8  return r[n]                        // 返回长度 n 的最优收益</code></pre>
+                  </div>
+                  <div class="code-col">
+                    <p class="code-h">C++</p>
+                    <pre class="code cpp"><code>int bottomUpCutRod(int p[], int n, int r[], int s[]) {   // r 存收益，s 存首段长度
+              r[0] = 0;                                  // 边界：长度 0 的收益为 0
+              for (int j = 1; j &lt;= n; ++j) {             // 按长度 1..n 递增求解（逆拓扑序）
+                  int q = NEG;                           // 当前长度 j 的最优收益
+                  for (int i = 1; i &lt;= j; ++i) {         // 枚举第一段的长度 i
+                      int v = p[i] + r[j - i];           // 首段收益 + 剩余部分"查表"
+                      if (v &gt; q) { q = v; s[j] = i; }    // 更优就更新收益并记下首段长度
+                  }                                      // 结束枚举
+                  r[j] = q;                              // 保存长度 j 的最优收益
+              }                                          // 结束长度循环
+              return r[n];                               // 返回长度 n 的最优收益
+          }                                              // 结束 bottomUpCutRod</code></pre>
+                  </div>
+                </div>
+          
+                <p><b>复杂度</b>：内层循环对每个 <span class="m">j</span> 跑 <span class="m">j</span> 次，总工作量 <span class="m">1 + 2 + … + n = &Theta;(n<sup>2</sup>)</span>；空间 <span class="m">&Theta;(n)</span>。从 <span class="m">&Theta;(2<sup>n</sup>)</span> 到 <span class="m">&Theta;(n<sup>2</sup>)</span>，这是"存表"带来的全部收益。</p>
+          
+                <h3 id="sec-rod-h7">3.7 步骤四：构造最优解（保存切割方案）</h3>
+          
+                <p>前面的算法只返回最优解的<b>收益值</b>，并未返回<b>解本身</b>（一个长度列表，给出切割后每段钢条的长度）。扩展办法：不仅保存最优收益值 <span class="m">r[j]</span>，还保存对应的切割方案 <span class="m">s[j]</span> = 求解规模 <span class="m">j</span> 的子问题时<b>第一段钢条的最优切割长度</b>（PPT 第 17 页，已核对 <code>image17.png</code>、<code>image19.png</code>）。</p>
+          
+                <div class="code-pair">
+                  <div class="code-col">
+                    <p class="code-h">伪代码（PPT 第 17 页原图）</p>
+                    <pre class="code"><code>EXTENDED-BOTTOM-UP-CUT-ROD(p, n)     // 与 BOTTOM-UP 的区别：多记一个 s 数组
+          1  let r[0..n] and s[0..n] be new arrays   // r 存收益，s 存首段最优长度
+          2  r[0] = 0                           // 边界
+          3  for j = 1 to n                     // 按长度递增
+          4      q = −∞                          // 当前最优收益
+          5      for i = 1 to j                 // 枚举第一段长度
+          6          if q &lt; p[i] + r[j−i]       // 找到更优的切法
+          7              q = p[i] + r[j−i]      // 更新最优收益
+          8              s[j] = i               // 记下这一段的长度（第 8 行）
+          
+          PRINT-CUT-ROD-SOLUTION(p, n)         // 输出长度为 n 的钢条的完整最优方案
+          1  (r, s) = EXTENDED-BOTTOM-UP-CUT-ROD(p, n)   // 先算表
+          2  while n &gt; 0                       // 剩余长度大于 0 就继续切
+          3      print s[n]                     // 输出这一段
+          4      n = n − s[n]                   // 剩余长度减去这一段</code></pre>
+                  </div>
+                  <div class="code-col">
+                    <p class="code-h">C++</p>
+                    <pre class="code cpp"><code>void extendedBottomUpCutRod(int p[], int n, int r[], int s[]) {   // 同时求 r 与 s
+              r[0] = 0;                                  // 边界：长度 0 的收益为 0
+              for (int j = 1; j &lt;= n; ++j) {             // 按长度递增求解
+                  int q = NEG;                           // 当前长度 j 的最优收益
+                  for (int i = 1; i &lt;= j; ++i) {         // 枚举第一段的长度 i
+                      if (q &lt; p[i] + r[j - i]) {         // 发现更优的切法
+                          q = p[i] + r[j - i];           // 更新最优收益
+                          s[j] = i;                      // 记下第一段的最优长度
+                      }                                  // 结束比较
+                  }                                      // 结束枚举
+                  r[j] = q;                              // 保存长度 j 的最优收益
+              }                                          // 结束长度循环
+          }                                              // 结束 extendedBottomUpCutRod
+          
+          void printCutRodSolution(int p[], int n) {     // 输出长度为 n 的完整最优方案
+              int r[11], s[11];                          // r 存收益、s 存首段长度
+              extendedBottomUpCutRod(p, n, r, s);        // 先把表算出来
+              while (n &gt; 0) {                            // 剩余长度大于 0 就继续切
+                  printf("%d ", s[n]);                   // 输出当前这一段的长度
+                  n = n - s[n];                          // 剩余长度减去这一段
+              }                                          // 循环结束
+              printf("\\n");                              // 方案输出完毕换行
+          }                                              // 结束 printCutRodSolution</code></pre>
+                  </div>
+                </div>
+          
+                <h3 id="sec-rod-h8">3.8 动画：自底向上填表与回溯方案</h3>
+        ` },
+        { type: 'demo', name: 'rod-cutting', title: "钢条切割：n = 4 的 r[0..4] 与 s[1..4] 逐格填充（15 步）" },
+        { type: 'html', html: `
+          <h3 id="sec-rod-h9">3.9 完整结果：r[1..10] 与最优方案</h3>
+          
+                <p>用同一张价格表跑 <code>EXTENDED-BOTTOM-UP-CUT-ROD(p, 10)</code>，得到（全部由价格表按递推式复算，可用第 3.7 节的程序直接验证）：</p>
+          
+                <table class="tbl">
+                  <thead><tr><th>长度 <span class="m">j</span></th><th class="num">0</th><th class="num">1</th><th class="num">2</th><th class="num">3</th><th class="num">4</th><th class="num">5</th><th class="num">6</th><th class="num">7</th><th class="num">8</th><th class="num">9</th><th class="num">10</th></tr></thead>
+                  <tbody>
+                    <tr><td><span class="m">r[j]</span> 最优收益</td><td class="num">0</td><td class="num">1</td><td class="num">5</td><td class="num">8</td><td class="num"><b>10</b></td><td class="num">13</td><td class="num">17</td><td class="num">18</td><td class="num">22</td><td class="num">25</td><td class="num">30</td></tr>
+                    <tr><td><span class="m">s[j]</span> 首段长度</td><td class="num">—</td><td class="num">1</td><td class="num">2</td><td class="num">3</td><td class="num">2</td><td class="num">2</td><td class="num">6</td><td class="num">1</td><td class="num">2</td><td class="num">3</td><td class="num">10</td></tr>
+                    <tr><td>最优方案</td><td>—</td><td>1</td><td>2</td><td>3</td><td><b>2+2</b></td><td>2+3</td><td>6</td><td>1+6</td><td>2+6</td><td>3+6</td><td>10</td></tr>
+                  </tbody>
+                </table>
+          
+                <p>注意 <span class="m">j = 10</span> 时最优方案是<b>不切</b>（<span class="m">p<sub>10</sub> = 30</span> 大于 <span class="m">2+6 = 5+17 = 22</span>、<span class="m">10+0 = 30</span> 等所有切法），这正对应题目里"如果 <span class="m">p<sub>n</sub></span> 足够大，最优解可能就是完全不需要切割"那句话。</p>
+          
+                <div class="callout warn">
+                  <p class="callout-h">易错：递归式里到底该写 <span class="m">r<sub>n−i</sub></span> 还是 <span class="m">r<sub>i</sub> + r<sub>n−i</sub></span></p>
+                  <p>PPT 第 7 页写的是 <span class="m">r<sub>n</sub> = max(p<sub>n</sub>, r<sub>1</sub>+r<sub>n−1</sub>, …, r<sub>n−1</sub>+r<sub>1</sub>)</span>，那是在"把钢条<b>切成两段</b>分别最优"的视角下写的，所以出现两个 <span class="m">r</span>；第 8 页的递推式 <span class="m">r<sub>n</sub> = max<sub>i</sub>(p<sub>i</sub> + r<sub>n−i</sub>)</span> 是"<b>先切下第一段 i、剩下的整段递归</b>"的视角，只出现一个 <span class="m">r</span>。两者<b>等价</b>（因为 <span class="m">r<sub>i</sub> ≥ p<sub>i</sub></span>，前者不会比后者更优），但写算法时必须用第 8 页的<b>一个 r</b> 的形式，否则第一段会被重复枚举、复杂度退化。考试写递推式建议写 <span class="m">r<sub>n</sub> = max<sub>1≤i≤n</sub>(p<sub>i</sub> + r<sub>n−i</sub>)</span>。</p>
+                </div>
+          
+                <div class="callout key">
+                  <p class="callout-h">本节考点</p>
+                  <p>① 方案数 <span class="m">2<sup>n−1</sup></span>，<span class="m">n = 4</span> 时 8 种，最优 2+2 = <b>10</b>；② 最优子结构：<span class="m">r<sub>n</sub> = max<sub>1≤i≤n</sub>(p<sub>i</sub> + r<sub>n−i</sub>)</span>，<span class="m">r<sub>0</sub> = 0</span>；③ 朴素递归 <span class="m">T(n) = 2<sup>n</sup> = &Theta;(2<sup>n</sup>)</span>（递归树 <span class="m">2<sup>n</sup></span> 个结点、<span class="m">2<sup>n−1</sup></span> 个叶结点）；④ 备忘 / 自底向上均 <span class="m">&Theta;(n<sup>2</sup>)</span> 时间、<span class="m">&Theta;(n)</span> 空间；⑤ 用 <span class="m">s[j]</span> 保存首段长度即可 <span class="m">O(n)</span> 输出方案。</p>
+                </div>
+        ` },
+      ],
+    },
+    {
+      id: 'sec-matrix',
+      heading: "4. 习题 2：矩阵链乘法（matrix-chain multiplication）",
+      blocks: [
+        { type: 'html', html: `
+          <h3 id="sec-matrix-h1">4.1 问题描述</h3>
+          
+                <p>给定 <span class="m">n</span> 个矩阵 <span class="m">{A<sub>1</sub>, A<sub>2</sub>, …, A<sub>n</sub>}</span>，其中 <span class="m">A<sub>i</sub></span> 与 <span class="m">A<sub>i+1</sub></span> 是<b>可乘的</b>（<span class="m">i = 1, …, n−1</span>），希望计算这 <span class="m">n</span> 个矩阵的连乘积 <span class="m">A<sub>1</sub>A<sub>2</sub>…A<sub>n</sub></span>。</p>
+          
+                <ul>
+                  <li><span class="m">A<sub>i</sub></span> 与 <span class="m">A<sub>i+1</sub></span> 可乘的条件：<span class="m">col(A<sub>i</sub>) = row(A<sub>i+1</sub>)</span>；</li>
+                  <li>由于矩阵乘法满足<b>结合律</b>，因此任何<b>加括号</b>的方法都会得到相同的计算结果；</li>
+                  <li><b>"完全括号化"</b>（fully parenthesized）：它是单一矩阵，或者是两个完全括号化的矩阵乘积链的积；</li>
+                  <li>设矩阵 <span class="m">A<sub>i</sub></span> 的规模为 <span class="m">p<sub>i−1</sub> × p<sub>i</sub></span>，求<b>完全括号化方案</b>，使得计算乘积所需<b>标量乘法次数最少</b>。</li>
+                </ul>
+          
+                <h3 id="sec-matrix-h2">4.2 问题分析：两个矩阵相乘的代价</h3>
+          
+                <p>两个矩阵相乘的次数：若 <span class="m">A</span> 是 <span class="m">p × q</span>、<span class="m">B</span> 是 <span class="m">q × r</span>，则 <span class="m">C = AB</span> 是 <span class="m">p × r</span>，共需 <b><span class="m">p · q · r</span></b> 次标量乘法。</p>
+          
+                <div class="callout key">
+                  <p class="callout-h">PPT 第 21 页的经典例子：10×100、100×5、5×50</p>
+                  <p><b>方案一</b>（先算前两个）：<span class="m">10·100·5 + 10·5·50 = 5000 + 2500 = 7500</span></p>
+                  <p><b>方案二</b>（先算后两个）：<span class="m">10·100·50 + 100·5·50 = 50000 + 25000 = 75000</span></p>
+                  <p>同样的三个矩阵、同样的结果，只因为<b>加括号的顺序</b>不同，乘法次数相差 <b>10 倍</b>。这就是"要找最优完全括号化方案"的原因。</p>
+                </div>
+          
+                <p>若用<b>直接的递归方法</b>枚举所有完全括号化方案（PPT 第 22 页），方案数是指数级的：<span class="m">n−1</span> 个断点的括号化方案数就是 Catalan 数 <span class="m">C(n−1)</span>，其量级为 <span class="m">&Omega;(4<sup>n</sup>/n<sup>3/2</sup>)</span>（此量级为补充说明，PPT 只说"直接的递归方法"）。因此必须用 DP。</p>
+          
+                <table class="tbl">
+                  <thead><tr><th>矩阵</th><th class="num">A<sub>1</sub></th><th class="num">A<sub>2</sub></th><th class="num">A<sub>3</sub></th><th class="num">A<sub>4</sub></th><th class="num">A<sub>5</sub></th><th class="num">A<sub>6</sub></th></tr></thead>
+                  <tbody>
+                    <tr><td>规模</td><td class="num">30×35</td><td class="num">35×15</td><td class="num">15×5</td><td class="num">5×10</td><td class="num">10×20</td><td class="num">20×25</td></tr>
+                  </tbody>
+                </table>
+          
+                <p>即维度序列 <b><span class="m">P = (30, 35, 15, 5, 10, 20, 25)</span></b>（<span class="m">p<sub>0</sub> … p<sub>6</sub></span>，<span class="m">n = 6</span>）。本节的 m 表、s 表都按这个算例（PPT 第 26、29 页，已核对 <code>image23.png</code> 的图 15-5）。</p>
+          
+                <h3 id="sec-matrix-h3">4.3 步骤一：分析最优解的结构（反证法）</h3>
+          
+                <p>将 <span class="m">A<sub>1</sub>A<sub>2</sub>…A<sub>n</sub></span> 记为 <span class="m">A<sub>1..n</sub></span>，设在第 <span class="m">k</span> 个位置上断开（<span class="m">1 ≤ k ≤ n−1</span>），即对应计算 <span class="m">((A<sub>1</sub>…A<sub>k</sub>)(A<sub>k+1</sub>…A<sub>n</sub>))</span>。计算量包括三部分：</p>
+          
+                <ol>
+                  <li>计算 <span class="m">(A<sub>1</sub>…A<sub>k</sub>)</span> 的代价；</li>
+                  <li>计算 <span class="m">(A<sub>k+1</sub>…A<sub>n</sub>)</span> 的代价；</li>
+                  <li>把这两个结果相乘的代价 <span class="m">p<sub>0</sub>·p<sub>k</sub>·p<sub>n</sub></span>。</li>
+                </ol>
+          
+                <div class="callout key">
+                  <p class="callout-h">关键特征（PPT 第 23 页）</p>
+                  <p>计算 <span class="m">A<sub>1..n</sub></span> 的一个最优次序所包含的 <span class="m">A<sub>1..k</sub></span> 次序<b>也是最优的</b>。由此可知，矩阵链乘积的计算次序问题的最优解包含着其子问题的最优解 —— 称这种性质为<b>最优子结构性质</b>，这是可用动态规划算法的<b>基本要素</b>。</p>
+                </div>
+          
+                <p><b>反证法证明</b>：若 <span class="m">A<sub>1..k</sub></span> 存在代价更小的括号化方案，把它替换进原方案，总代价会变小，与"原方案最优"矛盾；右侧 <span class="m">A<sub>k+1..n</sub></span> 同理。∎</p>
+          
+                <h3 id="sec-matrix-h4">4.4 步骤二：建立递归关系</h3>
+          
+                <p>假设计算 <span class="m">A<sub>i..j</sub></span> 所需要的最少标量乘法次数为 <span class="m">m(i, j)</span>，则原问题的最优值为 <span class="m">m(1, n)</span>。</p>
+          
+                <ul>
+                  <li>当 <span class="m">i = j</span> 时，无需计算，<span class="m">m(i, j) = m(i, i) = 0</span>；</li>
+                  <li>当 <span class="m">i &lt; j</span> 时，可用最优子结构性质来计算 <span class="m">m(i, j)</span>：若在 <span class="m">k</span> 处断开（<span class="m">i ≤ k &lt; j</span>），则 <span class="m">m(i, j) = m(i, k) + m(k+1, j) + p<sub>i−1</sub>p<sub>k</sub>p<sub>j</sub></span>；</li>
+                  <li>由于不知 <span class="m">k</span> 的位置，需要在 <span class="m">j − i</span> 个位置上选择使得 <span class="m">m(i, j)</span> 最小的 <span class="m">k</span>。</li>
+                </ul>
+          
+                <p class="formula">m(i, j) = 0 &nbsp;&nbsp;(i = j)；&nbsp;&nbsp; m(i, j) = min<sub>i ≤ k &lt; j</sub> { m(i, k) + m(k+1, j) + p<sub>i−1</sub> p<sub>k</sub> p<sub>j</sub> } &nbsp;&nbsp;(i &lt; j)</p>
+          
+                <p>若将 <span class="m">m(i, j)</span> 对应的 <span class="m">k</span> 值记录在 <span class="m">s(i, j)</span> 中，则相应的最优解便可构造出来。</p>
+          
+                <h3 id="sec-matrix-h5">4.5 步骤三：计算最优解（自底向上）</h3>
+          
+                <p>不同子问题的个数是 <span class="m">O(n<sup>2</sup>)</span>（<span class="m">i ≤ j</span> 的区间共 <span class="m">n(n+1)/2</span> 个），因此许多计算是重复的。为此采用自底向上的方法计算，计算过程中保存已经计算过的子问题的答案，以便后面更高层的计算直接引用。</p>
+          
+                <p>计算顺序（PPT 第 27~28 页，已核对 <code>image23.png</code> 的菱形图）—— <b>按矩阵链长度 <span class="m">L</span> 递增</b>：</p>
+          
+                <ol>
+                  <li>先计算出 <span class="m">m(i, i) = 0</span>，<span class="m">i = 1, 2, …, n</span>（链长 1）；</li>
+                  <li>计算 <span class="m">m(i, i+1)</span>，<span class="m">i = 1, 2, …, n−1</span>（矩阵链长度为 2）；</li>
+                  <li>计算 <span class="m">m(i, i+2)</span>，<span class="m">i = 1, 2, …, n−2</span>（矩阵链长度为 3）；</li>
+                  <li>…… 依此类推。在计算 <span class="m">m(i, j)</span> 时，只用到已经计算出的 <span class="m">m(i, k)</span> 与 <span class="m">m(k+1, j)</span>。</li>
+                </ol>
+          
+                <p>PPT 第 27 页的措辞值得记：当计算表项 <span class="m">m[i, j]</span> 时，会用到乘积 <span class="m">p<sub>i−1</sub>p<sub>k</sub>p<sub>j</sub></span>（<span class="m">k = i, i+1, …, j−1</span>），以及 <span class="m">m[i, j]</span> <b>西南方向</b>和<b>东南方向</b>的所有表项。</p>
+          
+                <svg class="fig" viewBox="0 0 860 470" role="img" aria-label="矩阵链 m 表的填充顺序：按链长 2 到 6 沿对角线填充，计算 m(i,j) 时需要同行左侧的 m(i,k) 与同列下方的 m(k+1,j)">
+                  <text x="24" y="24" class="tx-b">m 表按"链长 L"递增填充（同一条反斜线 = 同一个 L）</text>
+                  <text x="24" y="44" class="tx-sm">计算 m(i,j) 需要 m(i,k)（同行左侧）与 m(k+1,j)（同列下方）—— 都在已经填好的区域里</text>
+                  <!-- 表头 j -->
+                  <text x="90" y="72" class="tx-sm" text-anchor="middle">j=1</text>
+                  <text x="150" y="72" class="tx-sm" text-anchor="middle">2</text>
+                  <text x="210" y="72" class="tx-sm" text-anchor="middle">3</text>
+                  <text x="270" y="72" class="tx-sm" text-anchor="middle">4</text>
+                  <text x="330" y="72" class="tx-sm" text-anchor="middle">5</text>
+                  <text x="390" y="72" class="tx-sm" text-anchor="middle">6</text>
+                  <text x="46" y="104" class="tx-sm">i=1</text>
+                  <text x="46" y="150" class="tx-sm">2</text>
+                  <text x="46" y="196" class="tx-sm">3</text>
+                  <text x="46" y="242" class="tx-sm">4</text>
+                  <text x="46" y="288" class="tx-sm">5</text>
+                  <text x="46" y="334" class="tx-sm">6</text>
+                  <!-- 上三角格子：仅示意 L 分层 -->
+                  <rect x="68" y="80" width="56" height="40" fill="var(--c-panel-2)" stroke="var(--c-line)" stroke-width="1.2"></rect>
+                  <text x="96" y="105" class="tx-sm" text-anchor="middle">0</text>
+                  <rect x="128" y="80" width="56" height="40" fill="#eef2ff" stroke="var(--c-line)" stroke-width="1.2"></rect>
+                  <text x="156" y="105" class="tx-sm" text-anchor="middle">L=2</text>
+                  <rect x="188" y="80" width="56" height="40" fill="#e0e7ff" stroke="var(--c-line)" stroke-width="1.2"></rect>
+                  <text x="216" y="105" class="tx-sm" text-anchor="middle">L=3</text>
+                  <rect x="248" y="80" width="56" height="40" fill="#dbeafe" stroke="var(--c-line)" stroke-width="1.2"></rect>
+                  <text x="276" y="105" class="tx-sm" text-anchor="middle">L=4</text>
+                  <rect x="308" y="80" width="56" height="40" fill="#c7d2fe" stroke="var(--c-line)" stroke-width="1.2"></rect>
+                  <text x="336" y="105" class="tx-sm" text-anchor="middle">L=5</text>
+                  <rect x="368" y="80" width="56" height="40" fill="var(--c-key-bg)" stroke="var(--c-accent)" stroke-width="1.8"></rect>
+                  <text x="396" y="105" class="tx-sm tx-b" text-anchor="middle">L=6</text>
+                  <rect x="68" y="126" width="56" height="40" fill="var(--c-panel-2)" stroke="var(--c-line)" stroke-width="1.2"></rect>
+                  <text x="96" y="151" class="tx-sm" text-anchor="middle">0</text>
+                  <rect x="128" y="126" width="56" height="40" fill="#eef2ff" stroke="var(--c-line)" stroke-width="1.2"></rect>
+                  <text x="156" y="151" class="tx-sm" text-anchor="middle">L=2</text>
+                  <rect x="188" y="126" width="56" height="40" fill="#e0e7ff" stroke="var(--c-line)" stroke-width="1.2"></rect>
+                  <text x="216" y="151" class="tx-sm" text-anchor="middle">L=3</text>
+                  <rect x="248" y="126" width="56" height="40" fill="#dbeafe" stroke="var(--c-line)" stroke-width="1.2"></rect>
+                  <text x="276" y="151" class="tx-sm" text-anchor="middle">L=4</text>
+                  <rect x="308" y="126" width="56" height="40" fill="#c7d2fe" stroke="var(--c-line)" stroke-width="1.2"></rect>
+                  <text x="336" y="151" class="tx-sm" text-anchor="middle">L=5</text>
+                  <rect x="68" y="172" width="56" height="40" fill="var(--c-panel-2)" stroke="var(--c-line)" stroke-width="1.2"></rect>
+                  <text x="96" y="197" class="tx-sm" text-anchor="middle">0</text>
+                  <rect x="128" y="172" width="56" height="40" fill="#eef2ff" stroke="var(--c-line)" stroke-width="1.2"></rect>
+                  <text x="156" y="197" class="tx-sm" text-anchor="middle">L=2</text>
+                  <rect x="188" y="172" width="56" height="40" fill="#e0e7ff" stroke="var(--c-line)" stroke-width="1.2"></rect>
+                  <text x="216" y="197" class="tx-sm" text-anchor="middle">L=3</text>
+                  <rect x="248" y="172" width="56" height="40" fill="#dbeafe" stroke="var(--c-line)" stroke-width="1.2"></rect>
+                  <text x="276" y="197" class="tx-sm" text-anchor="middle">L=4</text>
+                  <rect x="68" y="218" width="56" height="40" fill="var(--c-panel-2)" stroke="var(--c-line)" stroke-width="1.2"></rect>
+                  <text x="96" y="243" class="tx-sm" text-anchor="middle">0</text>
+                  <rect x="128" y="218" width="56" height="40" fill="#eef2ff" stroke="var(--c-line)" stroke-width="1.2"></rect>
+                  <text x="156" y="243" class="tx-sm" text-anchor="middle">L=2</text>
+                  <rect x="188" y="218" width="56" height="40" fill="#e0e7ff" stroke="var(--c-line)" stroke-width="1.2"></rect>
+                  <text x="216" y="243" class="tx-sm" text-anchor="middle">L=3</text>
+                  <rect x="68" y="264" width="56" height="40" fill="var(--c-panel-2)" stroke="var(--c-line)" stroke-width="1.2"></rect>
+                  <text x="96" y="289" class="tx-sm" text-anchor="middle">0</text>
+                  <rect x="128" y="264" width="56" height="40" fill="#eef2ff" stroke="var(--c-line)" stroke-width="1.2"></rect>
+                  <text x="156" y="289" class="tx-sm" text-anchor="middle">L=2</text>
+                  <rect x="68" y="310" width="56" height="40" fill="var(--c-panel-2)" stroke="var(--c-line)" stroke-width="1.2"></rect>
+                  <text x="96" y="335" class="tx-sm" text-anchor="middle">0</text>
+                  <!-- 右侧说明 -->
+                  <text x="470" y="96" class="tx tx-b">例：算 m(2,5) 时（L = 4）</text>
+                  <text x="470" y="120" class="tx-sm">k = 2：m(2,2) + m(3,5) + p1p2p5</text>
+                  <text x="470" y="140" class="tx-sm">　　　= 0 + 2500 + 35·15·20 = 13000</text>
+                  <text x="470" y="164" class="tx-sm">k = 3：m(2,3) + m(4,5) + p1p3p5</text>
+                  <text x="470" y="184" class="tx-sm">　　　= 2625 + 1000 + 35·5·20 = 7125</text>
+                  <text x="470" y="208" class="tx-sm">k = 4：m(2,4) + m(5,5) + p1p4p5</text>
+                  <text x="470" y="228" class="tx-sm">　　　= 4375 + 0 + 35·10·20 = 11375</text>
+                  <text x="470" y="256" class="tx">⇒ m(2,5) = 7125，s(2,5) = 3</text>
+                  <text x="470" y="292" class="tx-sm">三个候选值用到的 m 表项：</text>
+                  <text x="470" y="312" class="tx-sm">(2,2)、(3,5) —— 第 2 行第 2 列 + 第 3 行第 5 列</text>
+                  <text x="470" y="332" class="tx-sm">(2,3)、(4,5) —— 第 2 行第 3 列 + 第 4 行第 5 列</text>
+                  <text x="470" y="352" class="tx-sm">(2,4)、(5,5) —— 第 2 行第 4 列 + 第 5 行第 5 列</text>
+                  <text x="470" y="384" class="tx-sm">它们都在 m(2,5) 的"西南 / 东南"方向，</text>
+                  <text x="470" y="404" class="tx-sm">因此按 L 递增填表时一定已经算好。</text>
+                  <text x="24" y="392" class="tx-sm">L=1（对角线）：m(i,i) = 0，共 n = 6 项</text>
+                  <text x="24" y="412" class="tx-sm">L=2：m(1,2)、m(2,3)、…、m(5,6)，共 5 项</text>
+                  <text x="24" y="432" class="tx-sm">L=3：4 项　L=4：3 项　L=5：2 项　L=6：1 项（就是 m(1,6)）</text>
+                </svg>
+                <p class="fig-cap">图 3 &nbsp;m 表按链长递增填充（对应 PPT 第 27 页的菱形图 / 图 15-5 的计算方向）</p>
+          
+                <h4>MATRIX-CHAIN-ORDER 伪代码 + C++</h4>
+          
+                <p>PPT 第 28 页给出的过程（注意：<span class="m">P = {p<sub>0</sub>, p<sub>1</sub>, …, p<sub>n</sub>}</span> 是"列数序列"，长度 <span class="m">n+1</span>）：</p>
+          
+                <div class="code-pair">
+                  <div class="code-col">
+                    <p class="code-h">伪代码（PPT 第 28 页）</p>
+                    <pre class="code"><code>MATRIX-CHAIN-ORDER(P)                // P = p0..pn，Ai 的规模是 p(i−1)×p(i)
+          1  n = len(P) − 1                    // 矩阵个数 n
+          2  for i = 1 to n                    // 初始化对角线
+          3      m[i, i] = 0                    // 单个矩阵不需要乘法
+          4  for L = 2 to n                    // 按矩阵链长度 L 递增
+          5      for i = 1 to n − L + 1        // 链的起点 i
+          6          j = i + L − 1              // 链的终点 j
+          7          m[i, j] = ∞                // 先置为正无穷
+          8          for k = i to j − 1         // 枚举断点 k
+          9              q = m[i, k] + m[k+1, j] + p(i−1)·p(k)·p(j)   // 候选代价
+          10             if q &lt; m[i, j]          // 找到更小的代价
+          11                 m[i, j] = q        // 更新最优值
+          12                 s[i, j] = k        // 记下最优断点
+          13 return m and s                    // 返回最优值表和断点表</code></pre>
+                  </div>
+                  <div class="code-col">
+                    <p class="code-h">C++</p>
+                    <pre class="code cpp"><code>const int INF = 0x7fffffff;                        // 用一个很大的数表示"无穷"
+          int m[7][7], s[7][7];                              // m 存最少乘次数，s 存最优断点
+          
+          void matrixChainOrder(int p[], int n) {            // p 长度 n+1，Ai 规模 p[i-1]×p[i]
+              for (int i = 1; i &lt;= n; ++i) { m[i][i] = 0; }   // 单个矩阵不需要乘法
+              for (int L = 2; L &lt;= n; ++L) {                 // 按链长 L = 2..n 递增
+                  for (int i = 1; i &lt;= n - L + 1; ++i) {      // 链的起点 i
+                      int j = i + L - 1;                     // 链的终点 j
+                      m[i][j] = INF;                         // 先置为正无穷
+                      for (int k = i; k &lt; j; ++k) {          // 枚举断点 k
+                          int q = m[i][k] + m[k + 1][j] + p[i - 1] * p[k] * p[j];   // 候选代价
+                          if (q &lt; m[i][j]) {                 // 找到更小的代价
+                              m[i][j] = q;                   // 更新最优值
+                              s[i][j] = k;                   // 记下最优断点
+                          }                                  // 结束比较
+                      }                                      // 结束断点枚举
+                  }                                          // 结束起点枚举
+              }                                              // 结束链长枚举
+          }                                                  // 结束 matrixChainOrder</code></pre>
+                  </div>
+                </div>
+          
+                <h3 id="sec-matrix-h6">4.6 PPT 算例：m 表与 s 表（n = 6）</h3>
+          
+                <p>m 表（<span class="m">m[i, j]</span>，只填 <span class="m">i ≤ j</span> 的上三角；空白处为无效项）：</p>
+          
+                <table class="tbl">
+                  <thead><tr><th><span class="m">i \\ j</span></th><th class="num">1</th><th class="num">2</th><th class="num">3</th><th class="num">4</th><th class="num">5</th><th class="num">6</th></tr></thead>
+                  <tbody>
+                    <tr><td><b>1</b></td><td class="num">0</td><td class="num">15750</td><td class="num">7875</td><td class="num">9375</td><td class="num">11875</td><td class="num"><b>15125</b></td></tr>
+                    <tr><td><b>2</b></td><td class="num">—</td><td class="num">0</td><td class="num">2625</td><td class="num">4375</td><td class="num">7125</td><td class="num">10500</td></tr>
+                    <tr><td><b>3</b></td><td class="num">—</td><td class="num">—</td><td class="num">0</td><td class="num">750</td><td class="num">2500</td><td class="num">5375</td></tr>
+                    <tr><td><b>4</b></td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">0</td><td class="num">1000</td><td class="num">3500</td></tr>
+                    <tr><td><b>5</b></td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">0</td><td class="num">5000</td></tr>
+                    <tr><td><b>6</b></td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">0</td></tr>
+                  </tbody>
+                </table>
+          
+                <p>s 表（<span class="m">s[i, j]</span> = 最优断点 <span class="m">k</span>）：</p>
+          
+                <table class="tbl">
+                  <thead><tr><th><span class="m">i \\ j</span></th><th class="num">1</th><th class="num">2</th><th class="num">3</th><th class="num">4</th><th class="num">5</th><th class="num">6</th></tr></thead>
+                  <tbody>
+                    <tr><td><b>1</b></td><td class="num">—</td><td class="num">1</td><td class="num">1</td><td class="num">3</td><td class="num">3</td><td class="num"><b>3</b></td></tr>
+                    <tr><td><b>2</b></td><td class="num">—</td><td class="num">—</td><td class="num">2</td><td class="num">3</td><td class="num">3</td><td class="num">3</td></tr>
+                    <tr><td><b>3</b></td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">3</td><td class="num">3</td><td class="num">3</td></tr>
+                    <tr><td><b>4</b></td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">4</td><td class="num">5</td></tr>
+                    <tr><td><b>5</b></td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">5</td></tr>
+                    <tr><td><b>6</b></td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">—</td></tr>
+                  </tbody>
+                </table>
+          
+                <p>最优值 <b><span class="m">m(1,6) = 15125</span></b>，最优方案 <b><span class="m">((A<sub>1</sub>(A<sub>2</sub>A<sub>3</sub>))((A<sub>4</sub>A<sub>5</sub>)A<sub>6</sub>))</span></b>。两张表的数值已与 PPT 第 26、29 页的图 15-5（<code>image23.png</code>）逐格比对，并用 Python / C++ 按递推式独立复算，完全一致。</p>
+        ` },
+        { type: 'demo', name: 'matrix-chain', title: "矩阵链乘法：P = (30,35,15,5,10,20,25) 的 m 表按链长递增填充（17 步）" },
+        { type: 'html', html: `
+          <h3 id="sec-matrix-h7">4.7 课堂练习：m(2, 5) 的三次断点计算</h3>
+          
+                <p>PPT 第 29 页专门把 <span class="m">m(2,5)</span> 抽出来做了演示（<span class="m">i = 2, j = 5</span>，链长 <span class="m">L = 4</span>），依据计算式有：</p>
+          
+                <table class="tbl">
+                  <thead><tr><th>断点 <span class="m">k</span></th><th>计算式</th><th>代入数值</th><th class="num">候选值</th></tr></thead>
+                  <tbody>
+                    <tr><td><span class="m">k = 2</span></td><td><span class="m">m(2,2) + m(3,5) + p<sub>1</sub>p<sub>2</sub>p<sub>5</sub></span></td><td><span class="m">0 + 2500 + 35·15·20</span></td><td class="num">13000</td></tr>
+                    <tr><td><span class="m">k = 3</span></td><td><span class="m">m(2,3) + m(4,5) + p<sub>1</sub>p<sub>3</sub>p<sub>5</sub></span></td><td><span class="m">2625 + 1000 + 35·5·20</span></td><td class="num"><b>7125</b></td></tr>
+                    <tr><td><span class="m">k = 4</span></td><td><span class="m">m(2,4) + m(5,5) + p<sub>1</sub>p<sub>4</sub>p<sub>5</sub></span></td><td><span class="m">4375 + 0 + 35·10·20</span></td><td class="num">11375</td></tr>
+                  </tbody>
+                </table>
+          
+                <p>所以 <b><span class="m">m(2,5) = 7125</span></b>，<b><span class="m">k = 3</span></b>，即 <b><span class="m">s(2,5) = 3</span></b>，最优括号化是 <span class="m">(A<sub>2</sub>A<sub>3</sub>)(A<sub>4</sub>A<sub>5</sub>)</span>。</p>
+          
+                <h3 id="sec-matrix-h8">4.8 步骤四：构造最优解</h3>
+          
+                <p><code>MATRIX-CHAIN-ORDER(P)</code> 给出了最优<b>值</b>，但未给出最优<b>解</b>。事实上 <span class="m">s[i, j]</span> 中的 <span class="m">k</span> 值已经给出了信息，由此可以构造出求解序列（PPT 第 30 页）：</p>
+          
+                <div class="code-pair">
+                  <div class="code-col">
+                    <p class="code-h">伪代码（PPT 第 30 页）</p>
+                    <pre class="code"><code>MATRIX-CHAIN-MULTIPLY(A, s, i, j)    // A 为矩阵数组，s 为断点表，求 Ai..j
+          1  if i == j                        // 只剩一个矩阵
+          2      return A(i)                   // 直接返回该矩阵
+          3  else                             // 否则在 s[i,j] 处拆成两段
+          4      x = MATRIX-CHAIN-MULTIPLY(A, s, i, s[i, j])          // 左半段
+          5      y = MATRIX-CHAIN-MULTIPLY(A, s, s[i, j]+1, j)        // 右半段
+          6      return MATRIX-MULTIPLY(x, y) // 两个子结果相乘</code></pre>
+                  </div>
+                  <div class="code-col">
+                    <p class="code-h">C++</p>
+                    <pre class="code cpp"><code>void printOptimalParens(int i, int j) {        // 依据 s 表打印完全括号化方案
+              if (i == j) {                              // 只剩一个矩阵
+                  printf("A%d", i);                      // 直接打印矩阵名
+              } else {                                   // 否则在 s[i][j] 处拆成两段
+                  printf("(");                           // 输出左括号
+                  printOptimalParens(i, s[i][j]);        // 递归打印左半段 i..s[i,j]
+                  printOptimalParens(s[i][j] + 1, j);    // 递归打印右半段 s[i,j]+1..j
+                  printf(")");                           // 输出右括号
+              }                                          // 结束分支
+          }                                              // 结束 printOptimalParens</code></pre>
+                  </div>
+                </div>
+          
+                <p>对 <span class="m">1..6</span> 调用它，输出正是 <b><span class="m">((A<sub>1</sub>(A<sub>2</sub>A<sub>3</sub>))((A<sub>4</sub>A<sub>5</sub>)A<sub>6</sub>))</span></b>。</p>
+          
+                <h3 id="sec-matrix-h9">4.9 复杂度与"思路扩展"</h3>
+          
+                <p><b>复杂度</b>：三层循环（<span class="m">L</span>、<span class="m">i</span>、<span class="m">k</span>），总工作量 <span class="m">&Theta;(n<sup>3</sup>)</span>；需要两张 <span class="m">n × n</span> 的表，空间 <span class="m">&Theta;(n<sup>2</sup>)</span>。相比之下，枚举所有括号化方案是指数级的。</p>
+          
+                <div class="callout">
+                  <p class="callout-h">思路扩展：矩阵链乘法问题可以使用哪些算法求解（不考虑时间复杂度）？</p>
+                  <p>PPT 第 31~33 页列出了一整串：<b>暴力解法、分治法、Strassen 算法、贪心法、动态规划</b>，甚至"进化算法？机器学习算法？神经网络算法？" —— 都打上了问号。</p>
+                  <p><b>为什么不用某些算法求解？</b>——用<b>算法分析</b>（时间复杂度、空间复杂度）回答。例如暴力枚举所有括号化方案是 Catalan 数量级（指数）；贪心法"每次选当前乘法代价最小的断点"不能保证全局最优（PPT 第 32 页用 <span class="m">m(2,5)</span> 的例子说明：局部看 <span class="m">k=2</span> 时 <span class="m">p<sub>1</sub>p<sub>2</sub>p<sub>5</sub> = 10500</span> 远大于 <span class="m">k=3</span> 的 3500，但贪心只看眼前一步，会漏掉更优的全局组合）。</p>
+                </div>
+          
+                <div class="callout tip">
+                  <p class="callout-h">记忆：做研究的两种思路（PPT 第 33 页备注）</p>
+                  <ul>
+                    <li><b>同一个算法技术可以用来解决哪些问题？</b>——深化对算法技术的理解，达到举一反三；</li>
+                    <li><b>同一个问题可以使用哪些算法求解？</b>——提升分析问题的能力，加强算法设计能力。</li>
+                  </ul>
+                  <p>这两句话也是本讲"思路扩展"小节存在的意义：DP 只是工具箱里的一把锤子，能不能用、该不该用，都要靠<b>算法分析</b>来回答。</p>
+                </div>
+          
+                <div class="callout key">
+                  <p class="callout-h">本节考点</p>
+                  <p>① 两矩阵相乘 <span class="m">p·q·r</span>；<span class="m">10×100、100×5、5×50</span> 两方案 <b>7500 vs 75000</b>；② 递推式 <span class="m">m(i,j) = min<sub>i≤k&lt;j</sub>{m(i,k)+m(k+1,j)+p<sub>i−1</sub>p<sub>k</sub>p<sub>j</sub>}</span>，<span class="m">m(i,i)=0</span>；③ 按<b>链长 L 递增</b>填表，<span class="m">m(1,6) = 15125</span>，<span class="m">s(1,6) = 3</span>，方案 <span class="m">((A<sub>1</sub>(A<sub>2</sub>A<sub>3</sub>))((A<sub>4</sub>A<sub>5</sub>)A<sub>6</sub>))</span>；④ <span class="m">m(2,5) = 7125</span>、<span class="m">s(2,5) = 3</span>（k=2/3/4 三个候选 13000 / 7125 / 11375）；⑤ 时间 <span class="m">&Theta;(n<sup>3</sup>)</span>、空间 <span class="m">&Theta;(n<sup>2</sup>)</span>。</p>
+                </div>
+        ` },
+      ],
+    },
+    {
+      id: 'sec-lcs',
+      heading: "5. 习题 3：最长公共子序列（LCS）",
+      blocks: [
+        { type: 'html', html: `
+          <h3 id="sec-lcs-h1">5.1 定义与两个例子</h3>
+          
+                <div class="callout key">
+                  <p class="callout-h">最长公共子序列（longest common subsequence, LCS）</p>
+                  <p>给定两个序列 <span class="m">x[1..m]</span> 和 <span class="m">y[1..n]</span>，找出它们两者的<b>一个最长公共子序列</b>。</p>
+                  <p>注意"子序列"（subsequence）不要求字符连续，只要求<b>相对次序不变</b>；这与"子串"（substring，必须连续）不同（此处区分为补充说明）。</p>
+                </div>
+          
+                <p><b>例 1（PPT 第 41 页）</b>：<span class="m">A = "HelloWorld"</span>，<span class="m">B = "loop"</span>，则 <span class="m">A</span> 与 <span class="m">B</span> 的最长公共子序列为 <b><code>"loo"</code></b>，返回的长度为 <b>3</b>（<code>H-e-l-l-o-W-o-r-l-d</code> 里依次取第 3、4、5 个字符 <code>l, o, o</code>）。</p>
+          
+                <p><b>例 2（PPT 第 42~43 页）</b>：<span class="m">x = A B C B D A B</span>（<span class="m">m = 7</span>），<span class="m">y = B D C A B A</span>（<span class="m">n = 6</span>）。它们的 LCS 是 <b><code>BCBA</code></b>，长度为 <b>4</b>；<b><code>BDAB</code> 也是</b>一个 LCS（PPT 第 43 页备注）。本例的 c 表与 b 表就是下面 5.8 节要逐格填的那两张表。</p>
+          
+                <h3 id="sec-lcs-h2">5.2 野蛮算法：为什么必须换思路</h3>
+          
+                <p>PPT 第 44~45 页的野蛮算法：<b>检查 <span class="m">x[1..m]</span> 的每个子序列</b>，看它是否为 <span class="m">y[1..n]</span> 的一个子序列。</p>
+          
+                <ul>
+                  <li>对每个子序列，检查需要 <span class="m">O(n)</span> 时间；</li>
+                  <li>序列 <span class="m">x</span> 有 <span class="m">2<sup>m</sup></span> 个子序列（每个长度为 <span class="m">m</span> 的位矢量对应一个子序列）；</li>
+                  <li>最坏情况下的运行时间 <span class="m">= O(n·2<sup>m</sup>)</span> —— <b>指数时间</b>。</li>
+                </ul>
+          
+                <h3 id="sec-lcs-h3">5.3 向更好的算法努力：只先算"长度"</h3>
+          
+                <p>PPT 第 46~47 页的简化思路：先只观察<b>一个最长公共子序列的长度</b>，再扩展算法找出 LCS 本身。记 <span class="m">|s|</span> 表示序列 <span class="m">s</span> 的长度，策略是<b>考虑 <span class="m">x</span> 和 <span class="m">y</span> 的前缀</b>：</p>
+          
+                <p class="formula">c[i, j] = | LCS( x[1..i], y[1..j] ) | &nbsp;&nbsp;⇒&nbsp;&nbsp; c[m, n] = | LCS(x, y) |</p>
+          
+                <p>也就是把"两个前缀"作为子问题：<span class="m">i</span> 和 <span class="m">j</span> 各有 <span class="m">m+1</span>、<span class="m">n+1</span> 种取值，所以不同子问题最多 <span class="m">(m+1)(n+1) = O(mn)</span> 个 —— <b>多项式</b>。这就是 DP 的立足点。</p>
+          
+                <h3 id="sec-lcs-h4">5.4 最优子结构：三条定理与证明</h3>
+          
+                <div class="callout key">
+                  <p class="callout-h">定理（LCS 的最优子结构，PPT 第 49 页逐字）</p>
+                  <p>令 <span class="m">X = x[1..m]</span> 和 <span class="m">Y = y[1..n]</span> 为两个序列，<span class="m">Z = z[1..k]</span> 为 <span class="m">X</span> 和 <span class="m">Y</span> 的任意 LCS。</p>
+                  <ol>
+                    <li>如果 <span class="m">x[m] = y[n]</span>，则 <span class="m">z[k] = x[m] = y[n]</span> 且 <span class="m">Z<sub>k−1</sub></span> 是 <span class="m">X<sub>m−1</sub></span> 和 <span class="m">Y<sub>n−1</sub></span> 的一个 LCS；</li>
+                    <li>如果 <span class="m">x[m] ≠ y[n]</span>，则 <span class="m">z[k] ≠ x[m]</span> 意味着 <span class="m">Z</span> 是 <span class="m">X<sub>m−1</sub></span> 和 <span class="m">Y</span> 的一个 LCS；</li>
+                    <li>如果 <span class="m">x[m] ≠ y[n]</span>，则 <span class="m">z[k] ≠ y[n]</span> 意味着 <span class="m">Z</span> 是 <span class="m">X</span> 和 <span class="m">Y<sub>n−1</sub></span> 的一个 LCS。</li>
+                  </ol>
+                </div>
+          
+                <p><b>情况 ① 的证明（PPT 第 51 页，剪贴并且拷贝 cut &amp; paste）</b>：</p>
+          
+                <p>用反证法。假设 <span class="m">w</span> 是 <span class="m">x[1..m−1]</span> 和 <span class="m">y[1..n−1]</span> 一个<b>更长</b>的 LCS，即 <span class="m">|w| &gt; k−1</span>。那么，<b>剪贴并且拷贝</b>：<span class="m">w ‖ z[k]</span>（<span class="m">w</span> 与 <span class="m">z[k]</span> 连接）是 <span class="m">x[1..m]</span> 和 <span class="m">y[1..n]</span> 的公共子序列，同时 <span class="m">|w ‖ z[k]| &gt; k</span>。这与 "<span class="m">Z</span> 是长度为 <span class="m">k</span> 的 LCS" <b>自相矛盾</b>，由此该声明得证。其他情况类似。∎</p>
+          
+                <p><b>情况 ② 的证明（SPEC 要求，剪贴 + 反证）</b>：</p>
+          
+                <p>已知 <span class="m">x[m] ≠ y[n]</span> 且 <span class="m">z[k] ≠ x[m]</span>。</p>
+                <ol>
+                  <li>先证 <span class="m">Z</span> 是 <span class="m">X<sub>m−1</sub></span> 与 <span class="m">Y</span> 的<b>公共子序列</b>：<span class="m">Z</span> 本来就是 <span class="m">X</span> 与 <span class="m">Y</span> 的公共子序列。因为 <span class="m">z[k] ≠ x[m]</span>，<span class="m">Z</span> 的全部字符都来自 <span class="m">x[1..m−1]</span>（<span class="m">X</span> 去掉末字符 <span class="m">x[m]</span> 后仍完整包含 <span class="m">Z</span>），而 <span class="m">Y</span> 不变，所以 <span class="m">Z</span> 也是 <span class="m">X<sub>m−1</sub></span> 与 <span class="m">Y</span> 的公共子序列。</li>
+                  <li>再证它<b>最长</b>：若 <span class="m">X<sub>m−1</sub></span> 与 <span class="m">Y</span> 存在更长的公共子序列 <span class="m">W</span>（<span class="m">|W| &gt; k</span>），那么 <span class="m">W</span> 当然也是 <span class="m">X</span> 与 <span class="m">Y</span> 的公共子序列（<span class="m">X<sub>m−1</sub></span> 是 <span class="m">X</span> 的前缀），于是 <span class="m">X</span> 与 <span class="m">Y</span> 有长度大于 <span class="m">k</span> 的公共子序列，与 <span class="m">|LCS(X,Y)| = k</span> 矛盾。</li>
+                </ol>
+                <p>故 <span class="m">Z</span> 是 <span class="m">X<sub>m−1</sub></span> 与 <span class="m">Y</span> 的一个 LCS。情况 ③ 对称（把 <span class="m">X</span> 与 <span class="m">Y</span> 互换）。∎</p>
+          
+                <h3 id="sec-lcs-h5">5.5 递归公式</h3>
+          
+                <p class="formula">c[i, j] = c[i−1, j−1] + 1 &nbsp;&nbsp;（若 x[i] = y[j]）；&nbsp;&nbsp; c[i, j] = max{ c[i−1, j], c[i, j−1] } &nbsp;&nbsp;（其他）</p>
+          
+                <p>用文字说（PPT 第 52 页）：</p>
+                <ul>
+                  <li>如果 <span class="m">x[m] = y[n]</span>，我们应该求解 <span class="m">X<sub>m−1</sub></span> 和 <span class="m">Y<sub>n−1</sub></span> 的一个 LCS（再把 <span class="m">x[m]</span> 接在末尾）；</li>
+                  <li>如果 <span class="m">x[m] ≠ y[n]</span>，我们<b>必须求解两个子问题</b>：求 <span class="m">X<sub>m−1</sub></span> 和 <span class="m">Y</span> 的一个 LCS；求 <span class="m">X<sub>m</sub></span> 和 <span class="m">Y<sub>n−1</sub></span> 的一个 LCS，取二者较长者。</li>
+                </ul>
+          
+                <h3 id="sec-lcs-h6">5.6 递归算法、递归树与重叠子问题</h3>
+          
+                <p>按上面的递归式直接写递归算法，<b>最坏情况</b>是 <span class="m">x[i] ≠ y[j]</span>：这种情况下算法要计算<b>两个</b>子问题，每个子问题只有一个参数递减了。于是递归树的高度为 <span class="m">m + n</span>，<b>潜在的工作量是指数的</b>（PPT 第 55~57 页）。</p>
+          
+                <p>但树里出现了大量<b>相同</b>的子问题 —— "有些子问题我们已经解决了！"（PPT 第 58 页）。下图是 <span class="m">m = 3, n = 4</span> 时的递归树示意：红框里是同一个子问题 <span class="m">(2,3)</span> 被两处同时展开。</p>
+          
+                <svg class="fig" viewBox="0 0 900 400" role="img" aria-label="LCS 递归树：根为 3,4，展开后 2,3 与 1,3 与 2,2 等子问题重复出现，说明重叠子问题">
+                  <text x="24" y="24" class="tx-b">LCS 的递归树（m = 3, n = 4）：同一子问题被反复展开</text>
+                  <text x="24" y="44" class="tx-sm">结点 (i, j) 表示子问题 LCS(x[1..i], y[1..j])；高度 = m + n，叶结点数量指数增长</text>
+                  <!-- 边 -->
+                  <line x1="450" y1="86" x2="300" y2="136" stroke="var(--c-line)" stroke-width="1.6"></line>
+                  <line x1="450" y1="86" x2="600" y2="136" stroke="var(--c-line)" stroke-width="1.6"></line>
+                  <line x1="300" y1="166" x2="190" y2="216" stroke="var(--c-line)" stroke-width="1.6"></line>
+                  <line x1="300" y1="166" x2="390" y2="216" stroke="var(--c-line)" stroke-width="1.6"></line>
+                  <line x1="600" y1="166" x2="510" y2="216" stroke="var(--c-line)" stroke-width="1.6"></line>
+                  <line x1="600" y1="166" x2="700" y2="216" stroke="var(--c-line)" stroke-width="1.6"></line>
+                  <line x1="390" y1="246" x2="330" y2="296" stroke="var(--c-line)" stroke-width="1.6"></line>
+                  <line x1="390" y1="246" x2="450" y2="296" stroke="var(--c-line)" stroke-width="1.6"></line>
+                  <line x1="510" y1="246" x2="450" y2="296" stroke="var(--c-hot)" stroke-width="2" stroke-dasharray="5 4"></line>
+                  <line x1="510" y1="246" x2="560" y2="296" stroke="var(--c-hot)" stroke-width="2" stroke-dasharray="5 4"></line>
+                  <line x1="190" y1="246" x2="150" y2="296" stroke="var(--c-line)" stroke-width="1.6"></line>
+                  <line x1="700" y1="246" x2="700" y2="296" stroke="var(--c-line)" stroke-width="1.6"></line>
+                  <!-- 重复子问题的红框 -->
+                  <rect x="352" y="216" width="196" height="60" rx="8" fill="none" stroke="var(--c-hot)" stroke-width="2" stroke-dasharray="6 4"></rect>
+                  <text x="450" y="330" class="tx-sm" fill="var(--c-hot)">红框：子问题 (2,3) 在左右两棵子树里各出现一次</text>
+                  <!-- 根 -->
+                  <rect x="410" y="58" width="80" height="30" rx="5" fill="var(--c-key-bg)" stroke="var(--c-accent)" stroke-width="2"></rect>
+                  <text x="450" y="78" class="tx tx-b" text-anchor="middle">(3,4)</text>
+                  <!-- 第二层 -->
+                  <rect x="260" y="136" width="80" height="30" rx="5" fill="var(--c-panel-2)" stroke="var(--c-line)" stroke-width="1.4"></rect>
+                  <text x="300" y="156" class="tx" text-anchor="middle">(2,4)</text>
+                  <rect x="560" y="136" width="80" height="30" rx="5" fill="var(--c-panel-2)" stroke="var(--c-line)" stroke-width="1.4"></rect>
+                  <text x="600" y="156" class="tx" text-anchor="middle">(3,3)</text>
+                  <!-- 第三层 -->
+                  <rect x="150" y="216" width="80" height="30" rx="5" fill="var(--c-panel-2)" stroke="var(--c-line)" stroke-width="1.4"></rect>
+                  <text x="190" y="236" class="tx" text-anchor="middle">(1,4)</text>
+                  <rect x="350" y="216" width="80" height="30" rx="5" fill="var(--c-warn-bg)" stroke="var(--c-hot)" stroke-width="1.8"></rect>
+                  <text x="390" y="236" class="tx tx-b" text-anchor="middle">(2,3)</text>
+                  <rect x="470" y="216" width="80" height="30" rx="5" fill="var(--c-warn-bg)" stroke="var(--c-hot)" stroke-width="1.8"></rect>
+                  <text x="510" y="236" class="tx tx-b" text-anchor="middle">(2,3)</text>
+                  <rect x="660" y="216" width="80" height="30" rx="5" fill="var(--c-panel-2)" stroke="var(--c-line)" stroke-width="1.4"></rect>
+                  <text x="700" y="236" class="tx" text-anchor="middle">(3,2)</text>
+                  <!-- 第四层 -->
+                  <rect x="110" y="296" width="80" height="30" rx="5" fill="var(--c-panel-2)" stroke="var(--c-line)" stroke-width="1.4"></rect>
+                  <text x="150" y="316" class="tx" text-anchor="middle">(1,3)</text>
+                  <rect x="290" y="296" width="80" height="30" rx="5" fill="var(--c-panel-2)" stroke="var(--c-line)" stroke-width="1.4"></rect>
+                  <text x="330" y="316" class="tx" text-anchor="middle">(1,3)</text>
+                  <rect x="410" y="296" width="80" height="30" rx="5" fill="var(--c-panel-2)" stroke="var(--c-line)" stroke-width="1.4"></rect>
+                  <text x="450" y="316" class="tx" text-anchor="middle">(2,2)</text>
+                  <rect x="520" y="296" width="80" height="30" rx="5" fill="var(--c-panel-2)" stroke="var(--c-line)" stroke-width="1.4"></rect>
+                  <text x="560" y="316" class="tx" text-anchor="middle">(2,2)</text>
+                  <rect x="660" y="296" width="80" height="30" rx="5" fill="var(--c-panel-2)" stroke="var(--c-line)" stroke-width="1.4"></rect>
+                  <text x="700" y="316" class="tx" text-anchor="middle">(3,1)</text>
+                  <text x="24" y="366" class="tx-sm">不同子问题只有 (m+1)(n+1) 个：m = 3, n = 4 时是 4 × 5 = 20 个（PPT 第 60 页说的是 mn 个量级）；</text>
+                  <text x="24" y="386" class="tx-sm">把每次算出的 c[i,j] 存进表里，递归树上的重复展开就被"查表"一次性消掉 —— 这就是备忘录/自底上。</text>
+                </svg>
+                <p class="fig-cap">图 4 &nbsp;LCS 递归树中的重叠子问题（对应 PPT 第 56~58 页的 <span class="m">m=3, n=4</span> 树）</p>
+          
+                <div class="callout key">
+                  <p class="callout-h">重叠子问题（动态规划标志 #2，PPT 第 59~60 页）</p>
+                  <p>一个递归方案包括<b>重复出现的不同子问题</b>。两个长度为 <span class="m">m</span> 和 <span class="m">n</span> 的字符串的<b>不同</b> LCS 子问题的数目仅仅有 <b><span class="m">mn</span></b> 个。</p>
+                </div>
+          
+                <h3 id="sec-lcs-h7">5.7 备忘录算法：只在表里没有时递归</h3>
+          
+                <p>PPT 第 61~63 页：备忘录（memoization）—— 在计算出一个子问题的答案后，将其存储在表中；此后调用将<b>检查表</b>，以避免重复工作。</p>
+          
+                <div class="code-pair">
+                  <div class="code-col">
+                    <p class="code-h">伪代码（PPT 第 62 页，按第 61 页说明补全）</p>
+                    <pre class="code"><code>LCS-MEMO(x, y, i, j)                 // 求 LCS(x[1..i], y[1..j]) 的长度
+          1  if c[i, j] = NIL                  // 表里还没有这个子问题的答案
+          2  then if x[i] = y[j]                // 两个末字符相同（和以前一样）
+          3           c[i, j] = LCS-MEMO(x, y, i−1, j−1) + 1   // 左上子问题 + 1
+          4       else c[i, j] = max( LCS-MEMO(x, y, i−1, j),   // 丢掉 x 的末字符
+          5                          LCS-MEMO(x, y, i, j−1) )   // 丢掉 y 的末字符
+          6  return c[i, j]                     // 返回（可能是刚算好并存表的）值</code></pre>
+                  </div>
+                  <div class="code-col">
+                    <p class="code-h">C++</p>
+                    <pre class="code cpp"><code>int memo[8][7];                                // 备忘表，−1 表示"还没算过"
+          int lcsMemo(char x[], char y[], int i, int j) { // 求 LCS(x[1..i], y[1..j]) 的长度
+              if (i == 0 || j == 0) { return 0; }         // 边界：任一前缀为空则长度为 0
+              if (memo[i][j] &gt;= 0) { return memo[i][j]; } // 查表命中就直接返回
+              if (x[i] == y[j]) {                         // 两个末字符相同：左上子问题 + 1
+                  memo[i][j] = lcsMemo(x, y, i - 1, j - 1) + 1;   // 左上子问题的长度再加 1
+              } else {                                    // 末字符不同：取两个子问题的较大者
+                  int a = lcsMemo(x, y, i - 1, j);        // 丢掉 x 的末字符
+                  int b = lcsMemo(x, y, i, j - 1);        // 丢掉 y 的末字符
+                  memo[i][j] = (a &gt; b) ? a : b;           // 取较大的长度
+              }                                           // 结束分支
+              return memo[i][j];                          // 返回并存表
+          }                                               // 结束 lcsMemo</code></pre>
+                  </div>
+                </div>
+          
+                <p><b>复杂度（PPT 第 63 页）</b>：时间 <span class="m">= &Theta;(mn)</span>（每个表项常量工作）；空间 <span class="m">= &Theta;(mn)</span>。</p>
+          
+                <h3 id="sec-lcs-h8">5.8 自底向上：LCS-LENGTH 与 c / b 两张表</h3>
+          
+                <p>PPT 第 71 页的 <code>LCS-LENGTH(X, Y)</code>。填表顺序的依据是：为了计算 <span class="m">c[i, j]</span>，我们需要 <span class="m">c[i−1, j−1]</span>、<span class="m">c[i−1, j]</span> 和 <span class="m">c[i, j−1]</span> —— 三者都在左上方，所以按<b>行优先、从上到下、从左到右</b>填即可。<span class="m">b[i, j]</span> 指向表中（计算 <span class="m">c[i, j]</span> 时）选择的<b>最优方案</b>。</p>
+          
+                <div class="code-pair">
+                  <div class="code-col">
+                    <p class="code-h">伪代码（PPT 第 71 页 17 行）</p>
+                    <pre class="code"><code>LCS-LENGTH(X, Y)                     // 自底向上填 c 表（长度）与 b 表（箭头）
+          1  m ← length[X]                     // x 的长度
+          2  n ← length[Y]                     // y 的长度
+          3  for i ← 1 to m                    // 第 0 列全部清零
+          4      c[i, 0] ← 0                   // 任意前缀与空串的 LCS 长度为 0
+          5  for j ← 0 to n                    // 第 0 行全部清零
+          6      c[0, j] ← 0                   // 空串与任意前缀的 LCS 长度为 0
+          7  for i ← 1 to m                    // 逐行
+          8      for j ← 1 to n                // 逐列
+          9          if x_i = y_j              // 末字符相同
+          10             c[i, j] ← c[i−1, j−1] + 1        // 左上 + 1
+          11             b[i, j] ← "↖"         // 记"左上"箭头
+          12         else if c[i−1, j] ≥ c[i, j−1]        // 上方不小于左方
+          13             c[i, j] ← c[i−1, j]   // 继承上方
+          14             b[i, j] ← "↑"         // 记"向上"箭头
+          15         else c[i, j] ← c[i, j−1]  // 否则继承左方
+          16             b[i, j] ← "←"         // 记"向左"箭头
+          17 return c and b                    // 返回长度表和箭头表</code></pre>
+                  </div>
+                  <div class="code-col">
+                    <p class="code-h">C++</p>
+                    <pre class="code cpp"><code>char X[9] = " ABCBDAB";                        // 下标从 1 开始，X[1..7]
+          char Y[8] = " BDCABA";                         // 下标从 1 开始，Y[1..6]
+          int c[8][7], b[8][7];                          // c 存 LCS 长度，b 存回溯方向
+          
+          void lcsLength(int mm, int nn) {               // 自底向上填 c 表和 b 表
+              for (int i = 1; i &lt;= mm; ++i) { c[i][0] = 0; }   // 第 0 列清零
+              for (int j = 0; j &lt;= nn; ++j) { c[0][j] = 0; }   // 第 0 行清零
+              for (int i = 1; i &lt;= mm; ++i) {            // 逐行递推
+                  for (int j = 1; j &lt;= nn; ++j) {        // 逐列递推
+                      if (X[i] == Y[j]) {                // 两个末字符相同
+                          c[i][j] = c[i - 1][j - 1] + 1; // 长度 = 左上 + 1
+                          b[i][j] = 0;                   // 0 表示"左上"箭头
+                      } else if (c[i - 1][j] &gt;= c[i][j - 1]) {   // 上方不小于左方
+                          c[i][j] = c[i - 1][j];         // 继承上方的值
+                          b[i][j] = 1;                   // 1 表示"向上"箭头
+                      } else {                           // 左方更大
+                          c[i][j] = c[i][j - 1];         // 继承左方的值
+                          b[i][j] = 2;                   // 2 表示"向左"箭头
+                      }                                  // 结束分支
+                  }                                      // 结束列循环
+              }                                          // 结束行循环
+          }                                              // 结束 lcsLength
+          
+          void printLcs(int i, int j) {                  // 顺着 b 表回溯打印 LCS
+              if (i == 0 || j == 0) { return; }          // 走到边界就结束
+              if (b[i][j] == 0) {                        // 左上：该字符属于 LCS
+                  printLcs(i - 1, j - 1);                // 先递归前半段，保证正序输出
+                  printf("%c", X[i]);                    // 再输出当前字符
+              } else if (b[i][j] == 1) {                 // 向上：丢掉 X 的末字符
+                  printLcs(i - 1, j);                    // 继续在上一行找
+              } else {                                   // 向左：丢掉 Y 的末字符
+                  printLcs(i, j - 1);                    // 继续在左一列找
+              }                                          // 结束分支
+          }                                              // 结束 printLcs</code></pre>
+                  </div>
+                </div>
+          
+                <p><b>c 表</b>（<span class="m">c[i, j] = |LCS(x[1..i], y[1..j])|</span>，行 <span class="m">i</span> 对应 <span class="m">x</span> 的字符，列 <span class="m">j</span> 对应 <span class="m">y</span> 的字符）：</p>
+          
+                <table class="tbl">
+                  <thead>
+                    <tr><th><span class="m">i</span> \\ <span class="m">j</span></th><th class="num">0</th><th class="num">1<br>B</th><th class="num">2<br>D</th><th class="num">3<br>C</th><th class="num">4<br>A</th><th class="num">5<br>B</th><th class="num">6<br>A</th></tr>
+                  </thead>
+                  <tbody>
+                    <tr><td><b>0</b> —</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">0</td></tr>
+                    <tr><td><b>1</b> A</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">1</td><td class="num">1</td></tr>
+                    <tr><td><b>2</b> B</td><td class="num">0</td><td class="num">1</td><td class="num">1</td><td class="num">1</td><td class="num">1</td><td class="num">2</td><td class="num">2</td></tr>
+                    <tr><td><b>3</b> C</td><td class="num">0</td><td class="num">1</td><td class="num">1</td><td class="num">2</td><td class="num">2</td><td class="num">2</td><td class="num">2</td></tr>
+                    <tr><td><b>4</b> B</td><td class="num">0</td><td class="num">1</td><td class="num">1</td><td class="num">2</td><td class="num">2</td><td class="num">3</td><td class="num">3</td></tr>
+                    <tr><td><b>5</b> D</td><td class="num">0</td><td class="num">1</td><td class="num">2</td><td class="num">2</td><td class="num">2</td><td class="num">3</td><td class="num">3</td></tr>
+                    <tr><td><b>6</b> A</td><td class="num">0</td><td class="num">1</td><td class="num">2</td><td class="num">2</td><td class="num">3</td><td class="num">3</td><td class="num">4</td></tr>
+                    <tr><td><b>7</b> B</td><td class="num">0</td><td class="num">1</td><td class="num">2</td><td class="num">2</td><td class="num">3</td><td class="num">4</td><td class="num"><b>4</b></td></tr>
+                  </tbody>
+                </table>
+          
+                <p><b>b 表</b>（<span class="m">↖</span> = 取自左上并输出该字符，<span class="m">↑</span> = 取自上方，<span class="m">←</span> = 取自左方）：</p>
+          
+                <table class="tbl">
+                  <thead>
+                    <tr><th><span class="m">i</span> \\ <span class="m">j</span></th><th>1 B</th><th>2 D</th><th>3 C</th><th>4 A</th><th>5 B</th><th>6 A</th></tr>
+                  </thead>
+                  <tbody>
+                    <tr><td><b>1</b> A</td><td>↑</td><td>↑</td><td>↑</td><td>↖</td><td>←</td><td>↑</td></tr>
+                    <tr><td><b>2</b> B</td><td>↖</td><td>←</td><td>←</td><td>↑</td><td>↖</td><td>←</td></tr>
+                    <tr><td><b>3</b> C</td><td>↑</td><td>↑</td><td>↖</td><td>←</td><td>↑</td><td>↑</td></tr>
+                    <tr><td><b>4</b> B</td><td>↖</td><td>↑</td><td>↑</td><td>↑</td><td>↖</td><td>←</td></tr>
+                    <tr><td><b>5</b> D</td><td>↑</td><td>↖</td><td>↑</td><td>↑</td><td>↑</td><td>↑</td></tr>
+                    <tr><td><b>6</b> A</td><td>↑</td><td>↑</td><td>↑</td><td>↖</td><td>↑</td><td>↖</td></tr>
+                    <tr><td><b>7</b> B</td><td>↖</td><td>↑</td><td>↑</td><td>↑</td><td>↖</td><td>↑</td></tr>
+                  </tbody>
+                </table>
+          
+                <p>答案 <b><span class="m">c[7,6] = 4</span></b>。从 <span class="m">b[7,6]</span> 回溯到 <span class="m">b[1,1]</span>、跟着箭头走，需要 <b><span class="m">O(m+n)</span></b> 的时间（PPT 第 72 页）。回溯路径是 <span class="m">(7,6)↑(6,6)↖(5,5)↑(4,5)↖(3,3)↖(2,2)←(2,1)↖</span>，依次输出 <span class="m">A、B、C、B</span>，倒过来正是 <b><code>BCBA</code></b>。</p>
+        ` },
+        { type: 'demo', name: 'lcs-table', title: "LCS：x = ABCBDAB、y = BDCABA 的 c 表逐行填充与 b 表回溯（18 步）" },
+        { type: 'html', html: `
+          <h3 id="sec-lcs-h9">5.9 延伸一：关于最优子结构的判定（无权最长路径没有最优子结构）</h3>
+          
+                <p>PPT 第 73 页提出一个问题：给定有向图 <span class="m">G = (V, E)</span> 和两个顶点 <span class="m">u, v</span>，考虑下面两个问题是否具有最优子结构 ——</p>
+          
+                <ul>
+                  <li><b>无权最短路径</b>：找到一条从 <span class="m">u</span> 到 <span class="m">v</span> <b>边数最少</b>的路径；</li>
+                  <li><b>无权最长路径</b>：找到一条从 <span class="m">u</span> 到 <span class="m">v</span> 的<b>边数最多</b>的<b>简单</b>路径。</li>
+                </ul>
+          
+                <p>答案：<b>最短路径有</b>最优子结构（若 <span class="m">u → … → w → v</span> 最短，则 <span class="m">u → … → w</span> 必是 <span class="m">u</span> 到 <span class="m">w</span> 的最短路径，剪贴法即可证）；<b>无权最长路径没有</b>最优子结构 —— 而且问题比"不最优"更严重：<b>子问题的解的组合甚至都不是原问题的合法解</b>（PPT 第 74 页）。</p>
+          
+                <svg class="fig" viewBox="0 0 780 400" role="img" aria-label="四顶点有向图，q、r、s、t 四条边均双向：q 到 r 到 t 是 q 到 t 的最长简单路径，但 q 到 r 不是 q 到 r 的最长简单路径">
+                  <text x="24" y="24" class="tx-b">反例：无权最长简单路径不具有最优子结构（PPT 第 74 页原图）</text>
+                  <text x="24" y="44" class="tx-sm">每条边都是双向的（共 8 条有向边）；"最长"指边数最多</text>
+                  <!-- 上边：q → r（上）与 r → q（下） -->
+                  <line x1="212" y1="64" x2="368" y2="64" stroke="var(--c-line)" stroke-width="1.8"></line>
+                  <polygon points="362,58 362,70 372,64" fill="var(--c-line)"></polygon>
+                  <line x1="368" y1="80" x2="212" y2="80" stroke="var(--c-line)" stroke-width="1.8"></line>
+                  <polygon points="218,74 218,86 208,80" fill="var(--c-line)"></polygon>
+                  <!-- 下边：s → t（上）与 t → s（下） -->
+                  <line x1="212" y1="252" x2="368" y2="252" stroke="var(--c-line)" stroke-width="1.8"></line>
+                  <polygon points="362,246 362,258 372,252" fill="var(--c-line)"></polygon>
+                  <line x1="368" y1="268" x2="212" y2="268" stroke="var(--c-line)" stroke-width="1.8"></line>
+                  <polygon points="218,262 218,274 208,268" fill="var(--c-line)"></polygon>
+                  <!-- 左边：q → s（左）与 s → q（右） -->
+                  <line x1="184" y1="100" x2="184" y2="220" stroke="var(--c-line)" stroke-width="1.8"></line>
+                  <polygon points="178,214 190,214 184,224" fill="var(--c-line)"></polygon>
+                  <line x1="208" y1="220" x2="208" y2="100" stroke="var(--c-line)" stroke-width="1.8"></line>
+                  <polygon points="202,106 214,106 208,96" fill="var(--c-line)"></polygon>
+                  <!-- 右边：r → t（右）与 t → r（左） -->
+                  <line x1="392" y1="100" x2="392" y2="220" stroke="var(--c-line)" stroke-width="1.8"></line>
+                  <polygon points="386,214 398,214 392,224" fill="var(--c-line)"></polygon>
+                  <line x1="368" y1="220" x2="368" y2="100" stroke="var(--c-line)" stroke-width="1.8"></line>
+                  <polygon points="362,106 374,106 368,96" fill="var(--c-line)"></polygon>
+                  <!-- 顶点 -->
+                  <circle cx="196" cy="72" r="25" fill="var(--c-warn-bg)" stroke="var(--c-hot)" stroke-width="2.2"></circle>
+                  <text x="196" y="79" class="tx tx-b" text-anchor="middle">q</text>
+                  <circle cx="380" cy="72" r="25" fill="var(--c-warn-bg)" stroke="var(--c-hot)" stroke-width="2.2"></circle>
+                  <text x="380" y="79" class="tx tx-b" text-anchor="middle">r</text>
+                  <circle cx="196" cy="260" r="25" fill="var(--c-panel-2)" stroke="var(--c-line)" stroke-width="1.6"></circle>
+                  <text x="196" y="267" class="tx" text-anchor="middle">s</text>
+                  <circle cx="380" cy="260" r="25" fill="var(--c-warn-bg)" stroke="var(--c-hot)" stroke-width="2.2"></circle>
+                  <text x="380" y="267" class="tx tx-b" text-anchor="middle">t</text>
+                  <!-- 右侧说明 -->
+                  <text x="470" y="70" class="tx tx-b">① q → r → t 是 q 到 t 的最长简单路径</text>
+                  <text x="470" y="92" class="tx-sm">只有 2 条边，看起来"最优"。</text>
+                  <text x="470" y="126" class="tx tx-b">② 但 q → r 不是 q 到 r 的最长简单路径</text>
+                  <text x="470" y="148" class="tx-sm">q → s → t → r 有 3 条边，更长。</text>
+                  <text x="470" y="182" class="tx tx-b">③ r → t 也不是 r 到 t 的最长简单路径</text>
+                  <text x="470" y="204" class="tx-sm">r → q → s → t 有 3 条边，更长。</text>
+                  <text x="470" y="240" class="tx-sm">所以"最长"路径的子问题解里，拼接起来可能重复访问顶点，</text>
+                  <text x="470" y="260" class="tx-sm">例如把 q→s→t→r 与 r→q→s→t 拼起来就受顶点冲突影响 ——</text>
+                  <text x="470" y="280" class="tx-sm">子问题的解的组合甚至不是原问题的合法解。</text>
+                  <text x="24" y="330" class="tx-sm">原因（PPT 第 75 页）：<tspan class="tx-b">子问题无关</tspan>—— 同一个原问题的一个子问题的解</text>
+                  <text x="24" y="352" class="tx-sm">不影响另一个子问题的解。最短路径的子问题相互不共享资源（顶点/边），</text>
+                  <text x="24" y="374" class="tx-sm">而最长简单路径的两个子问题会争用同一批顶点，所以最优子结构不成立。</text>
+                </svg>
+                <p class="fig-cap">图 5 &nbsp;无权最长简单路径的反例（PPT 第 74 页 <code>image33.png</code>）与"子问题无关"的解释</p>
+          
+                <div class="callout key">
+                  <p class="callout-h">子问题无关（PPT 第 75 页）</p>
+                  <p>同一个原问题的一个子问题的解<b>不影响</b>另一个子问题的解 —— 最短路径的子问题"<b>相互不共享资源</b>"（不共享顶点），所以 <span class="m">u→w</span> 的最短路径与 <span class="m">w→v</span> 的最短路径可以直接拼接；而最长路径的两个子问题会<b>争用</b>顶点，拼接后可能不再是简单路径，甚至不是路径。</p>
+                  <p><b>结论</b>：判断一个问题能否用 DP，除了"最优子结构 + 重叠子问题"，还要检查<b>子问题是否无关</b>（是否会被同一个资源卡住）。</p>
+                </div>
+          
+                <h3 id="sec-lcs-h10">5.10 延伸二：最长上升子序列（LIS）</h3>
+          
+                <p>PPT 第 76 页：最长上升子序列（longest increasing subsequence），也可以叫最长非降序子序列，简称 <b>LIS</b>。例：6 个数分别是 <b><span class="m">1 7 6 2 3 4</span></b>，求最长上升子序列。</p>
+          
+                <p><b>答案</b>：<span class="m">1 2 3 4</span>，长度 <b>4</b>。（<span class="m">1 7</span> 只有 2；<span class="m">1 6</span> 之后没有更大的；只有 <span class="m">1 2 3 4</span> 能取到 4 个。）</p>
+          
+                <p><b>DP 做法（<span class="m">O(n<sup>2</sup>)</span>）</b>：定义 <span class="m">d[i]</span> = 以 <span class="m">a[i]</span> <b>结尾</b>的 LIS 长度，则</p>
+          
+                <p class="formula">d[i] = 1 + max{ d[j] : j &lt; i 且 a[j] &lt; a[i] } &nbsp;&nbsp;，&nbsp;&nbsp; LIS 长度 = max<sub>i</sub> d[i]</p>
+          
+                <div class="code-pair">
+                  <div class="code-col">
+                    <p class="code-h">伪代码</p>
+                    <pre class="code"><code>LIS(a, n)                            // 求长度（若要输出序列，另存前驱 pre[]）
+          1  for i = 1 to n                    // 逐个元素求 d[i]
+          2      d[i] = 1                       // 至少可以只取 a[i] 自己
+          3      for j = 1 to i − 1            // 枚举 i 之前的所有位置
+          4          if a[j] &lt; a[i] and d[j] + 1 &gt; d[i]   // 能接在 j 后面且更长
+          5              d[i] = d[j] + 1        // 更新 d[i]
+          6              pre[i] = j             // 记下前驱，便于输出方案
+          7  ans = max(d[1..n])                // 全局最长
+          8  return ans                        // 返回 LIS 长度</code></pre>
+                  </div>
+                  <div class="code-col">
+                    <p class="code-h">C++</p>
+                    <pre class="code cpp"><code>int lis(int a[], int n) {                      // 返回最长上升子序列的长度
+              int d[101], ans = 0;                       // d[i]：以 a[i] 结尾的 LIS 长度
+              for (int i = 1; i &lt;= n; ++i) {             // 逐个元素求 d[i]
+                  d[i] = 1;                              // 至少可以只取 a[i] 自己
+                  for (int j = 1; j &lt; i; ++j) {          // 枚举 i 之前的所有位置
+                      if (a[j] &lt; a[i] &amp;&amp; d[j] + 1 &gt; d[i]) {   // 能接在 j 后面且更长
+                          d[i] = d[j] + 1;               // 更新 d[i]
+                      }                                  // 结束判断
+                  }                                      // 结束枚举 j
+                  if (d[i] &gt; ans) { ans = d[i]; }        // 更新全局最长
+              }                                          // 结束枚举 i
+              return ans;                                // 返回 LIS 长度
+          }                                              // 结束 lis</code></pre>
+                  </div>
+                </div>
+          
+                <p>对 <span class="m">1 7 6 2 3 4</span> 跑一遍：<span class="m">d = [1, 2, 2, 2, 3, 4]</span>，<span class="m">max = 4</span>，对应序列 <span class="m">1 2 3 4</span>。</p>
+          
+                <div class="callout tip">
+                  <p class="callout-h">记忆：LIS 的 <span class="m">O(n log n)</span> 做法（思路，补充）</p>
+                  <p>维护一个数组 <span class="m">tail[]</span>：<span class="m">tail[k]</span> 表示"长度为 <span class="m">k+1</span> 的上升子序列的<b>最小可能结尾值</b>"。<span class="m">tail</span> 天然<b>单调递增</b>，于是对每个 <span class="m">a[i]</span> 在 <span class="m">tail</span> 里<b>二分</b>找第一个 <span class="m">≥ a[i]</span> 的位置并替换它（找不到就追加）。总时间 <span class="m">&Theta;(n log n)</span>，空间 <span class="m">&Theta;(n)</span>。注意：这个方法只能求<b>长度</b>，要输出具体序列仍需记录前驱。</p>
+                </div>
+          
+                <div class="callout key">
+                  <p class="callout-h">本节考点</p>
+                  <p>① LCS 定义与两个例子（<code>"loo"</code> 长度 3；<code>BCBA</code> 长度 4，<code>BDAB</code> 也行）；② 野蛮算法 <span class="m">O(n·2<sup>m</sup>)</span>；③ 三条最优子结构定理 + 剪贴法证明；④ 递归式 <span class="m">c[i,j] = c[i−1,j−1]+1</span> 或 <span class="m">max(c[i−1,j], c[i,j−1])</span>；⑤ 重叠子问题只有 <span class="m">mn</span> 个 → 备忘录 <span class="m">&Theta;(mn)</span>；⑥ 自底向上填 c、b 两表，<span class="m">c[7,6] = 4</span>，回溯 <span class="m">O(m+n)</span> 得 <code>BCBA</code>；⑦ 无权<b>最长</b>路径<b>无</b>最优子结构（子问题相关）；⑧ LIS：<span class="m">1 7 6 2 3 4</span> → <span class="m">1 2 3 4</span>，长度 4。</p>
+                </div>
+        ` },
+      ],
+    },
+    {
+      id: 'sec-assembly',
+      heading: "6. 习题 4：装配线调度（assembly-line scheduling）",
+      blocks: [
+        { type: 'html', html: `
+          <h3 id="sec-assembly-h1">6.1 问题模型</h3>
+          
+                <p>一个汽车机架进入一条生产线，在每个工作站增加一些配件，最后在装配线结束，完成的汽车下线（PPT 第 77 页）。有 <b>2 条装配线 × n 个工作站</b>：</p>
+          
+                <table class="tbl">
+                  <thead><tr><th>记号</th><th>含义</th></tr></thead>
+                  <tbody>
+                    <tr><td><span class="m">S<sub>i,j</sub></span></td><td>生产线 <span class="m">i</span> 上的第 <span class="m">j</span> 个工作站（<span class="m">i = 1, 2</span>；<span class="m">j = 1, …, n</span>）</td></tr>
+                    <tr><td><span class="m">a<sub>i,j</sub></span></td><td>工作站 <span class="m">S<sub>i,j</sub></span> 需要的<b>装配时间</b></td></tr>
+                    <tr><td><span class="m">t<sub>i,j</sub></span></td><td>每条线上从工作站 <span class="m">S<sub>i,j</sub></span> 到<b>另外一条线</b>上的第 <span class="m">j+1</span> 个站的<b>传输时间</b></td></tr>
+                    <tr><td><span class="m">e<sub>i</sub></span> / <span class="m">x<sub>i</sub></span></td><td>生产线 <span class="m">i</span> 上从<b>上线</b>到进入第 1 站、以及从第 <span class="m">n</span> 站到<b>下线</b>的时间</td></tr>
+                  </tbody>
+                </table>
+          
+                <p><b>目标</b>：确定选择哪些工作站，使得制造一台汽车<b>总的时间最小化</b>。</p>
+          
+                <p>蛮力法：<b><span class="m">&Omega;(2<sup>n</sup>)</span></b> —— 为什么？因为经过每一站时都有"留在这条线"或"换到另一条线"两种选择，<span class="m">n</span> 站就是 <span class="m">2<sup>n</sup></span> 条候选路线。而问题是<b>线性有序的</b>（从左到右一站一站走）⇒ 适合动态规划。</p>
+          
+                <svg class="fig" viewBox="0 0 960 300" role="img" aria-label="两条装配线各六个工作站，标出装配时间 a、换线传输时间 t、上线时间 e 与下线时间 x，其中最快路径为线1站1、线2站2、线1站3、线2站4、线2站5、线1站6">
+                  <text x="20" y="22" class="tx-b">两条装配线 × 6 个工作站；绿色框 = 最快路线经过的工作站</text>
+                  <!-- 上线 / 下线 -->
+                  <text x="20" y="74" class="tx-sm">机架上线</text>
+                  <line x1="86" y1="88" x2="128" y2="88" stroke="var(--c-line)" stroke-width="1.8"></line>
+                  <polygon points="124,82 124,94 134,88" fill="var(--c-line)"></polygon>
+                  <text x="60" y="108" class="tx-sm">e1 = 2</text>
+                  <line x1="86" y1="208" x2="128" y2="208" stroke="var(--c-line)" stroke-width="1.8"></line>
+                  <polygon points="124,202 124,214 134,208" fill="var(--c-line)"></polygon>
+                  <text x="60" y="228" class="tx-sm">e2 = 4</text>
+                  <!-- 线 1 的六个站 -->
+                  <rect x="138" y="70" width="64" height="36" rx="5" fill="var(--c-tip-bg)" stroke="var(--c-ok)" stroke-width="2.2"></rect>
+                  <text x="170" y="93" class="tx tx-b" text-anchor="middle">7</text>
+                  <rect x="268" y="70" width="64" height="36" rx="5" fill="var(--c-panel-2)" stroke="var(--c-line)" stroke-width="1.4"></rect>
+                  <text x="300" y="93" class="tx" text-anchor="middle">9</text>
+                  <rect x="398" y="70" width="64" height="36" rx="5" fill="var(--c-tip-bg)" stroke="var(--c-ok)" stroke-width="2.2"></rect>
+                  <text x="430" y="93" class="tx tx-b" text-anchor="middle">3</text>
+                  <rect x="528" y="70" width="64" height="36" rx="5" fill="var(--c-panel-2)" stroke="var(--c-line)" stroke-width="1.4"></rect>
+                  <text x="560" y="93" class="tx" text-anchor="middle">4</text>
+                  <rect x="658" y="70" width="64" height="36" rx="5" fill="var(--c-panel-2)" stroke="var(--c-line)" stroke-width="1.4"></rect>
+                  <text x="690" y="93" class="tx" text-anchor="middle">8</text>
+                  <rect x="788" y="70" width="64" height="36" rx="5" fill="var(--c-tip-bg)" stroke="var(--c-ok)" stroke-width="2.2"></rect>
+                  <text x="820" y="93" class="tx tx-b" text-anchor="middle">4</text>
+                  <!-- 线 2 的六个站 -->
+                  <rect x="138" y="190" width="64" height="36" rx="5" fill="var(--c-panel-2)" stroke="var(--c-line)" stroke-width="1.4"></rect>
+                  <text x="170" y="213" class="tx" text-anchor="middle">8</text>
+                  <rect x="268" y="190" width="64" height="36" rx="5" fill="var(--c-tip-bg)" stroke="var(--c-ok)" stroke-width="2.2"></rect>
+                  <text x="300" y="213" class="tx tx-b" text-anchor="middle">5</text>
+                  <rect x="398" y="190" width="64" height="36" rx="5" fill="var(--c-panel-2)" stroke="var(--c-line)" stroke-width="1.4"></rect>
+                  <text x="430" y="213" class="tx" text-anchor="middle">6</text>
+                  <rect x="528" y="190" width="64" height="36" rx="5" fill="var(--c-tip-bg)" stroke="var(--c-ok)" stroke-width="2.2"></rect>
+                  <text x="560" y="213" class="tx tx-b" text-anchor="middle">4</text>
+                  <rect x="658" y="190" width="64" height="36" rx="5" fill="var(--c-tip-bg)" stroke="var(--c-ok)" stroke-width="2.2"></rect>
+                  <text x="690" y="213" class="tx tx-b" text-anchor="middle">5</text>
+                  <rect x="788" y="190" width="64" height="36" rx="5" fill="var(--c-panel-2)" stroke="var(--c-line)" stroke-width="1.4"></rect>
+                  <text x="820" y="213" class="tx" text-anchor="middle">7</text>
+                  <!-- 站与站之间的传送（同线直行，细线） -->
+                  <line x1="202" y1="88" x2="264" y2="88" stroke="var(--c-line)" stroke-width="1.4"></line>
+                  <line x1="332" y1="88" x2="394" y2="88" stroke="var(--c-line)" stroke-width="1.4"></line>
+                  <line x1="462" y1="88" x2="524" y2="88" stroke="var(--c-line)" stroke-width="1.4"></line>
+                  <line x1="592" y1="88" x2="654" y2="88" stroke="var(--c-line)" stroke-width="1.4"></line>
+                  <line x1="722" y1="88" x2="784" y2="88" stroke="var(--c-line)" stroke-width="1.4"></line>
+                  <line x1="202" y1="208" x2="264" y2="208" stroke="var(--c-line)" stroke-width="1.4"></line>
+                  <line x1="332" y1="208" x2="394" y2="208" stroke="var(--c-line)" stroke-width="1.4"></line>
+                  <line x1="462" y1="208" x2="524" y2="208" stroke="var(--c-line)" stroke-width="1.4"></line>
+                  <line x1="592" y1="208" x2="654" y2="208" stroke="var(--c-line)" stroke-width="1.4"></line>
+                  <line x1="722" y1="208" x2="784" y2="208" stroke="var(--c-line)" stroke-width="1.4"></line>
+                  <!-- 换线传输 t（斜线） -->
+                  <line x1="202" y1="110" x2="264" y2="186" stroke="var(--c-accent-2)" stroke-width="1.6" stroke-dasharray="5 3"></line>
+                  <text x="212" y="152" class="tx-sm">t1,1=2</text>
+                  <line x1="202" y1="186" x2="264" y2="110" stroke="var(--c-accent-2)" stroke-width="1.6" stroke-dasharray="5 3"></line>
+                  <text x="212" y="176" class="tx-sm">t2,1=2</text>
+                  <line x1="332" y1="110" x2="394" y2="186" stroke="var(--c-accent-2)" stroke-width="1.6" stroke-dasharray="5 3"></line>
+                  <text x="342" y="152" class="tx-sm">t1,2=3</text>
+                  <line x1="332" y1="186" x2="394" y2="110" stroke="var(--c-accent-2)" stroke-width="1.6" stroke-dasharray="5 3"></line>
+                  <text x="342" y="176" class="tx-sm">t2,2=1</text>
+                  <line x1="462" y1="110" x2="524" y2="186" stroke="var(--c-accent-2)" stroke-width="1.6" stroke-dasharray="5 3"></line>
+                  <text x="472" y="152" class="tx-sm">t1,3=1</text>
+                  <line x1="462" y1="186" x2="524" y2="110" stroke="var(--c-accent-2)" stroke-width="1.6" stroke-dasharray="5 3"></line>
+                  <text x="472" y="176" class="tx-sm">t2,3=2</text>
+                  <line x1="592" y1="110" x2="654" y2="186" stroke="var(--c-accent-2)" stroke-width="1.6" stroke-dasharray="5 3"></line>
+                  <text x="602" y="152" class="tx-sm">t1,4=3</text>
+                  <line x1="592" y1="186" x2="654" y2="110" stroke="var(--c-accent-2)" stroke-width="1.6" stroke-dasharray="5 3"></line>
+                  <text x="602" y="176" class="tx-sm">t2,4=2</text>
+                  <line x1="722" y1="110" x2="784" y2="186" stroke="var(--c-accent-2)" stroke-width="1.6" stroke-dasharray="5 3"></line>
+                  <text x="732" y="152" class="tx-sm">t1,5=4</text>
+                  <line x1="722" y1="186" x2="784" y2="110" stroke="var(--c-accent-2)" stroke-width="1.6" stroke-dasharray="5 3"></line>
+                  <text x="732" y="176" class="tx-sm">t2,5=1</text>
+                  <!-- 下线 -->
+                  <line x1="852" y1="88" x2="900" y2="88" stroke="var(--c-line)" stroke-width="1.8"></line>
+                  <polygon points="896,82 896,94 906,88" fill="var(--c-line)"></polygon>
+                  <text x="888" y="72" class="tx-sm">x1 = 3</text>
+                  <line x1="852" y1="208" x2="900" y2="208" stroke="var(--c-line)" stroke-width="1.8"></line>
+                  <polygon points="896,202 896,214 906,208" fill="var(--c-line)"></polygon>
+                  <text x="888" y="232" class="tx-sm">x2 = 2</text>
+                  <!-- 线号 -->
+                  <text x="20" y="50" class="tx-sm">生产线 1</text>
+                  <text x="20" y="170" class="tx-sm">生产线 2</text>
+                  <text x="20" y="262" class="tx-sm">最快路径：线1站1 → 线2站2 → 线1站3 → 线2站4 → 线2站5 → 线1站6，f* = 38</text>
+                  <text x="470" y="262" class="tx-sm">（数字 = 装配时间 a(i,j)；虚线 = 换线传输时间 t）</text>
+                  <text x="20" y="284" class="tx-sm">注：a、t、e、x 的取值与 PPT 第 82~89 页 f / l 表的复算结果完全自洽（见 6.6 节说明）。</text>
+                </svg>
+                <p class="fig-cap">图 6 &nbsp;两条装配线的结构（PPT 第 77 页示意图）与最快路径</p>
+          
+                <h3 id="sec-assembly-h2">6.2 步骤一：最优子结构</h3>
+          
+                <div class="callout key">
+                  <p class="callout-h">最优子结构（PPT 第 78 页）</p>
+                  <p>假设经 <span class="m">S<sub>1,j</sub></span> 最快的线路通过 <span class="m">S<sub>1,j−1</sub></span>，那么装配机架必定利用了从开始点到 <span class="m">S<sub>1,j−1</sub></span> 的<b>最快路径</b>。</p>
+                </div>
+          
+                <p>证明（剪贴法）：若不利用最快路径，用那条更快的路径替换前缀，整条路线会更快，矛盾。对线 2 与"从另一条线换过来"的情形同理。所以问题具有最优子结构，并且由于"问题是<b>线性有序</b>的"，适合 DP。</p>
+          
+                <h3 id="sec-assembly-h3">6.3 步骤二：递归式（重叠子问题）</h3>
+          
+                <p>PPT 第 79 页：既然通过 <span class="m">S<sub>1,j</sub></span> 最快的路线要么是通过 <span class="m">S<sub>1,j−1</sub></span> 然后是 <span class="m">S<sub>1,j</sub></span>，要么是通过 <span class="m">S<sub>2,j−1</sub></span> 然后<b>传输到线 1</b> 到达 <span class="m">S<sub>1,j</sub></span>，就有：</p>
+          
+                <p>记 <span class="m">f<sub>i</sub>[j]</span> = 从开始点通过 <span class="m">S<sub>i,j</sub></span> 的<b>最快时间</b>：</p>
+          
+                <p class="formula">f<sub>1</sub>[1] = e<sub>1</sub> + a<sub>1,1</sub> &nbsp;&nbsp;，&nbsp;&nbsp; f<sub>2</sub>[1] = e<sub>2</sub> + a<sub>2,1</sub></p>
+                <p class="formula">f<sub>1</sub>[j] = min( f<sub>1</sub>[j−1] + a<sub>1,j</sub> , &nbsp; f<sub>2</sub>[j−1] + t<sub>2,j−1</sub> + a<sub>1,j</sub> ) &nbsp;&nbsp;(j ≥ 2)</p>
+                <p class="formula">f<sub>2</sub>[j] = min( f<sub>2</sub>[j−1] + a<sub>2,j</sub> , &nbsp; f<sub>1</sub>[j−1] + t<sub>1,j−1</sub> + a<sub>2,j</sub> ) &nbsp;&nbsp;(j ≥ 2)</p>
+                <p class="formula">f* = min( f<sub>1</sub>[n] + x<sub>1</sub> , &nbsp; f<sub>2</sub>[n] + x<sub>2</sub> )</p>
+          
+                <p>同时用 <span class="m">l<sub>i</sub>[j]</span> 记录"以最快路线通过 <span class="m">S<sub>i,j</sub></span> 时，第 <span class="m">j−1</span> 个站所在的<b>线号</b>"（即前驱线号），用 <span class="m">l*</span> 记录最后从哪条线下线。这样 <span class="m">f*</span> 给出最优值，<span class="m">l</span> 表给出最优解。</p>
+          
+                <h3 id="sec-assembly-h4">6.4 FASTEST-WAY 伪代码 + C++</h3>
+          
+                <p>PPT 第 80 页（注意：PPT 第 80 页第 17 行印作 "then"，按语义应为 <b>else</b>，此处已改正并注明）：</p>
+          
+                <div class="code-pair">
+                  <div class="code-col">
+                    <p class="code-h">伪代码（PPT 第 80 页）</p>
+                    <pre class="code"><code>FASTEST-WAY(a, t, e, x, n)           // a 装配时间、t 换线时间、e 上线、x 下线
+          1  f1[1] ← e1 + a1,1                // 线 1 第 1 站：上线时间 + 装配时间
+          2  f2[1] ← e2 + a2,1                // 线 2 第 1 站
+          3  for j ← 2 to n                   // 从第 2 站递推到第 n 站
+          4      do if f1[j−1] + a1,j ≤ f2[j−1] + t2,j−1 + a1,j   // 留在原线更快
+          5            then f1[j] ← f1[j−1] + a1,j               // 记录线 1 的最快时间
+          6                 l1[j] ← 1                            // 前驱仍是线 1
+          7            else f1[j] ← f2[j−1] + t2,j−1 + a1,j       // 换线更快：加传输时间
+          8                 l1[j] ← 2                            // 前驱是线 2
+          9      do if f2[j−1] + a2,j ≤ f1[j−1] + t1,j−1 + a2,j   // 留在原线更快
+          10           then f2[j] ← f2[j−1] + a2,j               // 记录线 2 的最快时间
+          11                l2[j] ← 2                            // 前驱仍是线 2
+          12           else f2[j] ← f1[j−1] + t1,j−1 + a2,j       // 换线更快
+          13                l2[j] ← 1                            // 前驱是线 1
+          14 if f1[n] + x1 ≤ f2[n] + x2       // 比较两条线的出口总时间
+          15   then f* = f1[n] + x1           // 走线 1 下线
+          16        l* = 1                    // 记录终点线号
+          17   else f* = f2[n] + x2           // （PPT 印作 then，应为 else）
+          18        l* = 2                    // 记录终点线号</code></pre>
+                  </div>
+                  <div class="code-col">
+                    <p class="code-h">C++</p>
+                    <pre class="code cpp"><code>int a1[7] = {0, 7, 9, 3, 4, 8, 4};             // 线 1 各站的装配时间
+          int a2[7] = {0, 8, 5, 6, 4, 5, 7};             // 线 2 各站的装配时间
+          int t1[6] = {0, 2, 3, 1, 3, 4};                // 线 1 换到线 2 的传输时间
+          int t2[6] = {0, 2, 1, 2, 2, 1};                // 线 2 换到线 1 的传输时间
+          int f1[7], f2[7], l1[7], l2[7];                // f 存最快时间，l 存前驱线号
+          int fstar, lstar;                              // 全局最优时间与终点线号
+          
+          void fastestWay(int n) {                       // n 个工作站
+              f1[1] = 2 + a1[1];                         // 第 1 条线第 1 站：上线 2 + 装配 7 = 9
+              f2[1] = 4 + a2[1];                         // 第 2 条线第 1 站：上线 4 + 装配 8 = 12
+              for (int j = 2; j &lt;= n; ++j) {             // 从第 2 站递推到第 n 站
+                  if (f1[j - 1] + a1[j] &lt;= f2[j - 1] + t2[j - 1] + a1[j]) {   // 留在原线更快
+                      f1[j] = f1[j - 1] + a1[j];         // 记录线 1 的最快时间
+                      l1[j] = 1;                         // 前驱仍在第 1 条线
+                  } else {                               // 从线 2 换线过来更快
+                      f1[j] = f2[j - 1] + t2[j - 1] + a1[j];   // 加上换线传输时间
+                      l1[j] = 2;                         // 前驱是第 2 条线
+                  }                                      // 结束分支
+                  if (f2[j - 1] + a2[j] &lt;= f1[j - 1] + t1[j - 1] + a2[j]) {   // 留在原线更快
+                      f2[j] = f2[j - 1] + a2[j];         // 记录线 2 的最快时间
+                      l2[j] = 2;                         // 前驱仍在第 2 条线
+                  } else {                               // 从线 1 换线过来更快
+                      f2[j] = f1[j - 1] + t1[j - 1] + a2[j];   // 加上换线传输时间
+                      l2[j] = 1;                         // 前驱是第 1 条线
+                  }                                      // 结束分支
+              }                                          // 结束递推
+              if (f1[n] + 3 &lt;= f2[n] + 2) {              // 比较两条线的出口总时间
+                  fstar = f1[n] + 3; lstar = 1;          // 走线 1 下线（x1 = 3）
+              } else {                                   // 否则走线 2 下线
+                  fstar = f2[n] + 2; lstar = 2;          // 走线 2 下线（x2 = 2）
+              }                                          // 结束比较
+          }                                              // 结束 fastestWay</code></pre>
+                  </div>
+                </div>
+          
+                <h3 id="sec-assembly-h5">6.5 PRINT-STATION 伪代码 + C++</h3>
+          
+                <div class="code-pair">
+                  <div class="code-col">
+                    <p class="code-h">伪代码（PPT 第 81 页）</p>
+                    <pre class="code"><code>PRINT-STATION(l, n)                  // 依据 l 表倒序打印最快路径
+          1  i ← l*                           // 从最后一条线开始
+          2  print "line" i ", station" n      // 先打印最后一站
+          3  for j ← n downto 2                // 从后往前逐站回溯
+          4      do i ← li[j]                  // 取该站记录的前驱线号
+          5         print "line" i ", station" j−1   // 打印前一站</code></pre>
+                  </div>
+                  <div class="code-col">
+                    <p class="code-h">C++</p>
+                    <pre class="code cpp"><code>void printStation(int n) {                     // 依据 l 表倒序打印最快路径
+              int i = lstar;                             // 从最后一条线开始
+              printf("line %d, station %d\\n", i, n);     // 先打印最后一站
+              for (int j = n; j &gt;= 2; --j) {             // 从后往前逐站回溯
+                  i = (i == 1) ? l1[j] : l2[j];          // 取该站记录的前驱线号
+                  printf("line %d, station %d\\n", i, j - 1);   // 打印前一站
+              }                                          // 结束回溯
+          }                                              // 结束 printStation</code></pre>
+                  </div>
+                </div>
+          
+                <h3 id="sec-assembly-h6">6.6 PPT 算例：f 表与 l 表</h3>
+          
+                <p>PPT 第 82~89 页逐格填出的 <span class="m">f</span> 表与 <span class="m">l</span> 表（<b>已用递推式逐项复算，与 PPT 逐格一致</b>，见本节末尾说明）：</p>
+          
+                <table class="tbl">
+                  <thead><tr><th>工作站 <span class="m">j</span></th><th class="num">1</th><th class="num">2</th><th class="num">3</th><th class="num">4</th><th class="num">5</th><th class="num">6</th></tr></thead>
+                  <tbody>
+                    <tr><td><span class="m">f<sub>1</sub>[j]</span></td><td class="num">9</td><td class="num">18</td><td class="num">20</td><td class="num">24</td><td class="num">32</td><td class="num"><b>35</b></td></tr>
+                    <tr><td><span class="m">f<sub>2</sub>[j]</span></td><td class="num">12</td><td class="num">16</td><td class="num">22</td><td class="num">25</td><td class="num">30</td><td class="num"><b>37</b></td></tr>
+                    <tr><td><span class="m">l<sub>1</sub>[j]</span></td><td class="num">—</td><td class="num">1</td><td class="num">2</td><td class="num">1</td><td class="num">1</td><td class="num">2</td></tr>
+                    <tr><td><span class="m">l<sub>2</sub>[j]</span></td><td class="num">—</td><td class="num">1</td><td class="num">2</td><td class="num">1</td><td class="num">2</td><td class="num">2</td></tr>
+                  </tbody>
+                </table>
+          
+                <p><span class="m">f* = min(f<sub>1</sub>[6] + x<sub>1</sub>, f<sub>2</sub>[6] + x<sub>2</sub>) = min(35 + 3, 37 + 2) = min(38, 39) = </span><b><span class="m">38</span></b>，<b><span class="m">l* = 1</span></b>。回溯得到的输出（PPT 第 81 页的顺序）是：</p>
+          
+                <pre class="code"><code>line 1, station 6          // 从线 1 的第 6 站下线（f* = 38）
+          line 2, station 5          // l1[6] = 2 → 前一站在线 2 的第 5 站
+          line 2, station 4          // l2[5] = 2 → 前一站在线 2 的第 4 站
+          line 1, station 3          // l2[4] = 1 → 前一站在线 1 的第 3 站
+          line 2, station 2          // l1[3] = 2 → 前一站在线 2 的第 2 站
+          line 1, station 1          // l2[2] = 1 → 前一站在线 1 的第 1 站</code></pre>
+          
+                <p>即 <b>线1站1 → 线2站2 → 线1站3 → 线2站4 → 线2站5 → 线1站6</b>。</p>
+        ` },
+        { type: 'demo', name: 'assembly-line', title: "装配线调度：f1 / f2 逐站填充并回溯最快路径（14 步）" },
+        { type: 'html', html: `
+          <div class="callout warn">
+                  <p class="callout-h">关于 <span class="m">l<sub>1</sub>/l<sub>2</sub></span> 的逐项对应（已核对 PPT 第 84~89 页）</p>
+                  <p>PPT 第 84 页只画出 <span class="m">l<sub>1</sub>[2] = 1</span>，第 85 页补 <span class="m">l<sub>1</sub>[3] = 2</span>，第 86 页补 <span class="m">l<sub>1</sub>[4] = 1</span>，第 87 页补 <span class="m">l<sub>1</sub>[5] = 1</span>、<span class="m">l<sub>2</sub>[2] = 1</span>、<span class="m">l<sub>2</sub>[3] = 2</span>、<span class="m">l<sub>2</sub>[4] = 1</span>，第 88 页补满 <span class="m">l<sub>1</sub>[6] = 2</span>、<span class="m">l<sub>2</sub>[5] = 2</span>、<span class="m">l<sub>2</sub>[6] = 2</span>。</p>
+                  <p>满表为 <b><span class="m">l<sub>1</sub> = [1, 2, 1, 1, 2]</span></b>、<b><span class="m">l<sub>2</sub> = [1, 2, 1, 2, 2]</span></b>（<span class="m">j = 2..6</span>）。按递推式复算的结果与此<b>完全一致</b>，无需修正。</p>
+                </div>
+          
+                <div class="callout">
+                  <p class="callout-h">数据来源说明</p>
+                  <p>PPT 第 77~89 页只给出 <span class="m">f</span>、<span class="m">l</span> 两张表的<b>数值</b>，<span class="m">a<sub>i,j</sub></span>、<span class="m">t<sub>i,j</sub></span>、<span class="m">e<sub>i</sub></span>、<span class="m">x<sub>i</sub></span> 的取值在 PPT 文字层中没有出现（它们画在示意图里）。本节采用的取值 <span class="m">a<sub>1</sub> = [7,9,3,4,8,4]</span>、<span class="m">a<sub>2</sub> = [8,5,6,4,5,7]</span>、<span class="m">t<sub>1</sub> = [2,3,1,3,4]</span>、<span class="m">t<sub>2</sub> = [2,1,2,2,1]</span>、<span class="m">e = (2, 4)</span>、<span class="m">x = (3, 2)</span> 是<b>与 PPT 的 f / l 表逐格自洽</b>的那一组（用它复算得到 <span class="m">f<sub>1</sub> = [9,18,20,24,32,35]</span>、<span class="m">f<sub>2</sub> = [12,16,22,25,30,37]</span>、<span class="m">f* = 38</span>、<span class="m">l* = 1</span>，与 PPT 完全相同），因此可以放心用于复习与答题。</p>
+                </div>
+          
+                <h3 id="sec-assembly-h7">6.7 复杂度</h3>
+          
+                <ul>
+                  <li><b>时间</b>：<code>FASTEST-WAY</code> 对每站做常数次比较，共 <span class="m">&Theta;(n)</span>；<code>PRINT-STATION</code> 再 <span class="m">&Theta;(n)</span>。</li>
+                  <li><b>空间</b>：<span class="m">f<sub>1</sub>, f<sub>2</sub>, l<sub>1</sub>, l<sub>2</sub></span> 各 <span class="m">n</span> 项，<span class="m">&Theta;(n)</span>。</li>
+                  <li><b>对比蛮力</b>：<span class="m">&Omega;(2<sup>n</sup>)</span> → <span class="m">&Theta;(n)</span>，这是本讲中"提速比"最大的一个例子。</li>
+                </ul>
+          
+                <div class="callout key">
+                  <p class="callout-h">本节考点</p>
+                  <p>① 模型：2 条线 × n 站，<span class="m">a<sub>i,j</sub></span> 装配、<span class="m">t<sub>i,j</sub></span> 换线、<span class="m">e<sub>i</sub></span> 上线、<span class="m">x<sub>i</sub></span> 下线；② 最优子结构（经 <span class="m">S<sub>1,j</sub></span> 最快必经过前一站最快路径）；③ 递推式两行 + <span class="m">f* = min(f<sub>1</sub>[n]+x<sub>1</sub>, f<sub>2</sub>[n]+x<sub>2</sub>)</span>；④ 算例 <span class="m">f<sub>1</sub> = [9,18,20,24,32,35]</span>、<span class="m">f<sub>2</sub> = [12,16,22,25,30,37]</span>、<span class="m">f* = 38</span>、<span class="m">l* = 1</span>；⑤ 路径 <b>1-1 → 2-2 → 1-3 → 2-4 → 2-5 → 1-6</b>；⑥ 时间 / 空间均 <span class="m">&Theta;(n)</span>，蛮力 <span class="m">&Omega;(2<sup>n</sup>)</span>。</p>
+                </div>
+        ` },
+      ],
+    },
+    {
+      id: 'sec-obst',
+      heading: "7. 习题 5：最优二叉搜索树（OBST）",
+      blocks: [
+        { type: 'html', html: `
+          <h3 id="sec-obst-h1">7.1 定义与记号</h3>
+          
+                <p>给定一个序列 <span class="m">K = &lang;k<sub>1</sub>, k<sub>2</sub>, …, k<sub>n</sub>&rang;</span>，有 <span class="m">n</span> 个<b>有序且各不相同</b>的键（<span class="m">k<sub>1</sub> &lt; k<sub>2</sub> &lt; … &lt; k<sub>n</sub></span>），集合 <span class="m">P = &lang;p<sub>1</sub>, p<sub>2</sub>, …, p<sub>n</sub>&rang;</span> 表示在 <span class="m">K</span> 中<b>成功</b>搜索的概率；<span class="m">D = &lang;d<sub>0</sub>, d<sub>1</sub>, d<sub>2</sub>, …, d<sub>n</sub>&rang;</span> 为 <span class="m">n+1</span> 个不同的<b>哑键</b>（<span class="m">d<sub>i</sub></span> 表示所有在 <span class="m">k<sub>i</sub></span> 和 <span class="m">k<sub>i+1</sub></span> 之间的值），<span class="m">Q = &lang;q<sub>0</sub>, q<sub>1</sub>, q<sub>2</sub>, …, q<sub>n</sub>&rang;</span> 表示<b>不成功</b>搜索的概率。<b>创建二叉搜索树，使得其期望搜索花费最小</b>（PPT 第 90 页）。</p>
+          
+                <p>二叉搜索树（二叉排序树）：或者是一棵空树，或者是具有下列性质的二叉树 —— 若左子树不空，则左子树上所有结点的值均<b>小于</b>根结点的值；若右子树不空，则右子树上所有结点的值均<b>大于</b>根结点的值；左右子树也分别为二叉排序树（PPT 第 90 页备注）。</p>
+          
+                <p>对一棵树 <span class="m">T</span>，一次搜索的期望代价为</p>
+          
+                <p class="formula">E[T] = &sum;<sub>i=1..n</sub> p<sub>i</sub> · (depth(k<sub>i</sub>) + 1) + &sum;<sub>i=0..n</sub> q<sub>i</sub> · (depth(d<sub>i</sub>) + 1)</p>
+          
+                <p>（深度从 0 起算，"<span class="m">+1</span>"表示比较次数 = 深度 + 1。这正是 PPT 第 91 页那些 <span class="m">0.10×1</span>、<span class="m">0.15×2</span> 乘式的来源。）</p>
+          
+                <h3 id="sec-obst-h2">7.2 PPT 的算例：两棵候选树，2.75 vs 2.80</h3>
+          
+                <p>PPT 第 91 页的算例（已核对 <code>image36.wmf</code> 位置的图片不可读，故以 PPT 文字层给出的 p / q 表与两棵树的费用值为准）：</p>
+          
+                <table class="tbl">
+                  <thead><tr><th><span class="m">i</span></th><th class="num">0</th><th class="num">1</th><th class="num">2</th><th class="num">3</th><th class="num">4</th><th class="num">5</th></tr></thead>
+                  <tbody>
+                    <tr><td><span class="m">p<sub>i</sub></span>（成功）</td><td class="num">—</td><td class="num">0.15</td><td class="num">0.10</td><td class="num">0.05</td><td class="num">0.10</td><td class="num">0.20</td></tr>
+                    <tr><td><span class="m">q<sub>i</sub></span>（失败）</td><td class="num">0.05</td><td class="num">0.10</td><td class="num">0.05</td><td class="num">0.05</td><td class="num">0.05</td><td class="num">0.10</td></tr>
+                  </tbody>
+                </table>
+          
+                <p>两棵候选树（每个键下标注它的成功概率，哑键画成小方块）：</p>
+          
+                <svg class="fig" viewBox="0 0 960 420" role="img" aria-label="两棵候选二叉搜索树：左边的树以 k2 为根、费用 2.75 最优；右边的树以 k2 为根、k4 为右子树根、费用 2.80">
+                  <text x="24" y="24" class="tx-b">左：费用 = 2.75（最优）&nbsp;&nbsp;｜&nbsp;&nbsp;右：费用 = 2.80</text>
+                  <text x="24" y="44" class="tx-sm">圆 = 真实键 k1..k5（下面小字是 p 值）；方块 = 哑键 d0..d5（q 值）</text>
+                  <!-- ================= 左树 ================= -->
+                  <!-- 边 -->
+                  <line x1="230" y1="82" x2="130" y2="130" stroke="var(--c-line)" stroke-width="1.6"></line>
+                  <line x1="230" y1="82" x2="350" y2="130" stroke="var(--c-line)" stroke-width="1.6"></line>
+                  <line x1="130" y1="166" x2="86" y2="214" stroke="var(--c-line)" stroke-width="1.6"></line>
+                  <line x1="130" y1="166" x2="176" y2="214" stroke="var(--c-line)" stroke-width="1.6"></line>
+                  <line x1="350" y1="166" x2="300" y2="214" stroke="var(--c-line)" stroke-width="1.6"></line>
+                  <line x1="350" y1="166" x2="404" y2="214" stroke="var(--c-line)" stroke-width="1.6"></line>
+                  <line x1="300" y1="250" x2="256" y2="298" stroke="var(--c-line)" stroke-width="1.6"></line>
+                  <line x1="300" y1="250" x2="344" y2="298" stroke="var(--c-line)" stroke-width="1.6"></line>
+                  <line x1="256" y1="334" x2="226" y2="382" stroke="var(--c-line)" stroke-width="1.6"></line>
+                  <line x1="256" y1="334" x2="288" y2="382" stroke="var(--c-line)" stroke-width="1.6"></line>
+                  <!-- 真实键 -->
+                  <circle cx="230" cy="64" r="22" fill="var(--c-key-bg)" stroke="var(--c-accent)" stroke-width="2.2"></circle>
+                  <text x="230" y="70" class="tx tx-b" text-anchor="middle">k2</text>
+                  <text x="230" y="98" class="tx-sm" text-anchor="middle">0.10</text>
+                  <circle cx="130" cy="148" r="22" fill="var(--c-panel-2)" stroke="var(--c-line)" stroke-width="1.6"></circle>
+                  <text x="130" y="154" class="tx" text-anchor="middle">k1</text>
+                  <text x="130" y="182" class="tx-sm" text-anchor="middle">0.15</text>
+                  <circle cx="350" cy="148" r="22" fill="var(--c-panel-2)" stroke="var(--c-line)" stroke-width="1.6"></circle>
+                  <text x="350" y="154" class="tx" text-anchor="middle">k5</text>
+                  <text x="350" y="182" class="tx-sm" text-anchor="middle">0.20</text>
+                  <circle cx="300" cy="232" r="22" fill="var(--c-panel-2)" stroke="var(--c-line)" stroke-width="1.6"></circle>
+                  <text x="300" y="238" class="tx" text-anchor="middle">k4</text>
+                  <text x="300" y="266" class="tx-sm" text-anchor="middle">0.10</text>
+                  <circle cx="256" cy="316" r="22" fill="var(--c-panel-2)" stroke="var(--c-line)" stroke-width="1.6"></circle>
+                  <text x="256" y="322" class="tx" text-anchor="middle">k3</text>
+                  <text x="256" y="350" class="tx-sm" text-anchor="middle">0.05</text>
+                  <!-- 哑键 -->
+                  <rect x="74" y="214" width="22" height="22" fill="var(--c-panel-2)" stroke="var(--c-line)" stroke-width="1.2"></rect>
+                  <text x="85" y="229" class="tx-sm" text-anchor="middle">d0</text>
+                  <rect x="166" y="214" width="22" height="22" fill="var(--c-panel-2)" stroke="var(--c-line)" stroke-width="1.2"></rect>
+                  <text x="177" y="229" class="tx-sm" text-anchor="middle">d1</text>
+                  <rect x="392" y="214" width="22" height="22" fill="var(--c-panel-2)" stroke="var(--c-line)" stroke-width="1.2"></rect>
+                  <text x="403" y="229" class="tx-sm" text-anchor="middle">d5</text>
+                  <rect x="214" y="382" width="22" height="22" fill="var(--c-panel-2)" stroke="var(--c-line)" stroke-width="1.2"></rect>
+                  <text x="225" y="397" class="tx-sm" text-anchor="middle">d2</text>
+                  <rect x="278" y="382" width="22" height="22" fill="var(--c-panel-2)" stroke="var(--c-line)" stroke-width="1.2"></rect>
+                  <text x="289" y="397" class="tx-sm" text-anchor="middle">d3</text>
+                  <rect x="333" y="298" width="22" height="22" fill="var(--c-panel-2)" stroke="var(--c-line)" stroke-width="1.2"></rect>
+                  <text x="344" y="313" class="tx-sm" text-anchor="middle">d4</text>
+                  <!-- 费用 -->
+                  <text x="60" y="410" class="tx tx-b" fill="var(--c-ok)">费用 = 2.75 → 最优 ✓</text>
+                  <!-- ================= 右树 ================= -->
+                  <line x1="710" y1="82" x2="610" y2="130" stroke="var(--c-line)" stroke-width="1.6"></line>
+                  <line x1="710" y1="82" x2="820" y2="130" stroke="var(--c-line)" stroke-width="1.6"></line>
+                  <line x1="610" y1="166" x2="566" y2="214" stroke="var(--c-line)" stroke-width="1.6"></line>
+                  <line x1="610" y1="166" x2="656" y2="214" stroke="var(--c-line)" stroke-width="1.6"></line>
+                  <line x1="820" y1="166" x2="760" y2="210" stroke="var(--c-line)" stroke-width="1.6"></line>
+                  <line x1="820" y1="166" x2="872" y2="210" stroke="var(--c-line)" stroke-width="1.6"></line>
+                  <line x1="760" y1="254" x2="737" y2="298" stroke="var(--c-line)" stroke-width="1.6"></line>
+                  <line x1="760" y1="254" x2="795" y2="298" stroke="var(--c-line)" stroke-width="1.6"></line>
+                  <line x1="876" y1="254" x2="851" y2="298" stroke="var(--c-line)" stroke-width="1.6"></line>
+                  <line x1="876" y1="254" x2="897" y2="298" stroke="var(--c-line)" stroke-width="1.6"></line>
+                  <circle cx="710" cy="64" r="22" fill="var(--c-key-bg)" stroke="var(--c-accent)" stroke-width="2.2"></circle>
+                  <text x="710" y="70" class="tx tx-b" text-anchor="middle">k2</text>
+                  <text x="710" y="98" class="tx-sm" text-anchor="middle">0.10</text>
+                  <circle cx="610" cy="148" r="22" fill="var(--c-panel-2)" stroke="var(--c-line)" stroke-width="1.6"></circle>
+                  <text x="610" y="154" class="tx" text-anchor="middle">k1</text>
+                  <text x="610" y="182" class="tx-sm" text-anchor="middle">0.15</text>
+                  <circle cx="820" cy="148" r="22" fill="var(--c-panel-2)" stroke="var(--c-line)" stroke-width="1.6"></circle>
+                  <text x="820" y="154" class="tx" text-anchor="middle">k4</text>
+                  <text x="820" y="182" class="tx-sm" text-anchor="middle">0.10</text>
+                  <circle cx="760" cy="232" r="22" fill="var(--c-panel-2)" stroke="var(--c-line)" stroke-width="1.6"></circle>
+                  <text x="760" y="238" class="tx" text-anchor="middle">k3</text>
+                  <text x="760" y="204" class="tx-sm" text-anchor="middle">0.05</text>
+                  <circle cx="876" cy="232" r="22" fill="var(--c-panel-2)" stroke="var(--c-line)" stroke-width="1.6"></circle>
+                  <text x="876" y="238" class="tx" text-anchor="middle">k5</text>
+                  <text x="902" y="238" class="tx-sm" text-anchor="start">0.20</text>
+                  <rect x="554" y="214" width="22" height="22" fill="var(--c-panel-2)" stroke="var(--c-line)" stroke-width="1.2"></rect>
+                  <text x="565" y="229" class="tx-sm" text-anchor="middle">d0</text>
+                  <rect x="646" y="214" width="22" height="22" fill="var(--c-panel-2)" stroke="var(--c-line)" stroke-width="1.2"></rect>
+                  <text x="657" y="229" class="tx-sm" text-anchor="middle">d1</text>
+                  <rect x="726" y="298" width="22" height="22" fill="var(--c-panel-2)" stroke="var(--c-line)" stroke-width="1.2"></rect>
+                  <text x="737" y="313" class="tx-sm" text-anchor="middle">d2</text>
+                  <rect x="790" y="298" width="22" height="22" fill="var(--c-panel-2)" stroke="var(--c-line)" stroke-width="1.2"></rect>
+                  <text x="801" y="313" class="tx-sm" text-anchor="middle">d3</text>
+                  <rect x="846" y="298" width="22" height="22" fill="var(--c-panel-2)" stroke="var(--c-line)" stroke-width="1.2"></rect>
+                  <text x="857" y="313" class="tx-sm" text-anchor="middle">d4</text>
+                  <rect x="890" y="298" width="22" height="22" fill="var(--c-panel-2)" stroke="var(--c-line)" stroke-width="1.2"></rect>
+                  <text x="901" y="313" class="tx-sm" text-anchor="middle">d5</text>
+                  <text x="540" y="410" class="tx tx-b" fill="var(--c-warn)">费用 = 2.80 → 差一点点</text>
+                </svg>
+                <p class="fig-cap">图 7 &nbsp;PPT 第 91 页的两棵候选树：左树 <span class="m">k<sub>2</sub></span> 为根、右子树退化为链 <span class="m">k<sub>5</sub>–k<sub>4</sub>–k<sub>3</sub></span>，费用 2.75；右树把 <span class="m">k<sub>4</sub></span> 提上来做右子树根，费用 2.80</p>
+          
+                <p>把两棵树的期望代价逐项算出来（深度从 0 起算，乘数 = 深度 + 1）：</p>
+          
+                <table class="tbl">
+                  <thead><tr><th></th><th>左树：键深度</th><th>左树贡献</th><th>右树：键深度</th><th>右树贡献</th></tr></thead>
+                  <tbody>
+                    <tr><td><span class="m">k<sub>1</sub></span>（0.15）</td><td>1</td><td class="num">0.15 × 2 = 0.30</td><td>1</td><td class="num">0.15 × 2 = 0.30</td></tr>
+                    <tr><td><span class="m">k<sub>2</sub></span>（0.10）</td><td>0</td><td class="num">0.10 × 1 = 0.10</td><td>0</td><td class="num">0.10 × 1 = 0.10</td></tr>
+                    <tr><td><span class="m">k<sub>3</sub></span>（0.05）</td><td>3</td><td class="num">0.05 × 4 = 0.20</td><td>2</td><td class="num">0.05 × 3 = 0.15</td></tr>
+                    <tr><td><span class="m">k<sub>4</sub></span>（0.10）</td><td>2</td><td class="num">0.10 × 3 = 0.30</td><td>1</td><td class="num">0.10 × 2 = 0.20</td></tr>
+                    <tr><td><span class="m">k<sub>5</sub></span>（0.20）</td><td>1</td><td class="num">0.20 × 2 = 0.40</td><td>2</td><td class="num">0.20 × 3 = 0.60</td></tr>
+                    <tr><td><b>真实键小计</b></td><td>—</td><td class="num"><b>1.30</b></td><td>—</td><td class="num"><b>1.35</b></td></tr>
+                    <tr><td><span class="m">d<sub>0</sub></span>（0.05）</td><td>2</td><td class="num">0.05 × 3 = 0.15</td><td>2</td><td class="num">0.05 × 3 = 0.15</td></tr>
+                    <tr><td><span class="m">d<sub>1</sub></span>（0.10）</td><td>2</td><td class="num">0.10 × 3 = 0.30</td><td>2</td><td class="num">0.10 × 3 = 0.30</td></tr>
+                    <tr><td><span class="m">d<sub>2</sub></span>（0.05）</td><td>4</td><td class="num">0.05 × 5 = 0.25</td><td>3</td><td class="num">0.05 × 4 = 0.20</td></tr>
+                    <tr><td><span class="m">d<sub>3</sub></span>（0.05）</td><td>4</td><td class="num">0.05 × 5 = 0.25</td><td>3</td><td class="num">0.05 × 4 = 0.20</td></tr>
+                    <tr><td><span class="m">d<sub>4</sub></span>（0.05）</td><td>3</td><td class="num">0.05 × 4 = 0.20</td><td>3</td><td class="num">0.05 × 4 = 0.20</td></tr>
+                    <tr><td><span class="m">d<sub>5</sub></span>（0.10）</td><td>2</td><td class="num">0.10 × 3 = 0.30</td><td>3</td><td class="num">0.10 × 4 = 0.40</td></tr>
+                    <tr><td><b>哑键小计</b></td><td>—</td><td class="num"><b>1.45</b></td><td>—</td><td class="num"><b>1.45</b></td></tr>
+                    <tr><td><b>合计 E[T]</b></td><td>—</td><td class="num"><b>2.75</b></td><td>—</td><td class="num"><b>2.80</b></td></tr>
+                  </tbody>
+                </table>
+          
+                <p>两次搜索代价只差 0.05 —— 但足以说明"把高频的 <span class="m">k<sub>5</sub></span>（0.20）放到深度 1"比"把 <span class="m">k<sub>4</sub></span>（0.10）放到深度 1"更划算。这正是 OBST 要自动做出的权衡。</p>
+          
+                <h3 id="sec-obst-h3">7.3 步骤一：最优子结构</h3>
+          
+                <div class="callout key">
+                  <p class="callout-h">最优子结构（PPT 第 92 页）</p>
+                  <p>如果一棵最优二叉搜索树 <span class="m">T</span> 的子树 <span class="m">T'</span> 含有键 <span class="m">k<sub>i</sub>, …, k<sub>j</sub></span>，那么这个子树 <span class="m">T'</span> 肯定是子问题"键 <span class="m">k<sub>i</sub>, …, k<sub>j</sub></span> 和哑键 <span class="m">d<sub>i−1</sub>, …, d<sub>j</sub></span>"的最优解（PPT 注明"请自行证明"，用剪贴法）。</p>
+                  <p><b>解的结构</b>：给定键 <span class="m">k<sub>i</sub>, …, k<sub>j</sub></span>，以 <span class="m">k<sub>r</sub></span>（<span class="m">i ≤ r ≤ j</span>）为根，其左子树包括键 <span class="m">k<sub>i</sub>, …, k<sub>r−1</sub></span>（和哑键 <span class="m">d<sub>i−1</sub>, …, d<sub>r−1</sub></span>），右子树包括键 <span class="m">k<sub>r+1</sub>, …, k<sub>j</sub></span>（和哑键 <span class="m">d<sub>r</sub>, …, d<sub>j</sub></span>）。</p>
+                  <p>对于"包括键 <span class="m">k<sub>i</sub>, …, k<sub>i</sub></span> 和根 <span class="m">k<sub>i</sub></span>"的子树，左子树包括键 <span class="m">k<sub>i</sub>, …, k<sub>i−1</sub></span>（<b>没有键</b>）和哑键 <span class="m">d<sub>i−1</sub></span>。</p>
+                </div>
+          
+                <h3 id="sec-obst-h4">7.4 步骤二：递归式</h3>
+          
+                <p>记 <span class="m">e[i, j]</span> = 搜索一棵包括键 <span class="m">k<sub>i</sub>, …, k<sub>j</sub></span> 的最优二叉搜索树的<b>期望费用</b>，希望找出 <span class="m">e[1, n]</span>。</p>
+          
+                <p>边界（只有哑键 <span class="m">d<sub>i−1</sub></span>）：</p>
+                <p class="formula">e[i, i−1] = q<sub>i−1</sub></p>
+          
+                <p>如果 <span class="m">k<sub>r</sub></span>（<span class="m">i ≤ r ≤ j</span>）是包括键 <span class="m">k<sub>i</sub>, …, k<sub>j</sub></span> 的最优子树的根，并且令</p>
+                <p class="formula">e[i, j] = p<sub>r</sub> + ( e[i, r−1] + w(i, r−1) ) + ( e[r+1, j] + w(r+1, j) ) = e[i, r−1] + e[r+1, j] + w(i, j)</p>
+          
+                <p>其中 <span class="m">w(i, j)</span> 是区间 <span class="m">[i, j]</span> 内所有键与哑键的概率之和，可按</p>
+                <p class="formula">w(i, j) = w(i, j−1) + p<sub>j</sub> + q<sub>j</sub></p>
+          
+                <p><b>迭代计算</b>（PPT 第 94 页问"为什么"）：因为 <span class="m">w(i, j)</span> 只在 <span class="m">w(i, j−1)</span> 上加两项，O(1) 就能算出来，不必每次重新累加（否则会多一层 <span class="m">O(n)</span> 求和，总复杂度升到 <span class="m">O(n<sup>4</sup>)</span>）。于是递归式为：</p>
+          
+                <p class="formula">e[i, j] = min<sub>i ≤ r ≤ j</sub> { e[i, r−1] + e[r+1, j] + w(i, j) } &nbsp;&nbsp;（<span class="m">i ≤ j</span>）</p>
+          
+                <p>用 <span class="m">root[i, j]</span> 记录索引 <span class="m">r</span> —— 它对应 <span class="m">k<sub>r</sub></span> 为最优搜索树的根，该树包括键 <span class="m">k<sub>i</sub>, …, k<sub>j</sub></span>。</p>
+          
+                <h3 id="sec-obst-h5">7.5 OPTIMAL-BST 伪代码 + C++</h3>
+          
+                <div class="code-pair">
+                  <div class="code-col">
+                    <p class="code-h">伪代码（PPT 第 94 页）</p>
+                    <pre class="code"><code>OPTIMAL-BST(p, q, n)                 // n 个真实键，n+1 个哑键
+          1  for i ← 1 to n + 1                // 初始化所有空区间
+          2      e[i, i−1] ← q(i−1)            // 只有哑键 d(i−1)
+          3      w[i, i−1] ← q(i−1)            // 权重也等于 q(i−1)
+          4  for l ← 1 to n                    // 按区间长度 l 递增
+          5      for i ← 1 to n − l + 1        // 区间起点 i
+          6          j ← i + l − 1             // 区间终点 j
+          7          e[i, j] ← ∞               // 先置为正无穷
+          8          w[i, j] ← w[i, j−1] + p(j) + q(j)   // 递推权重
+          9          for r ← i to j            // 枚举根 k(r)
+          10             t ← e[i, r−1] + e[r+1, j] + w[i, j]   // 候选费用
+          11             if t &lt; e[i, j]        // 更小的费用
+          12                 e[i, j] ← t       // 更新最优值
+          13                 root[i, j] ← r    // 记下最优根
+          14 return e and root                 // 返回费用表与根表</code></pre>
+                  </div>
+                  <div class="code-col">
+                    <p class="code-h">C++</p>
+                    <pre class="code cpp"><code>double p5[6] = {0, 0.15, 0.10, 0.05, 0.10, 0.20};     // 5 个键的成功概率
+          double q5[6] = {0.05, 0.10, 0.05, 0.05, 0.05, 0.10};   // 6 个哑键的失败概率
+          double e[7][6], w[7][6];                               // e 存期望费用，w 存区间权重
+          int root[7][6];                                        // root 存最优根的下标
+          
+          void optimalBst(int n) {                       // n 个真实键，n+1 个哑键
+              for (int i = 1; i &lt;= n + 1; ++i) {         // 初始化所有空区间
+                  e[i][i - 1] = q5[i - 1];               // 只有哑键 d(i−1) 的期望费用
+                  w[i][i - 1] = q5[i - 1];               // 只有哑键 d(i−1) 的权重
+              }                                          // 结束空区间初始化
+              for (int l = 1; l &lt;= n; ++l) {             // 按区间长度 l 递增
+                  for (int i = 1; i &lt;= n - l + 1; ++i) { // 区间起点 i
+                      int j = i + l - 1;                 // 区间终点 j
+                      e[i][j] = 1e18;                    // 先置为一个很大的数
+                      w[i][j] = w[i][j - 1] + p5[j] + q5[j];   // O(1) 递推区间权重
+                      for (int r = i; r &lt;= j; ++r) {     // 枚举根 k(r)
+                          double t = e[i][r - 1] + e[r + 1][j] + w[i][j];   // 候选费用
+                          if (t &lt; e[i][j]) {             // 找到更小的费用
+                              e[i][j] = t;               // 更新最优值
+                              root[i][j] = r;            // 记下最优根
+                          }                              // 结束比较
+                      }                                  // 结束根枚举
+                  }                                      // 结束起点枚举
+              }                                          // 结束长度枚举
+          }                                              // 结束 optimalBst</code></pre>
+                  </div>
+                </div>
+          
+                <h3 id="sec-obst-h6">7.6 完整 e 表、w 表与 root 表</h3>
+          
+                <p><b>e 表</b>（行 <span class="m">i</span>、列 <span class="m">j</span>；<span class="m">j = i−1</span> 那一格是只有哑键的边界值 <span class="m">q<sub>i−1</sub></span>，"—"表示该组合无定义）：</p>
+          
+                <table class="tbl">
+                  <thead><tr><th><span class="m">i</span> \\ <span class="m">j</span></th><th class="num">0</th><th class="num">1</th><th class="num">2</th><th class="num">3</th><th class="num">4</th><th class="num">5</th></tr></thead>
+                  <tbody>
+                    <tr><td><b>1</b></td><td class="num">0.05</td><td class="num">0.45</td><td class="num">0.90</td><td class="num">1.25</td><td class="num">1.75</td><td class="num"><b>2.75</b></td></tr>
+                    <tr><td><b>2</b></td><td class="num">—</td><td class="num">0.10</td><td class="num">0.40</td><td class="num">0.70</td><td class="num">1.20</td><td class="num">2.00</td></tr>
+                    <tr><td><b>3</b></td><td class="num">—</td><td class="num">—</td><td class="num">0.05</td><td class="num">0.25</td><td class="num">0.60</td><td class="num">1.30</td></tr>
+                    <tr><td><b>4</b></td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">0.05</td><td class="num">0.30</td><td class="num">0.90</td></tr>
+                    <tr><td><b>5</b></td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">0.05</td><td class="num">0.50</td></tr>
+                    <tr><td><b>6</b></td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">0.10</td></tr>
+                  </tbody>
+                </table>
+          
+                <p><b>w 表</b>（区间权重，<span class="m">w(i, j) = &sum;<sub>l=i..j</sub> p<sub>l</sub> + &sum;<sub>l=i−1..j</sub> q<sub>l</sub></span>）：</p>
+          
+                <table class="tbl">
+                  <thead><tr><th><span class="m">i</span> \\ <span class="m">j</span></th><th class="num">0</th><th class="num">1</th><th class="num">2</th><th class="num">3</th><th class="num">4</th><th class="num">5</th></tr></thead>
+                  <tbody>
+                    <tr><td><b>1</b></td><td class="num">0.05</td><td class="num">0.30</td><td class="num">0.45</td><td class="num">0.55</td><td class="num">0.70</td><td class="num">1.00</td></tr>
+                    <tr><td><b>2</b></td><td class="num">—</td><td class="num">0.10</td><td class="num">0.25</td><td class="num">0.35</td><td class="num">0.50</td><td class="num">0.80</td></tr>
+                    <tr><td><b>3</b></td><td class="num">—</td><td class="num">—</td><td class="num">0.05</td><td class="num">0.15</td><td class="num">0.30</td><td class="num">0.60</td></tr>
+                    <tr><td><b>4</b></td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">0.05</td><td class="num">0.20</td><td class="num">0.50</td></tr>
+                    <tr><td><b>5</b></td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">0.05</td><td class="num">0.35</td></tr>
+                    <tr><td><b>6</b></td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">0.10</td></tr>
+                  </tbody>
+                </table>
+          
+                <p><b>root 表</b>（<span class="m">root[i, j]</span> = 最优根的下标 <span class="m">r</span>）：</p>
+          
+                <table class="tbl">
+                  <thead><tr><th><span class="m">i</span> \\ <span class="m">j</span></th><th class="num">1</th><th class="num">2</th><th class="num">3</th><th class="num">4</th><th class="num">5</th></tr></thead>
+                  <tbody>
+                    <tr><td><b>1</b></td><td class="num">1</td><td class="num">1</td><td class="num">2</td><td class="num">2</td><td class="num"><b>2</b></td></tr>
+                    <tr><td><b>2</b></td><td class="num">—</td><td class="num">2</td><td class="num">2</td><td class="num">2</td><td class="num">4</td></tr>
+                    <tr><td><b>3</b></td><td class="num">—</td><td class="num">—</td><td class="num">3</td><td class="num">4</td><td class="num">5</td></tr>
+                    <tr><td><b>4</b></td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">4</td><td class="num">5</td></tr>
+                    <tr><td><b>5</b></td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">5</td></tr>
+                  </tbody>
+                </table>
+          
+                <p>从 <span class="m">root[1,5] = 2</span> 出发，根是 <span class="m">k<sub>2</sub></span>；左子树 <span class="m">root[1,1] = 1</span> → <span class="m">k<sub>1</sub></span>；右子树 <span class="m">root[3,5] = 5</span> → <span class="m">k<sub>5</sub></span>；<span class="m">root[3,4] = 4</span> → <span class="m">k<sub>4</sub></span>；<span class="m">root[3,3] = 3</span> → <span class="m">k<sub>3</sub></span>。重建出来的正是图 7 左边那棵树，<b><span class="m">e[1,5] = 2.75</span></b>。</p>
+          
+                <div class="callout warn">
+                  <p class="callout-h">关于 <span class="m">e[1,5]</span> 的"并列最优"</p>
+                  <p>在 <span class="m">(1,5)</span> 处，<span class="m">r = 2</span> 给出 <span class="m">e[1,1] + e[3,5] + w(1,5) = 0.45 + 1.30 + 1.00 = 2.75</span>，<span class="m">r = 4</span> 给出 <span class="m">e[1,3] + e[5,5] + w(1,5) = 1.25 + 0.50 + 1.00 = 2.75</span> —— <b>两棵树都是最优的</b>（此时 <span class="m">k<sub>4</sub></span> 为根的那棵也恰好是 2.75）。PPT 与教材取<b>第一个</b>最小的 <span class="m">r</span>（即 <span class="m">r = 2</span>），所以 <span class="m">root[1,5] = 2</span>。若程序用严格的 <span class="m">&lt;</span> 比较且浮点误差方向不同，可能得到 <span class="m">root[1,5] = 4</span>，但<b>费用值仍然是 2.75</b>。</p>
+                </div>
+          
+                <div class="callout">
+                  <p class="callout-h">数值核对说明（已核对 PPT 第 91、94、95 页）</p>
+                  <p>本页三张表都是按 7.4 节的递推式<b>逐格复算</b>得到的，并用 Python 与 C++ 两套独立程序互相验证；PPT 第 91 页的 <span class="m">p/q</span> 表与 <b>2.75 / 2.80</b> 两个费用值、第 94~95 页列出的那组散值（0.05、0.45、0.90、1.25、1.75、2.75、0.10、0.40、0.70、1.20、2.00、0.05、0.25、0.60、1.30、0.05、0.30、0.90、0.05、0.50、0.10）都能逐一对上。</p>
+                  <p>需要提示的是：PPT 里这些数字是以一组<b>独立文本框</b>摆放的，文本抽取时顺序会被打乱，因此<b>任务书里给出的若干"位置"有误</b> —— 例如 <span class="m">e[1,3]</span> 应为 <b>1.25</b>（PPT 上一度对应到 1.30）、<span class="m">e[2,5]</span> 应为 <b>2.00</b>、<span class="m">e[3,5]</span> 应为 <b>1.30</b>、<span class="m">e[2,2]</span> 应为 <b>0.40</b>、<span class="m">e[4,5]</span> 应为 <b>0.90</b>、<span class="m">e[5,5]</span> 应为 <b>0.50</b>。本页以递推式复算结果为准。</p>
+                </div>
+          
+                <h3 id="sec-obst-h7">7.7 复杂度</h3>
+          
+                <ul>
+                  <li><b>时间</b>：三层循环（长度 <span class="m">l</span>、起点 <span class="m">i</span>、根 <span class="m">r</span>），每层 <span class="m">O(n)</span>，共 <b><span class="m">&Theta;(n<sup>3</sup>)</span></b>。关键前提是 <span class="m">w(i,j)</span> 用递推 <span class="m">O(1)</span> 算出。</li>
+                  <li><b>空间</b>：<span class="m">e</span>、<span class="m">w</span>、<span class="m">root</span> 各 <span class="m">(n+1) × (n+1)</span>，共 <b><span class="m">&Theta;(n<sup>2</sup>)</span></b>。</li>
+                  <li>PPT 第 94 页的两个"为什么"：<span class="m">e</span> 表为什么需要 <span class="m">e[1..n+1, 0..n]</span> —— 因为要容纳 <span class="m">e[i, i−1]</span> 这类<b>空区间</b>（<span class="m">i = n+1</span>、<span class="m">j = 0</span>）的边界值；<span class="m">w</span> 为什么要迭代 —— 见 7.4 节。</li>
+                </ul>
+          
+                <div class="callout key">
+                  <p class="callout-h">本节考点</p>
+                  <p>① 定义：<span class="m">n</span> 个有序键 + <span class="m">n+1</span> 个哑键，成功概率 <span class="m">p<sub>i</sub></span>、失败概率 <span class="m">q<sub>i</sub></span>；② 期望代价公式（深度 + 1 加权）；③ 算例最优费用 <b>2.75</b>（另一棵树 2.80）；④ 最优子结构：子树必为相应子问题最优解；⑤ 递推 <span class="m">e[i,i−1] = q<sub>i−1</sub></span>、<span class="m">e[i,j] = min<sub>r</sub>{e[i,r−1]+e[r+1,j]+w(i,j)}</span>、<span class="m">w(i,j) = w(i,j−1)+p<sub>j</sub>+q<sub>j</sub></span>；⑥ 时间 <span class="m">&Theta;(n<sup>3</sup>)</span>、空间 <span class="m">&Theta;(n<sup>2</sup>)</span>，用 <span class="m">root</span> 表重建树。</p>
+                </div>
+        ` },
+      ],
+    },
+    {
+      id: 'sec-extra',
+      heading: "8. 思路扩展与课堂练习",
+      blocks: [
+        { type: 'html', html: `
+          <h3 id="sec-extra-h1">8.1 同一个问题的多种算法：以矩阵链乘法为例</h3>
+          
+                <p>PPT 第 31~33 页把"矩阵链乘法"当成一个练习"算法设计能力"的靶子：同一个问题，可以列出下面这一串解法（不考虑时间复杂度时都能work）：</p>
+          
+                <table class="tbl">
+                  <thead><tr><th>解法</th><th>思路</th><th>为什么（不）采用</th></tr></thead>
+                  <tbody>
+                    <tr><td><b>暴力解法</b></td><td>枚举所有完全括号化方案，逐个计算乘次数</td><td>方案数是 Catalan 数量级（指数），<span class="m">n</span> 稍大就跑不动</td></tr>
+                    <tr><td><b>分治法</b></td><td>递归地在 <span class="m">k</span> 处切开，分别求两段再合并</td><td>子问题<b>重叠</b>（同一个 <span class="m">(i,j)</span> 被反复求解），退化成指数</td></tr>
+                    <tr><td><b>动态规划</b></td><td>按链长递增填 <span class="m">m</span>、<span class="m">s</span> 两张表</td><td><b>采用</b>：<span class="m">&Theta;(n<sup>3</sup>)</span> 时间、<span class="m">&Theta;(n<sup>2</sup>)</span> 空间</td></tr>
+                    <tr><td><b>贪心法</b></td><td>每步选"当前乘法代价最小"的断点</td><td>没有贪心选择性质，局部最优 ≠ 全局最优（PPT 第 32 页用它作反例讨论）</td></tr>
+                    <tr><td><b>Strassen 算法</b></td><td>改写"两个矩阵相乘"这一步，把 8 次子乘降到 7 次</td><td>它优化的是<b>单次矩阵乘法</b>，不解决"括号化顺序"问题；二者可以叠加使用</td></tr>
+                    <tr><td>进化算法 / 机器学习 / 神经网络</td><td>启发式或学习式搜索括号化方案</td><td>PPT 打了问号：没有最优性保证，且对 <span class="m">n = 6</span> 这种规模纯属杀鸡用牛刀</td></tr>
+                  </tbody>
+                </table>
+          
+                <p>结论就是那两句话：<b>用算法分析（时间复杂度、空间复杂度）来回答"为什么不用某个算法"</b>；研究思路上，一边问"同一个算法技术能解决哪些问题"，一边问"同一个问题能用哪些算法"。</p>
+          
+                <h3 id="sec-extra-h2">8.2 课堂练习 1：用动态规划计算斐波那契数列</h3>
+          
+                <p>题目（PPT 第 96 页）：针对斐波那契数列 <span class="m">F(0) = 0</span>、<span class="m">F(1) = 1</span>、<span class="m">F(n) = F(n−1) + F(n−2)</span>，如何使用动态规划法计算 <span class="m">F(n)</span>？请给出算法每个步骤的思想和算法伪代码。</p>
+          
+                <p><b>四个步骤的落地</b>：</p>
+                <ol>
+                  <li><b>刻画结构特征</b>：<span class="m">F(n)</span> 的最优值（这里就是"值"本身）由 <span class="m">F(n−1)</span> 与 <span class="m">F(n−2)</span> 决定 —— 最优子结构；</li>
+                  <li><b>递归定义值</b>：<span class="m">F(n) = F(n−1) + F(n−2)</span>，边界 <span class="m">F(0) = 0</span>、<span class="m">F(1) = 1</span>；</li>
+                  <li><b>计算值</b>：按 <span class="m">i = 2, 3, …, n</span> 递增（逆拓扑序）填表 <span class="m">f[i]</span>；</li>
+                  <li><b>构造解</b>：本题只要求值，第 4 步可省略（若要输出整个数列，表本身就是解）。</li>
+                </ol>
+          
+                <div class="code-pair">
+                  <div class="code-col">
+                    <p class="code-h">伪代码</p>
+                    <pre class="code"><code>FIB-DP(n)                            // 自底向上求 F(n)
+          1  let f[0..n] be a new array         // 建表，f[i] 存 F(i)
+          2  f[0] = 0                           // 边界 F(0) = 0
+          3  if n ≥ 1 then f[1] = 1             // 边界 F(1) = 1
+          4  for i = 2 to n                     // 按规模递增（逆拓扑序）填表
+          5      f[i] = f[i−1] + f[i−2]         // 直接查表，不再递归
+          6  return f[n]                        // 返回 F(n)</code></pre>
+                  </div>
+                  <div class="code-col">
+                    <p class="code-h">C++（滚动数组，空间 O(1)）</p>
+                    <pre class="code cpp"><code>long long fibDp(int n) {                       // 自底向上计算 F(n)
+              if (n == 0) { return 0; }                  // 边界 F(0) = 0
+              if (n == 1) { return 1; }                  // 边界 F(1) = 1
+              long long a = 0, b = 1, t;                 // a = F(i−2)，b = F(i−1)
+              for (int i = 2; i &lt;= n; ++i) {             // 从 i = 2 递推到 i = n
+                  t = a + b;                             // 递推式：F(i) = F(i−1) + F(i−2)
+                  a = b;                                 // 滚动：a 变成 F(i−1)
+                  b = t;                                 // 滚动：b 变成 F(i)
+              }                                          // 结束递推
+              return b;                                  // 返回 F(n)
+          }                                              // 结束 fibDp</code></pre>
+                  </div>
+                </div>
+          
+                <p>前 11 项（可用上面的程序验证，<code>F(20) = 6765</code>）：</p>
+          
+                <table class="tbl">
+                  <thead><tr><th><span class="m">n</span></th><th class="num">0</th><th class="num">1</th><th class="num">2</th><th class="num">3</th><th class="num">4</th><th class="num">5</th><th class="num">6</th><th class="num">7</th><th class="num">8</th><th class="num">9</th><th class="num">10</th></tr></thead>
+                  <tbody>
+                    <tr><td><span class="m">F(n)</span></td><td class="num">0</td><td class="num">1</td><td class="num">1</td><td class="num">2</td><td class="num">3</td><td class="num">5</td><td class="num">8</td><td class="num">13</td><td class="num">21</td><td class="num">34</td><td class="num">55</td></tr>
+                  </tbody>
+                </table>
+          
+                <p><b>为什么这样就快了？</b>朴素递归 <code>FIB(n) = FIB(n−1) + FIB(n−2)</code> 的子问题<b>大量重叠</b>（<span class="m">F(3)</span> 算 2 次、<span class="m">F(2)</span> 算 3 次、<span class="m">F(1)</span> 算 5 次），调用次数按 <span class="m">&Theta;1.618<sup>n</sup></span> 增长（指数）；而不同子问题只有 <span class="m">n+1</span> 个，自底向上填表是 <span class="m">&Theta;(n)</span> 时间、<span class="m">&Theta;(n)</span> 空间，滚动数组后空间降到 <span class="m">&Theta;(1)</span>。</p>
+          
+                <h3 id="sec-extra-h3">8.3 课堂练习 2：给出计算 m[2, 5] 的步骤</h3>
+          
+                <p>题目（PPT 第 96 页第 2 题）。解答步骤（详细算式见 <a href="#sec-matrix">第 4.7 节</a>）：</p>
+          
+                <ol>
+                  <li>确定区间：<span class="m">i = 2</span>、<span class="m">j = 5</span>，链长 <span class="m">L = j − i + 1 = 4</span>，所以 <span class="m">m[2,5]</span> 在 <span class="m">L = 4</span> 那一轮被计算；</li>
+                  <li>需要的前置表项：<span class="m">m[2,2] = 0</span>、<span class="m">m[3,5] = 2500</span>、<span class="m">m[2,3] = 2625</span>、<span class="m">m[4,5] = 1000</span>、<span class="m">m[2,4] = 4375</span>、<span class="m">m[5,5] = 0</span> —— 全部已在 <span class="m">L ≤ 3</span> 时算好；</li>
+                  <li>枚举断点 <span class="m">k = 2, 3, 4</span>，分别得到 <b>13000 / 7125 / 11375</b>；</li>
+                  <li>取最小值 <b><span class="m">m[2,5] = 7125</span></b>，对应 <b><span class="m">k = 3</span></b>，记 <b><span class="m">s[2,5] = 3</span></b>；</li>
+                  <li>若要写方案：<span class="m">s[2,5] = 3</span> ⇒ <span class="m">(A<sub>2</sub>A<sub>3</sub>)(A<sub>4</sub>A<sub>5</sub>)</span>，再对两段分别查 <span class="m">s[2,3] = 2</span>、<span class="m">s[4,5] = 4</span>，都是单矩阵，递归终止。</li>
+                </ol>
+          
+                <div class="callout tip">
+                  <p class="callout-h">答题模板：任何"填某一格"的 DP 题都按这 5 步写</p>
+                  <p>① 说清这一格的 <span class="m">(i, j)</span> 与它所属的"阶段"（链长 / 区间长 / 前缀长度）；② 列出它依赖的<b>已经算好</b>的格子；③ 逐项代入候选值（写算式，不要只写结果）；④ 取 min/max 并写出最优值；⑤ 写出对应的<b>决策表</b>项（<span class="m">s</span> / <span class="m">b</span> / <span class="m">l</span> / <span class="m">root</span>）。</p>
+                </div>
+        ` },
+      ],
+    },
+    {
+      id: 'sec-summary',
+      heading: "9. 小结：五个问题一张表",
+      blocks: [
+        { type: 'html', html: `
+          <h3 id="sec-summary-h1">9.1 五个问题的递归式、复杂度与表格规模</h3>
+          
+                <table class="tbl">
+                  <thead><tr><th>问题</th><th>子问题定义</th><th>递归式</th><th>填表顺序</th><th>时间</th><th>空间</th><th>构造解的表</th></tr></thead>
+                  <tbody>
+                    <tr>
+                      <td><b>钢条切割</b></td>
+                      <td><span class="m">r[j]</span>：长度 <span class="m">j</span> 的最大收益</td>
+                      <td><span class="m">r<sub>j</sub> = max<sub>1≤i≤j</sub>(p<sub>i</sub> + r<sub>j−i</sub>)</span>，<span class="m">r<sub>0</sub>=0</span></td>
+                      <td><span class="m">j = 1 → n</span></td>
+                      <td><span class="m">&Theta;(n<sup>2</sup>)</span></td>
+                      <td><span class="m">&Theta;(n)</span></td>
+                      <td><span class="m">s[j]</span> 首段长度</td>
+                    </tr>
+                    <tr>
+                      <td><b>矩阵链</b></td>
+                      <td><span class="m">m(i,j)</span>：<span class="m">A<sub>i..j</sub></span> 的最少乘次数</td>
+                      <td><span class="m">m(i,j) = min<sub>i≤k&lt;j</sub>{m(i,k)+m(k+1,j)+p<sub>i−1</sub>p<sub>k</sub>p<sub>j</sub>}</span>，<span class="m">m(i,i)=0</span></td>
+                      <td>链长 <span class="m">L = 2 → n</span></td>
+                      <td><span class="m">&Theta;(n<sup>3</sup>)</span></td>
+                      <td><span class="m">&Theta;(n<sup>2</sup>)</span></td>
+                      <td><span class="m">s[i,j]</span> 最优断点</td>
+                    </tr>
+                    <tr>
+                      <td><b>LCS</b></td>
+                      <td><span class="m">c[i,j]</span>：两个前缀的 LCS 长度</td>
+                      <td><span class="m">c[i,j] = c[i−1,j−1]+1</span>（相等）或 <span class="m">max(c[i−1,j], c[i,j−1])</span></td>
+                      <td>行优先 <span class="m">i = 1→m</span>，<span class="m">j = 1→n</span></td>
+                      <td><span class="m">&Theta;(mn)</span></td>
+                      <td><span class="m">&Theta;(mn)</span></td>
+                      <td><span class="m">b[i,j]</span> 回溯箭头</td>
+                    </tr>
+                    <tr>
+                      <td><b>装配线</b></td>
+                      <td><span class="m">f<sub>i</sub>[j]</span>：经 <span class="m">S<sub>i,j</sub></span> 的最快时间</td>
+                      <td><span class="m">f<sub>1</sub>[j] = min(f<sub>1</sub>[j−1]+a<sub>1j</sub>, f<sub>2</sub>[j−1]+t<sub>2,j−1</sub>+a<sub>1j</sub>)</span>（<span class="m">f<sub>2</sub></span> 对称）</td>
+                      <td><span class="m">j = 2 → n</span></td>
+                      <td><span class="m">&Theta;(n)</span></td>
+                      <td><span class="m">&Theta;(n)</span></td>
+                      <td><span class="m">l<sub>i</sub>[j]</span>、<span class="m">l*</span> 前驱线号</td>
+                    </tr>
+                    <tr>
+                      <td><b>OBST</b></td>
+                      <td><span class="m">e[i,j]</span>：区间 <span class="m">[i,j]</span> 的最优期望费用</td>
+                      <td><span class="m">e[i,j] = min<sub>i≤r≤j</sub>{e[i,r−1]+e[r+1,j]+w(i,j)}</span>，<span class="m">e[i,i−1]=q<sub>i−1</sub></span></td>
+                      <td>区间长 <span class="m">l = 1 → n</span></td>
+                      <td><span class="m">&Theta;(n<sup>3</sup>)</span></td>
+                      <td><span class="m">&Theta;(n<sup>2</sup>)</span></td>
+                      <td><span class="m">root[i,j]</span> 子树根</td>
+                    </tr>
+                  </tbody>
+                </table>
+          
+                <h3 id="sec-summary-h2">9.2 一页速记</h3>
+          
+                <div class="callout key">
+                  <p class="callout-h">四个步骤 + 两个要素 + 两种实现</p>
+                  <ol>
+                    <li><b>四步</b>：① 刻画最优解的结构（最优子结构）② 递归定义最优解的值 ③ 计算最优解的值（通常自底向上）④ 利用信息构造最优解；</li>
+                    <li><b>两要素</b>：<b>最优子结构</b>（标志 #1）+ <b>重叠子问题</b>（标志 #2）；另外要检查<b>子问题无关</b>（否则像无权最长路径一样失效）；</li>
+                    <li><b>两种实现</b>：带备忘的自顶向下（用到才算）/ 自底向上（按逆拓扑序全算），二者等价，按"是否所有子问题都要算"来选；</li>
+                    <li><b>实质</b>：分治思想 + 解决冗余 —— 第一次遇到时求解并存表，以后查表。</li>
+                  </ol>
+                </div>
+          
+                <div class="callout tip">
+                  <p class="callout-h">五个问题的"一句话记忆"</p>
+                  <ul>
+                    <li><b>钢条切割</b>：切下第一段 <span class="m">i</span>，剩下 <span class="m">n−i</span> 查表 → <span class="m">r<sub>4</sub> = 10</span>（2+2）；</li>
+                    <li><b>矩阵链</b>：按<b>链长</b>递增填表，断点 <span class="m">k</span> 两边都最优 → <span class="m">m(1,6) = 15125</span>；</li>
+                    <li><b>LCS</b>：末字符相等「左上 + 1」，否则「上、左取大」→ <span class="m">c[7,6] = 4</span>，<code>BCBA</code>；</li>
+                    <li><b>装配线</b>：每站二选一（留下 / 换线）→ <span class="m">f* = 38</span>，路径 1-1 → 2-2 → 1-3 → 2-4 → 2-5 → 1-6；</li>
+                    <li><b>OBST</b>：根 <span class="m">r</span> 左右都最优，权重 <span class="m">w(i,j)</span> 迭代算 → <span class="m">e[1,5] = 2.75</span>。</li>
+                  </ul>
+                </div>
+          
+                <h3 id="sec-summary-h3">9.3 常见错误清单</h3>
+          
+                <table class="tbl">
+                  <thead><tr><th>错误</th><th>正确做法</th></tr></thead>
+                  <tbody>
+                    <tr><td>把 programming 理解成"写程序"</td><td>是<b>表格法</b>（tabular method）</td></tr>
+                    <tr><td>钢条切割写成 <span class="m">r<sub>n</sub> = max(r<sub>i</sub> + r<sub>n−i</sub>)</span> 却只枚举一半</td><td>写 <span class="m">r<sub>n</sub> = max<sub>1≤i≤n</sub>(p<sub>i</sub> + r<sub>n−i</sub>)</span>；两个 <span class="m">r</span> 的版本要枚举全部 <span class="m">n−1</span> 个断点</td></tr>
+                    <tr><td>矩阵链按行优先（<span class="m">i</span> 递增、<span class="m">j</span> 递增）填表</td><td>必须按<b>链长 <span class="m">L</span></b> 递增，否则 <span class="m">m(i,k)</span>、<span class="m">m(k+1,j)</span> 还没算</td></tr>
+                    <tr><td>LCS 的 <span class="m">b[i,j]</span> 平局时随便取</td><td>按 PPT 的规则：相等时走"上"（<span class="m">c[i−1,j] ≥ c[i,j−1]</span>），否则"左"；平局不同会得到不同的 LCS，但长度相同</td></tr>
+                    <tr><td>装配线把 <span class="m">t<sub>2,j−1</sub></span> 写成 <span class="m">t<sub>2,j</sub></span></td><td>换线是从第 <span class="m">j−1</span> 站换到第 <span class="m">j</span> 站，用 <span class="m">t<sub>·,j−1</sub></span></td></tr>
+                    <tr><td>OBST 每次都重新累加 <span class="m">w(i,j)</span></td><td>用 <span class="m">w(i,j) = w(i,j−1) + p<sub>j</sub> + q<sub>j</sub></span> 递推，否则复杂度升到 <span class="m">O(n<sup>4</sup>)</span></td></tr>
+                    <tr><td>见到"最优化"就上 DP</td><td>先检查<b>最优子结构 + 重叠子问题 + 子问题无关</b>，还要看子问题规模是否可接受（<span class="m">n!</span>、<span class="m">2<sup>n</sup></span> 就放弃）</td></tr>
+                  </tbody>
+                </table>
+          
+                <div class="callout key">
+                  <p class="callout-h">全讲一句话总结</p>
+                  <p><b>动态规划 = 把"递归"里重复出现的子问题答案存进一张表，并按逆拓扑序把表填满。</b>五个习题只是同一件事的五种外衣：钢条切割是<b>一维</b>表（按长度），矩阵链与 OBST 是<b>二维区间</b>表（按区间长度），LCS 是<b>二维前缀</b>表（按行列），装配线是<b>两条一维</b>表（按站号）。认准"表怎么定义、按什么顺序填、需要哪张辅助表来构造解"，这一讲就通了。</p>
+                </div>
+        ` },
+      ],
+    },
+    {
+      id: 'sec-quiz',
+      heading: "本节自测（课件配套测验）",
+      blocks: [
+        { type: 'html', html: `
+          <p>下列 6 题取自课程配套测验（动态规划部分），覆盖：钢条切割的方案数与实现方式、LCS 的备忘录与回溯、最优二叉搜索树的状态定义、装配线调度的递推计算。每题给出<b>答案与解析</b>。</p>
+          
+                <h3 id="sec-quiz-h1">一、多项选择题</h3>
+        ` },
+        { type: 'quiz', quiz: {
+          "kind": "multi",
+          "question": "1. 关于钢条切割问题，下列说法正确的有哪些？",
+          "tag": "动态规划 · 原卷 6",
+          "options": [
+            "A. 长度为 n 的钢条有 2<sup>n−1</sup> 种切割方案",
+            "B. 可用带备忘的自顶向下法或自底向上法",
+            "C. 整根钢条不切割可能是最优方案",
+            "D. 课件假设每次切割都有很高成本"
+          ],
+          "answer": "A、B、C",
+          "explanation": "A 对：钢条上有 n−1 个可切位置，每个位置「切 / 不切」⇒ <span class=\"m\">2<sup>n−1</sup></span> 种方案（n=4 时正好 8 种）；B 对：这是 DP 两种等价实现（备忘录自顶向下 / 自底向上，后者按逆拓扑序）；C 对：当 <span class=\"m\">p<sub>n</sub></span> 足够大时不切最优 —— 价格表里 <span class=\"m\">r<sub>10</sub>=30=p<sub>10</sub></span>，n=10 时不切就是最优；<b>D 错</b>：PPT 明确「切割工序本身没有成本支出」，收益只由价格表 <span class=\"m\">p<sub>i</sub></span> 决定。"
+        } },
+        { type: 'quiz', quiz: {
+          "kind": "multi",
+          "question": "2. 关于 LCS 备忘录及解的构造，下列说法正确的有哪些？",
+          "tag": "动态规划 · 原卷 8",
+          "options": [
+            "A. 沿方向表回溯构造解需 O(m+n) 时间",
+            "B. LCS 不具有最优子结构",
+            "C. 备忘录算法时间和空间均为 Θ(mn)",
+            "D. LCS 递归树中存在重叠子问题"
+          ],
+          "answer": "A、C、D",
+          "explanation": "A 对：填完 <span class=\"m\">c</span> 表后从 <span class=\"m\">b[m,n]</span> 沿箭头回溯，每步至少让 i 或 j 减 1，最多 m+n 步，故 <span class=\"m\">O(m+n)</span>；<b>B 错</b>：LCS 的最优子结构定理（三种情形）正是它的 DP 基础；C 对：不同子问题共 <span class=\"m\">mn</span> 个，备忘录每个表项 O(1)，时间空间均 <span class=\"m\">Θ(mn)</span>；D 对：朴素递归树高 m+n、工作量指数级，但真正不同的子问题只有 mn 个 —— 大量重复正是「DP 标志 #2」。"
+        } },
+        { type: 'quiz', quiz: {
+          "kind": "multi",
+          "question": "3. 关于最优二叉搜索树问题，下列说法正确的有哪些？",
+          "tag": "动态规划 · 原卷 11",
+          "options": [
+            "A. 输入键按从小到大排列",
+            "B. root[i][j] 只记录最小费用而不记录根",
+            "C. p 表示成功搜索概率，q 表示不成功搜索概率",
+            "D. e[i, i−1] = q(i−1)"
+          ],
+          "answer": "A、C、D",
+          "explanation": "A 对：键满足 <span class=\"m\">k<sub>1</sub>&lt;k<sub>2</sub>&lt;…&lt;k<sub>n</sub></span>，这是构造 BST 的前提；<b>B 错</b>：最小费用存在 <span class=\"m\">e[i][j]</span> 里，<b>root[i][j] 存的恰恰是取到该最小值的根下标 r</b>（只有存了根才能构造出树）；C 对：<span class=\"m\">p<sub>i</sub></span> 是命中 <span class=\"m\">k<sub>i</sub></span> 的概率、<span class=\"m\">q<sub>i</sub></span> 是落在哑键 <span class=\"m\">d<sub>i</sub></span> 的概率；D 对：区间为空时只剩哑键 <span class=\"m\">d<sub>i−1</sub></span>，代价就是 <span class=\"m\">q<sub>i−1</sub></span>（初始化 <code>e[i][i-1] ← q<sub>i-1</sub></code>）。"
+        } },
+        { type: 'quiz', quiz: {
+          "kind": "multi",
+          "question": "4. 关于装配线调度问题，下列说法正确的有哪些？",
+          "tag": "动态规划 · 原卷 13",
+          "options": [
+            "A. l<sub>i</sub>[j] 可记录最快路线中前一站所在线号",
+            "B. 最快时间为 min(f1[n]+x1, f2[n]+x2)",
+            "C. 蛮力法的时间下界为 Ω(2<sup>n</sup>)",
+            "D. 问题限制制造过程只能使用一条生产线"
+          ],
+          "answer": "A、B、C",
+          "explanation": "A 对：<span class=\"m\">l<sub>1</sub>[j]、l<sub>2</sub>[j]</span> 记录到达 <span class=\"m\">S<sub>i,j</sub></span> 的最快路线来自哪条线，供 <code>PRINT-STATION</code> 回溯；B 对：最后要各自加上下线时间 <span class=\"m\">x<sub>1</sub>、x<sub>2</sub></span> 再取小；C 对：每个工作站都要决定走哪条线，共 <span class=\"m\">2<sup>n</sup></span> 种走法，蛮力是 <span class=\"m\">Ω(2<sup>n</sup>)</span>；<b>D 错</b>：两条线可以互相换线，换线时间 <span class=\"m\">t<sub>i,j</sub></span> 正是为「换线」建模的。"
+        } },
+        { type: 'html', html: `
+          <h3 id="sec-quiz-h2">二、填空题</h3>
+        ` },
+        { type: 'quiz', quiz: {
+          "kind": "fill",
+          "question": "5. 最优二叉搜索树算法中，root[i][j] 记录包含键 k<sub>i</sub> 到 k<sub>j</sub> 的最优子树的 ______。",
+          "tag": "动态规划 · 原卷 18",
+          "answer": "根节点索引 r",
+          "explanation": "（即使 <span class=\"m\">e[i][j]</span> 取到最小值的那个根 <span class=\"m\">k<sub>r</sub></span> 的下标）。分工要分清：<span class=\"m\">e[i][j]</span> 存<b>最小的期望搜索费用</b>（数值），<span class=\"m\">root[i][j]</span> 存<b>取得该最小值的根 k<sub>r</sub> 的下标 r</b>。有了 root 表，才能从 <span class=\"m\">root[1][n]</span> 出发递归地取 <span class=\"m\">(i, r−1)</span> 与 <span class=\"m\">(r+1, j)</span> 还原整棵最优树 —— 这就是「DP 第 4 步：利用计算出的信息构造最优解」。"
+        } },
+        { type: 'quiz', quiz: {
+          "kind": "fill",
+          "question": "6.（计算题）装配线有 3 个工作站，e1=2、e2=3，a1=(4,5,3)、a2=(6,4,5)，换线时间 t1,1=2、t1,2=1、t2,1=1、t2,2=3，下线时间 x1=4、x2=2，则最快总时间为 ______。",
+          "tag": "动态规划 · 原卷 19",
+          "answer": "18",
+          "explanation": "逐站递推（<span class=\"m\">f<sub>i</sub>[j]</span> = 从上线到经过 <span class=\"m\">S<sub>i,j</sub></span> 的最快时间）：\n        <br>① <span class=\"m\">f<sub>1</sub>[1]=e<sub>1</sub>+a<sub>1,1</sub>=2+4=6</span>，<span class=\"m\">f<sub>2</sub>[1]=e<sub>2</sub>+a<sub>2,1</sub>=3+6=9</span>；\n        <br>② <span class=\"m\">f<sub>1</sub>[2]=min(f<sub>1</sub>[1]+a<sub>1,2</sub>, f<sub>2</sub>[1]+t<sub>2,1</sub>+a<sub>1,2</sub>)=min(6+5, 9+1+5)=11</span>，\n        <span class=\"m\">f<sub>2</sub>[2]=min(f<sub>2</sub>[1]+a<sub>2,2</sub>, f<sub>1</sub>[1]+t<sub>1,1</sub>+a<sub>2,2</sub>)=min(9+4, 6+2+4)=12</span>；\n        <br>③ <span class=\"m\">f<sub>1</sub>[3]=min(11+3, 12+3+3)=14</span>，<span class=\"m\">f<sub>2</sub>[3]=min(12+5, 11+1+5)=17</span>；\n        <br>④ <span class=\"m\">f* = min(f<sub>1</sub>[3]+x<sub>1</sub>, f<sub>2</sub>[3]+x<sub>2</sub>)=min(14+4, 17+2)=<b>18</b></span>（走线 1 下线）。\n        <br>即 <span class=\"m\">f<sub>1</sub>=(6,11,14)</span>、<span class=\"m\">f<sub>2</sub>=(9,12,17)</span>，与课件答案一致。注意 <span class=\"m\">t</span> 的下标：从线 2 换到线 1 的 j 站用 <span class=\"m\">t<sub>2,j−1</sub></span>。"
+        } },
+      ],
+    },
+  ],
+};
+
+export default deck;

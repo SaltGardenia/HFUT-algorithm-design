@@ -1,0 +1,10 @@
+node_modules/
+dist/
+*.local
+.DS_Store
+npm-debug.log*
+
+# 课程 PPT 原件仅保留在本地（体积 ~40MB，内容已沉淀进网页；如需入库请移除本行）
+PPT/
+
+__pycache__/
