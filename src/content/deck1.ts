@@ -23,6 +23,7 @@ const deck: DeckData = {
     { id: 'sec-selection', text: "线性时间选择：找第 k 小的元素", level: 2 },
     { id: 'sec-selection-h1', text: "特殊情况：k = 1 或 k = n", level: 3 },
     { id: 'sec-selection-h2', text: "特殊情况：同时找最小值和最大值", level: 3 },
+    { id: 'sec-selection-h2b', text: "特殊情况：输入数据全是整数", level: 3 },
     { id: 'sec-selection-h3', text: "期望线性时间选择：快速选择 QuickSelect", level: 3 },
     { id: 'sec-quicksort', text: "分而治之：快速排序", level: 2 },
     { id: 'sec-quicksort-h1', text: "伪代码与 C++ 实现", level: 3 },
@@ -41,7 +42,18 @@ const deck: DeckData = {
       heading: "四大思维陷阱与四大核心武器",
       blocks: [
         { type: 'html', html: `
-          <p>课程开篇用四个「思维陷阱」点出常见误区，并对应给出四件「核心武器」。这两组是本讲的纲领，考试常以简答形式出现。</p>
+          <p>
+            课程开篇先回答两个「为什么」。<strong>学习路径</strong>：编程基础 → 数据结构 → 相关专业课 → 算法设计；
+            很多同学「听得懂，不会写」，缺的正是设计这一环。<strong>算法的地位</strong>：算法在计算机科学中处于核心位置——
+            程序 = 数据结构 + 算法，数据结构为算法服务。常见的疑问「AI 会不会取代算法设计？」课堂的回答是：
+            AI 是更强大的<strong>实现与检索工具</strong>，但「把现实问题抽象成什么计算模型、如何评价与证明一个方案」仍是人的核心能力，
+            这恰恰是本门课要训练的内容。
+          </p>
+          <p>
+            <strong>优秀的程序员 ≠ 高效的算法设计师</strong>：优秀的程序员能实现复杂功能，而本课程关乎<strong>写代码之前的思考</strong>，
+            目标是完成从「实现者（Coder）」到「设计师（Designer）」的思维跃迁。课程开篇用四个「思维陷阱」点出常见误区，
+            并对应给出四件「核心武器」。这两组是本讲的纲领，考试常以简答形式出现。
+          </p>
           
                 <h3 id="sec-toolbox-h1">四大思维陷阱</h3>
                 <table class="tbl">
@@ -72,6 +84,31 @@ const deck: DeckData = {
                   </tbody>
                 </table>
           
+          <p>陷阱一值得展开看完整的两条路径——它就是「线性时间选择」这道题的正反教材：</p>
+                <table class="tbl">
+                  <thead>
+                    <tr><th>错误路径（Code-First）</th><th>正确路径（Design-First）</th></tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>打开 IDE，写一个双重循环的<strong>冒泡排序</strong>（O(n²)）</td>
+                      <td><strong>思考</strong>：我需要的只是「部分排序」，完全排序做了太多无用功</td>
+                    </tr>
+                    <tr>
+                      <td>排序后取第 <code>arr[length − k]</code> 个元素</td>
+                      <td><strong>搜索范式</strong>：有什么算法能高效解决「选择」问题？→ <strong>QuickSelect，平均 O(n)</strong></td>
+                    </tr>
+                    <tr>
+                      <td>发现效率极低，数组很大时更慢</td>
+                      <td><strong>设计</strong>：写出伪代码，理清 partition 逻辑与递归边界</td>
+                    </tr>
+                    <tr>
+                      <td>推倒重来，陷入焦虑</td>
+                      <td><strong>编码</strong>：把清晰的伪代码翻译成具体语言</td>
+                    </tr>
+                  </tbody>
+                </table>
+
                 <h3 id="sec-toolbox-h2">四大核心武器</h3>
                 <table class="tbl">
                   <thead>
@@ -97,6 +134,22 @@ const deck: DeckData = {
                   </tbody>
                 </table>
           
+                <p>
+                  武器③的分析对象可以先拿<strong>归并排序</strong>热身（分治法）：分解显而易见，解决是递归排序两个子数组，组合是线性时间合并；
+                  对应递归式 <span class="m">T(n) = 2T(n/2) + O(n)</span>，其中 <strong>2 是子问题数目</strong>、<strong>n/2 是子问题规模</strong>、O(n) 是合并代价。
+                </p>
+
+                <div class="callout tip">
+                  <p class="callout-h">武器④配套：课堂推荐的学习资源</p>
+                  <p>
+                    MIT 公开课 6.046J《算法导论》：ocw.mit.edu（2005 秋季版）；
+                    B 站搬运（含字幕）：bilibili.com/video/av58608492；
+                    代码与论文资源：github.com、huggingface.co/papers/trending；
+                    在线工具书（算法百科）：www.huaxiaozhuan.com。
+                    关键不是收藏，而是遇到问题时<strong>能把问题翻译成搜索关键词</strong>。
+                  </p>
+                </div>
+
                 <div class="callout key">
                   <p class="callout-h">考点归纳</p>
                   <p>四个陷阱与四件武器是<strong>一一对应</strong>的：代码先行 → 伪代码；缺乏抽象 → 建模与抽象；重复造轮子 → 资源检索；证明缺失 → 分析与证明。</p>
@@ -121,7 +174,9 @@ const deck: DeckData = {
                 <p>
                   计算思维吸取了一般<strong>数学思维</strong>的解决问题方法、现实世界中巨大复杂系统的设计与评估的一般<strong>工程思维</strong>方法，
                   以及理解复杂性、智能、心理与人类行为的一般<strong>科学思维</strong>方法。它是数学思维与工程思维的互补与融合：
-                  <strong>抽象与实现</strong>。
+                  <strong>抽象与实现</strong>。其中<strong>实验思维（科学思维）</strong>的典型案例是屠呦呦发现青蒿素：
+                  通过控制变量、对比实验验证药效——这正是从「观察」到「结论」的科学方法；计算思维同样强调
+                  「建立在计算过程的能力和限制之上」，由人与机器共同执行。
                 </p>
           
                 <svg class="fig" viewBox="0 0 720 250" role="img" aria-label="计算思维的三种思维融合示意图">
@@ -357,6 +412,13 @@ const deck: DeckData = {
                   <li><strong>成对处理</strong>输入元素：先把一对输入元素相互比较（1 次），再把较小的与当前最小值比较、较大的与当前最大值比较（2 次），即每两个元素共需 3 次比较。总计 <span class="m">3&lfloor;n/2&rfloor;</span> 次。</li>
                 </ol>
                 <p class="formula">成对处理比较次数 = 3&lfloor;n/2&rfloor; &nbsp;&lt;&nbsp; 2n − 2 &nbsp;（n &ge; 2 时）</p>
+
+                <h3 id="sec-selection-h2b">特殊情况：输入数据全是整数</h3>
+                <p>
+                  当输入全是（取值范围有限的）整数时，可以完全绕开「比较」：使用<strong>线性时间排序算法</strong>
+                  （计数排序、基数排序，见第 3 讲）先排好序再取第 <span class="m">k</span> 个，运行时间
+                  <span class="m">Θ(n + k)</span>。也就是说，特殊情形下选择问题可以被排序「顺带」解决，而且代价是线性的。
+                </p>
           
                 <h3 id="sec-selection-h3">期望线性时间选择：快速选择 QuickSelect</h3>
                 <p>
@@ -586,6 +648,17 @@ const deck: DeckData = {
                   划分函数本身只需一次线性扫描与常数次交换，故 <code>PARTITION</code> 的时间为 <span class="m">O(n)</span>。
                   随机化选取基准可以避免「已排序输入」这一最坏实例，把最坏情况的概率降到可忽略。
                 </p>
+
+                <div class="callout tip">
+                  <p class="callout-h">课堂思考（课件练习）</p>
+                  <p>
+                    对数组 <span class="m">5&nbsp;3&nbsp;7&nbsp;4&nbsp;1&nbsp;6</span> 做升序快速排序：
+                    （1）手动写出每一步的执行过程（每次划分后数组的状态）；
+                    （2）针对这些步骤写出对应的伪代码；
+                    （3）思考：<strong>伪代码是否正确怎么验证？</strong>——用循环不变式论证划分的正确性，再用数学归纳法证整体；
+                    （4）思考：<strong>是否可以改进？</strong>——如三数取中选基准、小区间改插入排序、尾递归优化等。
+                  </p>
+                </div>
           
                 <div class="callout key">
                   <p class="callout-h">考点归纳</p>
@@ -898,6 +971,16 @@ const deck: DeckData = {
                   （分治策略、动态规划、贪心法、回溯法、分支限界法），最后是<strong>高级专题</strong>。
                 </p>
           
+                <div class="callout tip">
+                  <p class="callout-h">课堂类比：炒菜的食谱（科研与工程中的四种组合）</p>
+                  <p>
+                    课件用「炒菜」类比研究中的问题—方法组合：<strong>老问题老方法</strong>——已有方法还能在步骤上改进、参数上调优；
+                    <strong>老问题新方法</strong>——同样的食材换个食谱；<strong>新问题老方法</strong>——遇到新食材先套用已有食谱试试；
+                    <strong>新问题新方法</strong>——为新食材发明新炒法。遇到「研究透了的问题」，不妨换个角度（如英文→中文、有监督→半监督/无监督）
+                    把它变成一个新问题。
+                  </p>
+                </div>
+
                 <div class="callout tip">
                   <p class="callout-h">一句话总结</p>
                   <p>

@@ -9,7 +9,7 @@ import { registry } from '../components/demos/registry';
 const EXPECT_SECTIONS: Record<string, number> = {
   deck1: 7,
   deck2: 12,
-  deck3: 14,
+  deck3: 15, // 课程内容补充：新增「0. 算法与计算思维（课件导引）」
   deck4: 8,
   deck5: 8,
   deck6: 13,

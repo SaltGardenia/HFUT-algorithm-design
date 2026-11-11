@@ -1266,6 +1266,11 @@ const deck: DeckData = {
                 </table>
           
                 <p>答案 <b><span class="m">c[7,6] = 4</span></b>。从 <span class="m">b[7,6]</span> 回溯到 <span class="m">b[1,1]</span>、跟着箭头走，需要 <b><span class="m">O(m+n)</span></b> 的时间（PPT 第 72 页）。回溯路径是 <span class="m">(7,6)↑(6,6)↖(5,5)↑(4,5)↖(3,3)↖(2,2)←(2,1)↖</span>，依次输出 <span class="m">A、B、C、B</span>，倒过来正是 <b><code>BCBA</code></b>。</p>
+
+                <div class="callout tip">
+                  <p class="callout-h">思考（PPT 第 70 页）：如何获取<b>所有</b>求解方案？</p>
+                  <p>上面的 <code>b</code> 表每个格只记了"当时选的最优方向"，所以一次回溯只能得到一条方案；而本例 <code>BDAB</code> 也是合法的 LCS。要枚举<b>所有</b>最优方案，回溯时不能只走 <code>b[i,j]</code> 记的那一个方向，而是把<b>所有能达到最大值的分支都走一遍</b>：在 <span class="m">x<sub>i</sub> = y<sub>j</sub></span> 处走左上；在 <span class="m">c[i−1,j] = c[i,j−1]</span>（并列最大）处把"上"和"左"两条路都展开，用 DFS 收集所有到达边界的路径。方案可能不止一个，但每个格最多分两叉，总数仍是有限且可枚举的。</p>
+                </div>
         ` },
         { type: 'demo', name: 'lcs-table', title: "LCS：x = ABCBDAB、y = BDCABA 的 c 表逐行填充与 b 表回溯（18 步）" },
         { type: 'html', html: `

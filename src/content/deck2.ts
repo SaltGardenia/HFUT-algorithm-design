@@ -52,8 +52,22 @@ const deck: DeckData = {
       heading: "一、算法的由来（速览）",
       blocks: [
         { type: 'html', html: `
-          <p>算法不是计算机的产物，而是人类解决计算问题的古老方法；计算机只是让它跑得更快。下面这条时间线只需记住“谁、什么时候、做了什么”。</p>
-          
+          <p><strong>算法就在生活里</strong>：衣食住行的背后全是算法——衣（购物推荐、排产）、食（外卖派单、菜谱步骤）、住（智能家居调度、建筑结构计算）、行（导航最短路径、红绿灯配时）。课程从两个问题出发：</p>
+
+                <ul>
+                  <li><strong>如何设计正确、高效的算法？</strong>——需要掌握算法设计的方法论；</li>
+                  <li><strong>如何判断哪个算法更高效？</strong>——需要分析、比较算法的运行效率。</li>
+                </ul>
+                <p><strong>设计高效算法、分析算法性能，两者交互验证</strong>——这句话就是整门课的主线，也是“设计与分析”并称的原因。</p>
+
+                <div class="callout tip">
+                  <p class="callout-h">课堂引入：1 + 2 + 3 + … + 100 = ?</p>
+                  <p><strong>方法一</strong>（逐个累加）：1 + 2 = 3，3 + 3 = 6，6 + 4 = 10，…，4950 + 100 = 5050，要做 99 次加法；
+                  <strong>方法二</strong>（高斯配对）：(1 + 100) × 50 = 5050，一步出结果。“数学王子”高斯的这个例子说明：<strong>求解同一问题通常存在多种方法，其效率可能不同</strong>——显然方法二更高效。选方法、造方法，正是算法设计的任务。</p>
+                </div>
+
+                <p>参考书籍：T. H. Cormen, C. E. Leiserson, R. L. Rivest, C. Stein，《算法导论》第三版（Introduction to Algorithms, 3rd ed.）。算法不是计算机的产物，而是人类解决计算问题的古老方法；计算机只是让它跑得更快。下面这条时间线只需记住“谁、什么时候、做了什么”。</p>
+
                 <table class="tbl">
                   <thead>
                     <tr><th>时间</th><th>人物 / 典籍</th><th>贡献</th></tr>
@@ -70,7 +84,7 @@ const deck: DeckData = {
           
                 <div class="callout">
                   <p class="callout-h">图灵奖（ACM，1966 年设立，计算机界的“诺贝尔奖”）</p>
-                  <p>1966～2018 年的 53 年间共产生 70 位得主；其中算法与计算复杂性领域 13 人，占比约 <strong>18.6%</strong>。代表：Donald E. Knuth（1974，<em>算法分析之父</em>）、Robert W. Floyd（1978，最短路径 Floyd 算法）、Stephen A. Cook（1982，NP 完全性）、Richard M. Karp（1985，NP 完全性与网络流算法）、John Hopcroft / Robert Tarjan（1986，最差情况分析、数据结构与图算法）、Juris Hartmanis / Richard E. Stearns（1993）、Manuel Blum（1995，计算复杂性理论）、Andrew Yao 姚期智（2000，伪随机数生成与通信复杂性）、Leslie G. Valiant（2010，#P 完全性与计算学习理论）。其他相关：Tony Hoare（1980，提出快速排序）、Edsger W. Dijkstra（1972，单源最短路径算法）。</p>
+                  <p>1966～2018 年的 53 年间共产生 70 位得主；其中算法与计算复杂性领域 13 人，占比约 <strong>18.6%</strong>。代表：Donald E. Knuth（1974，<em>算法分析之父</em>）、Dana S. Scott / Michael O. Rabin（1976，非确定自动机；Rabin 还有素数判定随机算法）、Robert W. Floyd（1978，最短路径 Floyd 算法）、Stephen A. Cook（1982，NP 完全性）、Richard M. Karp（1985，NP 完全性与网络流算法）、John Hopcroft（1986，最差情况分析、数据结构与算法）/ Robert Tarjan（1986，数据结构与图算法）、Juris Hartmanis / Richard E. Stearns（1993，计算复杂性理论）、Manuel Blum（1995，计算复杂性理论）、Andrew Yao 姚期智（2000，伪随机数生成与通信复杂性）、Leslie G. Valiant（2010，#P 完全性与计算学习理论）。其他相关：Tony Hoare（1980，霍尔逻辑；提出快速排序）、Edsger W. Dijkstra（1972，ALGOL 之父；单源最短路径 Dijkstra 算法）。</p>
                 </div>
         ` },
       ],
