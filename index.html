@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>总目录 · 算法复习手册</title>
+<link rel="stylesheet" href="assets/handbook.css">
+</head>
+<body>
+<header class="topbar">
+  <button class="nav-toggle" type="button" aria-controls="sidebar" aria-expanded="true">☰ 目录</button>
+  <span class="topbar-title">算法复习手册</span>
+  <span class="topbar-sub">总目录 · 核心考点速览</span>
+</header>
+
+<div class="layout">
+  <nav class="sidebar" id="sidebar" aria-label="全站目录">
+    <p class="sidebar-h">全站导航</p>
+    <ul class="site-nav">
+      <li><a href="index.html" class="active" aria-current="page">总目录</a></li>
+      <li><a href="deck1.html">L1 · 绪论与设计思维</a></li>
+      <li><a href="deck2.html">L1 · 算法基础与分析</a></li>
+      <li><a href="deck3.html">L2 · 算法分析基础</a></li>
+      <li><a href="deck4.html">L3 · 线性时间排序</a></li>
+      <li><a href="deck5.html">L4 · 线性时间选择</a></li>
+      <li><a href="deck6.html">L5 · 递归与分治</a></li>
+      <li><a href="deck7.html">L6 · 动态规划</a></li>
+      <li><a href="deck8.html">L7 · 贪心法</a></li>
+    </ul>
+    <p class="sidebar-h">本页内容</p>
+    <ul class="toc" id="page-toc"></ul>
+  </nav>
+
+  <main class="content" id="content">
+    <h1>算法设计与分析 · 复习手册</h1>
+    <p class="lede">
+      依据课程八份 PPT 整理的核心考点手册。每个算法都配 <strong>伪代码 + C++ 双栏逐行注释</strong>、
+      <strong>可交互的执行过程动画</strong>与<strong>矢量图</strong>，可直接离线打开，也可打印成 PDF。
+    </p>
+
+    <section id="sec-map">
+      <h2>八讲内容地图</h2>
+      <p>八份 PPT 按「为什么学 → 是什么 → 怎么分析 → 怎么突破下界 → 四大设计策略」递进，复习时建议按此顺序推进。</p>
+
+      <div class="card-grid">
+        <a class="card" href="deck1.html">
+          <h3>第 1 讲 · 绪论与算法设计思维</h3>
+          <p>
+            从 Coder 到 Designer 的思维跃迁。四大思维陷阱、四大核心武器、计算思维；
+            辗转相除法、线性时间选择、快速排序分治与 partition；
+            抽象建模三例（地图染色 / 素数环 / 传教士与野人）。
+          </p>
+        </a>
+        <a class="card" href="deck2.html">
+          <h3>第 1 讲 · 算法基础与分析原则</h3>
+          <p>
+            算法的由来与定义、三大性质（有穷性 / 确定性 / 可行性）、三种表示法对比；
+            插入排序与选择排序全过程；算法分析三原则；渐近记号 Θ / O / Ω 与时间复杂度。
+          </p>
+        </a>
+        <a class="card" href="deck3.html">
+          <h3>第 2 讲 · 算法分析基础</h3>
+          <p>
+            渐近记号的严格定义与五种记号（Θ / O / Ω / o / ω）、性质与极限比较法；
+            求解递归式三法：代换法、递归树、主方法；循环不变式与正确性证明。
+          </p>
+        </a>
+        <a class="card" href="deck4.html">
+          <h3>第 3 讲 · 线性时间排序</h3>
+          <p>
+            用决策树模型证明<strong>比较排序的下界 Ω(n lg n)</strong>；
+            逆序数与「相邻交换」排序的 Ω(N²) 下界，解释希尔排序为何能突破；
+            计数排序（Θ(n+k)、稳定）与基数排序（LSD、正确性证明）。
+          </p>
+        </a>
+        <a class="card" href="deck5.html">
+          <h3>第 4 讲 · 线性时间选择</h3>
+          <p>
+            找第 k 小元素：特殊情形（同时求最大最小 3⌊n/2⌋ 次比较）、五种解法层次；
+            快速排序三种情况分析；<strong>RANDOMIZED-SELECT</strong>（只递归一边，期望 Θ(n)）与
+            其期望分析；<strong>最坏情况线性时间选择 BFPRT</strong>（中位数的中位数，T(n) ≤ T(n/5)+T(7n/10)+O(n)）。
+          </p>
+        </a>
+        <a class="card" href="deck6.html">
+          <h3>第 5 讲 · 递归与分治法</h3>
+          <p>
+            递归两要素（边界条件+递归方程）与优缺点；分治基本思想、四个适用条件、三步骤；
+            求幂、Hanoi、归并排序、二分查找、硬币问题、整数划分、矩阵相乘与 <strong>Strassen</strong>、VLSI 布局。
+          </p>
+        </a>
+        <a class="card" href="deck7.html">
+          <h3>第 6 讲 · 动态规划</h3>
+          <p>
+            表格法而非「写程序」；四步设计法、两要素（最优子结构 + 重叠子问题）、备忘 vs 自底向上；
+            <strong>五个经典问题</strong>：钢条切割、矩阵链乘法、LCS、装配线调度、最优二叉搜索树。
+          </p>
+        </a>
+        <a class="card" href="deck8.html">
+          <h3>第 7 讲 · 贪心法</h3>
+          <p>
+            贪心两要素与与 DP 的差别；<strong>MST 的最优子结构与贪心选择定理</strong>（剪切粘贴证明）与 Prim；
+            活动选择（最早结束）、<strong>哈夫曼编码</strong>（前缀码、贪心合并）；
+            贪心失效的反例：顶点覆盖、0-1 背包（vs 分数背包）。
+          </p>
+        </a>
+      </div>
+    </section>
+
+    <section id="sec-cheatsheet">
+      <h2>考点速查表</h2>
+      <p>把最容易考、最容易记混的结论集中在这里，串讲前一天过一遍即可。</p>
+
+      <h3>一、算法的三大性质</h3>
+      <table class="tbl">
+        <thead>
+          <tr><th>性质</th><th>含义</th><th>PPT 反例</th><th>正例（选择排序）</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>有穷性<br><span class="tx-sm">Finiteness</span></td>
+            <td>算法必须在有限个计算步骤后终止</td>
+            <td>给定输入数组，不断交换首尾元素的位置（动作序列没有终结）</td>
+            <td>遍历次数至多与数组元素个数相同</td>
+          </tr>
+          <tr>
+            <td>确定性<br><span class="tx-sm">Definiteness</span></td>
+            <td>算法必须是没有歧义的，每个步骤都是确定的</td>
+            <td>对于给定输入数组，交换两个数的位置（没有具体指明是哪两个数）</td>
+            <td>第 1 次遍历找最小、第 2 次找次小 …… 第 <span class="m">n</span> 次找第 <span class="m">n</span> 小</td>
+          </tr>
+          <tr>
+            <td>可行性<br><span class="tx-sm">Effectiveness</span></td>
+            <td>可以机械地一步一步执行基本操作步骤</td>
+            <td>将大元素放数组后部、小元素放数组前部（描述含糊，不可拆解为基本操作步骤）</td>
+            <td>算法可一步步地执行完成</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>二、算法分析的三条原则</h3>
+      <ol>
+        <li><strong>独立于机器</strong>：机器运算速度影响运行时间，跨机器比较不公平（PPT 例：天河三号百亿亿次/秒跑插入排序 vs 个人电脑十亿次/秒跑选择排序 → 无法公平比较）。</li>
+        <li><strong>归纳基本操作、代价统一为 1</strong>：算术运算 <code>+ − × ÷</code> 与赋值比较 <code>≔ &gt; &lt; =</code>，假设基本操作代价均为 1。</li>
+        <li><strong>分析最坏情况</strong>：统一机器性能后，运行时间只依赖<strong>问题输入规模 <span class="m">n</span></strong> 与<strong>具体实例</strong>；最好情况不常出现、不具普遍性，一般情况分析难度大，故常用最坏情况分析。</li>
+      </ol>
+      <p class="formula">算法运行时间仅依赖于问题输入规模 n，表示为 T(n)</p>
+
+      <h3>三、五种渐近记号</h3>
+      <table class="tbl">
+        <thead>
+          <tr><th>记号</th><th>名称</th><th>严格定义</th><th>与实数比较类比</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="num">Θ(g(n))</td><td>渐近紧确界</td>
+            <td>&exist; c<sub>1</sub>, c<sub>2</sub>, n<sub>0</sub> &gt; 0，&forall; n &ge; n<sub>0</sub>：0 &le; c<sub>1</sub>g(n) &le; f(n) &le; c<sub>2</sub>g(n)</td>
+            <td>f = Θ(g) &asymp; a = b</td>
+          </tr>
+          <tr>
+            <td class="num">O(g(n))</td><td>渐近上界</td>
+            <td>&exist; c, n<sub>0</sub> &gt; 0，&forall; n &ge; n<sub>0</sub>：0 &le; f(n) &le; cg(n)</td>
+            <td>f = O(g) &asymp; a &le; b</td>
+          </tr>
+          <tr>
+            <td class="num">Ω(g(n))</td><td>渐近下界</td>
+            <td>&exist; c, n<sub>0</sub> &gt; 0，&forall; n &ge; n<sub>0</sub>：0 &le; cg(n) &le; f(n)</td>
+            <td>f = Ω(g) &asymp; a &ge; b</td>
+          </tr>
+          <tr>
+            <td class="num">o(g(n))</td><td>渐近非紧上界</td>
+            <td>&forall; c &gt; 0，&exist; n<sub>0</sub>，&forall; n &ge; n<sub>0</sub>：0 &le; f(n) &lt; cg(n)</td>
+            <td>f = o(g) &asymp; a &lt; b</td>
+          </tr>
+          <tr>
+            <td class="num">ω(g(n))</td><td>渐近非紧下界</td>
+            <td>&forall; c &gt; 0，&exist; n<sub>0</sub>，&forall; n &ge; n<sub>0</sub>：0 &le; cg(n) &lt; f(n)</td>
+            <td>f = ω(g) &asymp; a &gt; b</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="callout key">
+        <p class="callout-h">必背等价关系</p>
+        <p><span class="m">f(n) = Θ(g(n))</span> &nbsp;当且仅当&nbsp; <span class="m">f(n) = O(g(n))</span> 且 <span class="m">f(n) = Ω(g(n))</span>。</p>
+        <p>因为 <span class="m">Θ(g(n)) &sube; O(g(n))</span>，所以 Θ 强于 O：<span class="m">f(n)=Θ(g(n)) &rArr; f(n)=O(g(n))</span>。</p>
+        <p>算法运行时间称为<strong>时间复杂度</strong>，通常用渐近记号 <strong>O</strong> 表示。</p>
+      </div>
+
+      <h3>四、求解递归式三法</h3>
+      <table class="tbl">
+        <thead>
+          <tr><th>方法</th><th>核心思路</th><th>适用与提醒</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>代换法</td>
+            <td>① 猜测解的形式 → ② 通过推导验证 → ③ 解出常数</td>
+            <td>最通用；必须处理初始条件；猜测不准会卡住（如直接猜 O(n²) 失败，需<strong>减去低阶项加强假设</strong>）</td>
+          </tr>
+          <tr>
+            <td>递归树</td>
+            <td>对递归执行的花费建模，逐层求和</td>
+            <td>可为代换法提供<strong>猜想</strong>；不太可靠但有启发作用</td>
+          </tr>
+          <tr>
+            <td>主方法</td>
+            <td>比较 <span class="m">f(n)</span> 与 <span class="m">n<sup>log<sub>b</sub>a</sup></span></td>
+            <td>仅适用于 <span class="m">T(n) = aT(n/b) + f(n)</span>（a &ge; 1, b &gt; 1）；情况 3 还需正则化条件</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>五、主方法三种情况</h3>
+      <p>适用于 <span class="m">T(n) = aT(n/b) + f(n)</span>，其中 <span class="m">a &ge; 1</span>、<span class="m">b &gt; 1</span> 为常数，<span class="m">f(n)</span> 是渐近正函数。比较基准是 <span class="m">n<sup>log<sub>b</sub>a</sup></span>。</p>
+      <table class="tbl">
+        <thead>
+          <tr><th>情况</th><th>条件</th><th>递归树加权分布</th><th>结论</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>情况 1</td>
+            <td>f(n) = O(n<sup>log<sub>b</sub>a − ε</sup>)，常量 ε &gt; 0<br>（f 比基准增长<strong>慢</strong>，慢 n<sup>ε</sup> 倍）</td>
+            <td>从根到叶子几何级数<strong>增长</strong>，叶子仅占常量部分</td>
+            <td>T(n) = Θ(n<sup>log<sub>b</sub>a</sup>)</td>
+          </tr>
+          <tr>
+            <td>情况 2</td>
+            <td>f(n) = Θ(n<sup>log<sub>b</sub>a</sup>)</td>
+            <td><strong>每层加权基本相同</strong></td>
+            <td>T(n) = Θ(n<sup>log<sub>b</sub>a</sup> lg n) = Θ(f(n) lg n)</td>
+          </tr>
+          <tr>
+            <td>情况 3</td>
+            <td>f(n) = Ω(n<sup>log<sub>b</sub>a + ε</sup>)，常量 ε &gt; 0<br>（f 比基准增长<strong>快</strong>）<br><strong>且</strong> f(n) 满足正则化条件 a·f(n/b) &le; c·f(n)，常量 c &lt; 1</td>
+            <td>从根到叶子几何级数<strong>递减</strong>，根仅占常量部分</td>
+            <td>T(n) = Θ(f(n))</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>六、两个排序算法的复杂度（PPT 逐行计数结论）</h3>
+      <table class="tbl">
+        <thead>
+          <tr><th>算法</th><th>最好情况</th><th>最坏情况</th><th>逐行计数结果</th><th>渐近</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>插入排序</td>
+            <td>数组已升序：比较 1+1+…+1 = n − 1 次</td>
+            <td>数组已降序：比较 1+2+…+(n−1) = n(n−1)/2 次</td>
+            <td class="num">T(n) = 3n²/2 + 7n/2 − 4</td>
+            <td class="num">Θ(n²)</td>
+          </tr>
+          <tr>
+            <td>选择排序</td>
+            <td>—</td>
+            <td>比较次数固定为 n(n−1)/2 次（与输入实例无关）</td>
+            <td class="num">T(n) = 2n² + 3n − 4</td>
+            <td class="num">Θ(n²)</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="callout tip">
+        <p class="callout-h">为什么可以忽略系数与低阶项</p>
+        <p>
+          <span class="m">3n²/2 + 7n/2 − 4</span> 与 <span class="m">2n² + 3n − 4</span> 在 <span class="m">n</span> 充分大时相差不大，
+          原因是两函数的<strong>最高阶项相同</strong>。渐近分析的本质就是忽略 <span class="m">T(n)</span> 的系数与低阶项，只关注高阶项，用记号 Θ 表示。
+        </p>
+      </div>
+    </section>
+
+    <section id="sec-linear">
+      <h2>七、比较排序的下界与线性时间排序</h2>
+      <p>这一组结论回答「O(n log n) 是不是极限」，以及「怎么突破它」。</p>
+
+      <h3>决策树模型</h3>
+      <ul>
+        <li><strong>内部节点</strong>标为 <span class="m">i:j</span>（<span class="m">i, j &isin; {1, 2, …, n}</span>），对应一次比较操作。</li>
+        <li><strong>左子树</strong>表示当 <span class="m">a<sub>i</sub> &le; a<sub>j</sub></span> 时的比较序列；<strong>右子树</strong>表示当 <span class="m">a<sub>i</sub> &ge; a<sub>j</sub></span> 时的比较序列。</li>
+        <li><strong>叶子节点</strong>对应一个排列。</li>
+        <li><strong>算法的运行时间 = 路径的长度</strong>；<strong>最坏运行时间 = 树的高度</strong>。</li>
+      </ul>
+
+      <h3>比较排序的下界（必考证明）</h3>
+      <p class="formula">定理：对 n 个项排序的任何决策树的高度是 &Omega;(n lg n)</p>
+      <table class="tbl">
+        <thead>
+          <tr><th>步骤</th><th>不等式</th><th>依据</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>①</td><td class="num">L &ge; n!</td><td>n 个元素有 n! 种可能的排列，每种排列至少对应一个可达叶子</td></tr>
+          <tr><td>②</td><td class="num">L &le; 2<sup>h</sup></td><td>高度 h 的二叉树最多有 2<sup>h</sup> 个叶子</td></tr>
+          <tr><td>③</td><td class="num">n! &le; 2<sup>h</sup> &rArr; h &ge; lg(n!)</td><td>由 ①② 联立，两边取 lg（lg 单调递增）</td></tr>
+          <tr><td>④</td><td class="num">h &ge; lg(n!) &ge; lg((n/e)<sup>n</sup>) = n lg n − n lg e = &Omega;(n lg n)</td><td>Stirling 公式 <span class="m">n! &asymp; &radic;(2&pi;n)&middot;(n/e)<sup>n</sup></span> 放缩</td></tr>
+        </tbody>
+      </table>
+      <div class="callout key">
+        <p class="callout-h">推论</p>
+        <p>
+          在最差情况下，任何一种<strong>比较排序</strong>至少需要 <span class="m">&Omega;(n lg n)</span> 次比较操作。
+          这是比较操作所能获得的信息有限所导致的。从这个意义上讲，<strong>堆排序和归并排序是渐进最佳的比较排序算法</strong>。
+        </p>
+        <p>信息论视角：n! 种可能输出需要至少 lg(n!) 位信息，而每次二值比较最多提供 1 位信息。</p>
+      </div>
+
+      <h3>相邻交换的下界与希尔排序为何能突破</h3>
+      <p class="formula">定理：通过交换相邻元素进行排序的任何算法平均需要 &Omega;(N²) 时间</p>
+      <ul>
+        <li><strong>排序的本质就是消除逆序数</strong>；对随机数组，逆序数是 <span class="m">O(N²)</span> 的。</li>
+        <li>用「交换<strong>相邻</strong>元素」消除逆序，<strong>每次正好只消除一个</strong>，因此必须执行 <span class="m">O(N²)</span> 次交换 —— 这就是冒泡、插入等算法只能到平方级别的原因。</li>
+        <li>要突破该下界，必须<strong>交换相隔比较远的元素，使一次交换能消除一个以上的逆序</strong>。<strong>希尔、快排、堆排</strong>都是交换比较远的元素。</li>
+      </ul>
+
+      <h3>三种排序的复杂度对照</h3>
+      <table class="tbl">
+        <thead>
+          <tr><th>算法</th><th>是否比较排序</th><th>时间复杂度</th><th>空间</th><th>稳定性</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>堆排序 / 归并排序</td><td>是</td><td class="num">Θ(n lg n)</td><td class="num">归并 O(n)</td><td>归并稳定、堆排不稳定</td></tr>
+          <tr><td>计数排序</td><td><strong>否</strong>（各项之间根本不比较）</td><td class="num">Θ(n + k)</td><td class="num">O(k)</td><td><strong>稳定</strong></td></tr>
+          <tr><td>基数排序</td><td><strong>否</strong>（逐位用稳定排序）</td><td class="num">Θ(d(n + k))</td><td class="num">O(n + k)</td><td><strong>稳定</strong></td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout warn">
+        <p class="callout-h">破解「矛盾」：计数排序 Θ(n+k) 与排序下界 Ω(n lg n) 冲突吗？</p>
+        <p>
+          <strong>不冲突</strong>。下界 <span class="m">&Omega;(n lg n)</span> 只约束<strong>比较排序</strong>；
+          计数排序<strong>不是比较排序</strong> —— 实际上各项之间根本没有比较。这正是它能达到线性时间的根本原因。
+        </p>
+        <p>另外计数排序是<strong>牺牲空间换时间</strong>：当 <span class="m">O(k) &gt; O(n log n)</span> 时，其效率反而不如基于比较的排序。</p>
+      </div>
+
+      <h3>计数排序的四段循环</h3>
+      <div class="code-pair">
+        <div class="code-col">
+          <p class="code-h">伪代码（PPT 原文）</p>
+          <pre class="code"><code>for i←1 to k                      // 循环1：清空计数数组
+    do C[i] ← 0                   // 每个桶的计数置 0
+for j←1 to n                      // 循环2：统计每个值出现的次数
+    do C[A[j]] ← C[A[j]] + 1      // C[i] = |{key = i}|
+for i←2 to k                      // 循环3：累加，得到前缀和
+    do C[i] ← C[i] + C[i–1]       // C[i] = |{key ≤ i}|
+for j←n downto 1                  // 循环4：反向填充（n downto 1 保证稳定性）
+    do B[C[A[j]]] ← A[j]          // 把 A[j] 放到它该在的位置
+       C[A[j]] ← C[A[j]] – 1      // 该位置的计数减 1
+</code></pre>
+        </div>
+        <div class="code-col">
+          <p class="code-h">运行时间（逐行代价）</p>
+          <pre class="code"><code>循环1  for i←1 to k        Θ(k)   // 与值域 k 成正比
+循环2  for j←1 to n        Θ(n)   // 与元素个数 n 成正比
+循环3  for i←2 to k        Θ(k)   // 与值域 k 成正比
+循环4  for j←n downto 1    Θ(n)   // 与元素个数 n 成正比
+------------------------------------  // 四段循环相加
+合计                       Θ(n + k)  // 总时间复杂度
+
+若 k = O(n)，则 T(n) = Θ(n)     // 线性时间
+空间复杂度：O(k)                 // 额外需要一个长度为 k 的数组
+</code></pre>
+        </div>
+      </div>
+      <p>
+        <strong>PPT 算例</strong>：<span class="m">A = &lang;4, 1, 3, 4, 3&rang;</span>（n = 5，k = 4）。
+        循环2 结束后 <span class="m">C = [1, 0, 2, 2]</span>；循环3 累加后 <span class="m">C = [1, 1, 3, 5]</span>；
+        循环4 反向填充后 <span class="m">B = &lang;1, 3, 3, 4, 4&rang;</span>，此时 <span class="m">C = [0, 1, 1, 3]</span>。
+        完整逐帧过程见<a href="deck4.html">「L3 · 线性时间排序」</a>页的动画。
+      </p>
+
+      <h3>基数排序（LSD）</h3>
+      <ul>
+        <li><strong>思想</strong>：把整数按位数切割成不同的数字，然后<strong>按每个位数分别比较</strong>（元素级别的分治法）。基数（radix）就是「进制」，所谓「每一位」是该进制下的位。</li>
+        <li><strong>做法</strong>：① 所有待比较数值统一为同样数位长度，短的补零；② <strong>从最低位开始</strong>依次排序。最低位排到最高位后，整个数列有序。</li>
+        <li><strong>为什么先低后高</strong>：越是后排的数位对结果次序影响越大，高位比低位影响大。必须用<strong>稳定</strong>的排序作为子过程。</li>
+        <li><strong>正确性（归纳）</strong>：假定低 t−1 位已排好，按第 t 位排序后，只需证任意两数相对位置正确 —— 第 t 位<strong>相同</strong>者靠稳定性保持原序，第 t 位<strong>不同</strong>者按该位排定。</li>
+        <li><strong>适用与缺点</strong>：适合取值很大的数、也可排字符串；缺点是<strong>不呈现时空局部性</strong>（按位排序时元素位置可能剧烈变动，无法利用缓存），且中间用的计数排序<strong>不是原地排序</strong>。</li>
+      </ul>
+      <p>
+        <strong>PPT 算例</strong>：<span class="m">329, 457, 657, 839, 436, 720, 355</span>
+        经个位 → 十位 → 百位三趟后得到 <span class="m">329, 355, 436, 457, 657, 720, 839</span>。
+      </p>
+    </section>
+
+    <section id="sec-select">
+      <h2>八、线性时间选择（第 4 讲）速查</h2>
+      <p>核心命题：<strong>找第 k 小元素不必排序</strong>——每次划分后只递归「目标所在的那一侧」，就能做到线性时间。</p>
+      <table class="tbl">
+        <thead>
+          <tr><th>情形</th><th>方法</th><th>代价</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>k = 1 或 k = n</td><td>一次线性扫描，记录当前最小/最大</td><td class="num">n − 1 次比较</td></tr>
+          <tr><td>同时找最小与最大（分别独立）</td><td>两次扫描</td><td class="num">2n − 2 次比较</td></tr>
+          <tr><td>同时找最小与最大（成对处理）</td><td>先对每对元素互比（1 次），较小者比当前最小、较大者比当前最大（2 次）</td><td class="num">3⌊n/2⌋ 次比较</td></tr>
+        </tbody>
+      </table>
+      <p class="formula">3&lfloor;n/2&rfloor; &lt; 2n − 2　（n &ge; 2）</p>
+
+      <h3>五种解法层次</h3>
+      <table class="tbl">
+        <thead>
+          <tr><th>解法</th><th>思路</th><th>复杂度</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>暴力</td><td>对每个元素统计比它小的个数</td><td class="num">O(n²)</td></tr>
+          <tr><td>归并排序</td><td>完全排序后取第 k 个</td><td class="num">O(n lg n)</td></tr>
+          <tr><td>快速排序</td><td>完全排序后取第 k 个</td><td class="num">平均 O(n lg n)</td></tr>
+          <tr><td><strong>RANDOMIZED-SELECT</strong></td><td>随机主元划分，<strong>只递归一边</strong></td><td class="num"><strong>期望 Θ(n)</strong>；最坏 Θ(n²)</td></tr>
+          <tr><td><strong>BFPRT（中位数的中位数）</strong></td><td>确定性选枢轴，保证划分均衡</td><td class="num"><strong>最坏 O(n)</strong></td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout key">
+        <p class="callout-h">两个必背递推式</p>
+        <p><strong>RANDOMIZED-SELECT 期望</strong>：<span class="m">E[T(n)] = (1/n)·&Sigma;<sub>k=0</sub><sup>n−1</sup> E[T(max(k, n−k−1))] + O(n)</span>，
+        用指示器随机变量 <span class="m">E[X<sub>k</sub>] = 1/n</span>，再用代换法证 <span class="m">E[T(n)] = O(n)</span>。关键放大：<span class="m">&Sigma;<sub>k=0</sub><sup>n−1</sup>T(max(k,n−k−1)) &le; (2/n)&Sigma;<sub>k=&lfloor;n/2&rfloor;</sub><sup>n−1</sup>T(k)</span>，且 <span class="m">&Sigma;<sub>k=&lfloor;n/2&rfloor;</sub><sup>n−1</sup>k &le; (3/8)n²</span>。</p>
+        <p><strong>BFPRT 最坏</strong>：<span class="m">T(n) &le; T(n/5) + T(7n/10) + O(n)</span>。因 <span class="m">1/5 + 7/10 = 9/10 &lt; 1</span>，几何级数收敛 ⇒ <span class="m">T(n) = O(n)</span>。</p>
+        <p><strong>为什么 7n/10</strong>：每组 5 个、取中位数后，中位数的中位数 x 至少有 3 个元素/组大于它、3 个小于它；被确定在一侧的元素约 <span class="m">3(&lceil;n/5&rceil;/2 − 2)</span>，故划分后较大子问题规模 ≤ <span class="m">n − 3(&lceil;n/5&rceil;/2 − 2) &asymp; 7n/10</span>。</p>
+      </div>
+
+      <div class="callout tip">
+        <p class="callout-h">延伸</p>
+        <p>把「每 5 个一组」改成「每 7 个一组」是否仍 O(n)？关键在于子问题规模系数之和是否 &lt; 1；每 7 个一组时每列有 4 个元素可确定，划分后规模更小，仍为 O(n)（常数变大）。</p>
+      </div>
+    </section>
+
+    <section id="sec-dc">
+      <h2>九、递归与分治（第 5 讲）速查</h2>
+      <h3>递归与分治要点</h3>
+      <ul>
+        <li><strong>递归函数两个要素</strong>：边界条件（递归出口）+ 递归方程。</li>
+        <li><strong>分治三步骤</strong>：分解（Divide）→ 求解（Conquer，递归）→ 合并（Combine）。</li>
+        <li><strong>四个适用条件</strong>：① 可分解为规模较小的问题；② <strong>子问题相互独立、不含公共子问题</strong>；③ 规模足够小时易解；④ 子问题的解可合并为原问题的解。</li>
+        <li>通用递归式：<span class="m">T(n) = a·T(n/b) + f(n)</span>（a 个子问题，每个规模 n/b，分解+合并代价 f(n)）。</li>
+      </ul>
+
+      <h3>本讲六个例子的递归式与结论</h3>
+      <table class="tbl">
+        <thead>
+          <tr><th>问题</th><th>递归式</th><th>结论</th><th>关键点</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>求幂 x<sup>n</sup></td><td class="num">T(n) = T(n/2) + O(1)</td><td class="num">O(lg n) 次乘法</td><td>偶数 x<sup>n</sup>=(x<sup>n/2</sup>)²，奇数再乘一个 x</td></tr>
+          <tr><td>Hanoi 塔</td><td class="num">T(n) = 2T(n−1) + 1</td><td class="num">2<sup>n</sup> − 1</td><td>先把 n−1 个移到辅助柱，移最大盘，再移 n−1 个</td></tr>
+          <tr><td>归并排序</td><td class="num">T(n) = 2T(n/2) + Θ(n)</td><td class="num">Θ(n lg n)</td><td>合并是线性时间</td></tr>
+          <tr><td>二分查找</td><td class="num">T(n) = T(n/2) + Θ(1)</td><td class="num">Θ(lg n)</td><td>n<sup>log<sub>2</sub>1</sup> = n<sup>0</sup> = 1，属主方法情况 2</td></tr>
+          <tr><td>矩阵相乘（分治）</td><td class="num">T(n) = 8T(n/2) + Θ(n²)</td><td class="num">Θ(n³)</td><td>8 次子矩阵乘，没有改进</td></tr>
+          <tr><td><strong>Strassen</strong></td><td class="num">T(n) = 7T(n/2) + Θ(n²)</td><td class="num">Θ(n<sup>lg7</sup>) ≈ Θ(n<sup>2.81</sup>)</td><td>7 乘 18 加/减；n ≥ 32 时超过普通算法</td></tr>
+        </tbody>
+      </table>
+      <p>
+        <strong>硬币问题（假币较轻，一个天平）</strong>：天平有 3 种结果（左轻 / 右轻 / 平衡），所以<strong>三分</strong>最优，
+        次数为 <span class="m">&lceil;log<sub>3</sub>n&rceil;</span>；二分与顺序搜索都不如三分。
+      </p>
+      <div class="callout key">
+        <p class="callout-h">Strassen 的 7 个乘法（2×2 分块）</p>
+        <p class="formula">
+          P1 = a(f−h)　P2 = (a+b)h　P3 = (c+d)e　P4 = d(g−e)<br>
+          P5 = (a+d)(e+h)　P6 = (b−d)(g+h)　P7 = (a−c)(e+f)<br>
+          r = P5+P4−P2+P6　s = P1+P2　t = P3+P4　u = P5+P1−P3−P7
+        </p>
+        <p>验证 r：<span class="m">(a+d)(e+h) + d(g−e) − (a+b)h + (b−d)(g+h) = ae+bg</span>。注意：<strong>该推导不依赖乘法的交换性</strong>。</p>
+      </div>
+      <p><strong>VLSI 布局</strong>：朴素嵌入面积 <span class="m">Θ(n lg n)</span>（<span class="m">H(n)=H(n/2)+Θ(1)</span>、<span class="m">W(n)=2W(n/2)+Θ(1)</span>）；<strong>H-树</strong>嵌入 <span class="m">L(n)=2L(n/4)+Θ(1)=Θ(&radic;n)</span>，面积 <span class="m">Θ(n)</span>。</p>
+    </section>
+
+    <section id="sec-dp">
+      <h2>十、动态规划（第 6 讲）速查</h2>
+      <p>
+        <strong>Programming 指「表格法」</strong>，不是写程序。DP 与分治都靠「组合子问题的解」，区别是 DP 适用于<strong>子问题重叠</strong>；
+        实质 = 分治思想 + <strong>解决冗余</strong>（每个子问题只解一次、存表复用）。
+      </p>
+
+      <h3>四步设计法（必背）</h3>
+      <ol>
+        <li>刻画最优解的结构特征（<strong>最优子结构</strong>：原问题最优解包含子问题最优解）；</li>
+        <li>递归地定义最优解的值（写出递归式）；</li>
+        <li>计算最优解的值（通常<strong>自底向上</strong>）；</li>
+        <li>利用计算出的信息构造最优解（如 m/s 表、b 箭头、l 数组、root 表）。</li>
+      </ol>
+      <p class="formula">DP 的两个要素：最优子结构 + 重叠子问题</p>
+
+      <h3>五个经典问题对照</h3>
+      <table class="tbl">
+        <thead>
+          <tr><th>问题</th><th>递归式 / 状态转移</th><th>时间复杂度</th><th>空间</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>钢条切割</td>
+            <td class="num">r<sub>n</sub> = max<sub>1&le;i&le;n</sub>(p<sub>i</sub> + r<sub>n−i</sub>)，r<sub>0</sub>=0</td>
+            <td class="num">朴素 O(2<sup>n</sup>) → DP Θ(n²)</td>
+            <td class="num">Θ(n)</td>
+          </tr>
+          <tr>
+            <td>矩阵链乘法</td>
+            <td class="num">m(i,j)=min<sub>i&le;k&lt;j</sub>{m(i,k)+m(k+1,j)+p<sub>i−1</sub>p<sub>k</sub>p<sub>j</sub>}</td>
+            <td class="num">Θ(n³)</td>
+            <td class="num">Θ(n²)</td>
+          </tr>
+          <tr>
+            <td>最长公共子序列</td>
+            <td class="num">x<sub>i</sub>=y<sub>j</sub>: c[i−1,j−1]+1；否则 max(c[i−1,j], c[i,j−1])</td>
+            <td class="num">Θ(mn)</td>
+            <td class="num">Θ(mn)</td>
+          </tr>
+          <tr>
+            <td>装配线调度</td>
+            <td class="num">f<sub>1</sub>[j]=min(f<sub>1</sub>[j−1]+a<sub>1j</sub>, f<sub>2</sub>[j−1]+t<sub>2,j−1</sub>+a<sub>1j</sub>)</td>
+            <td class="num">Θ(n)</td>
+            <td class="num">Θ(n)</td>
+          </tr>
+          <tr>
+            <td>最优二叉搜索树</td>
+            <td class="num">e[i,j]=min<sub>i&le;r&le;j</sub>{e[i,r−1]+e[r+1,j]+w(i,j)}，w(i,j)=w(i,j−1)+p<sub>j</sub>+q<sub>j</sub></td>
+            <td class="num">Θ(n³)</td>
+            <td class="num">Θ(n²)</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>PPT 关键算例（数字要记）</h3>
+      <ul>
+        <li><strong>钢条</strong>：价格 <span class="m">p=[1,5,8,9,10,17,17,20,24,30]</span>；n=4 有 <span class="m">2<sup>3</sup>=8</span> 种方案，最优 2+2 收益 10。</li>
+        <li><strong>矩阵链</strong>：<span class="m">P=(30,35,15,5,10,20,25)</span>，最优值 <span class="m">m(1,6)=15125</span>，方案 <span class="m">((A<sub>1</sub>,(A<sub>2</sub>A<sub>3</sub>))((A<sub>4</sub>A<sub>5</sub>)A<sub>6</sub>))</span>。</li>
+        <li><strong>LCS</strong>：<span class="m">x=ABCBDAB, y=BDCABA</span>，<span class="m">c[7][6]=4</span>，LCS 为 <span class="m">BCBA</span>（BDAB 也是）。</li>
+        <li><strong>装配线</strong>：PPT 算例 <span class="m">f* = 38</span>，<span class="m">l* = 1</span>。</li>
+        <li><strong>OBST</strong>：<span class="m">p=[_,.15,.10,.05,.10,.20]</span>、<span class="m">q=[.05,.10,.05,.05,.05,.10]</span>，最优费用 <span class="m">e[1,5]=2.75</span>。</li>
+      </ul>
+
+      <div class="callout warn">
+        <p class="callout-h">易错：最优子结构不是「总是成立」</p>
+        <p>
+          无权<strong>最短</strong>路径有最优子结构（子问题<strong>无关</strong>，不共享顶点）；
+          无权<strong>最长</strong>路径<strong>没有</strong>最优子结构——子问题的解甚至可能组合不成原问题的合法解（最长路径会争用顶点）。
+          所以「能分解成子问题」不等于「能用 DP」。
+        </p>
+      </div>
+      <p><strong>DP 与分治对比</strong>：相同=都合并子问题解；不同=分治要求子问题独立，子问题重复出现时会重复计算；DP 专治重叠，每个子问题只解一次。贪心不行时，DP 往往可行。</p>
+    </section>
+
+    <section id="sec-greedy">
+      <h2>十一、贪心法（第 7 讲）速查</h2>
+      <p class="formula">贪心可行的两个要素：最优子结构（optimal substructure）+ 贪心选择特性（greedy-choice property）</p>
+      <ul>
+        <li><strong>最优子结构</strong>：问题的最优解包含子问题的最优解。</li>
+        <li><strong>贪心选择特性</strong>：全局最优解可以通过一系列<strong>局部最优（贪心）选择</strong>得到；贪心做完选择后，只剩一个子问题。</li>
+        <li>与 DP 的差别：DP 要比较多个子问题的解再合并；贪心不做回溯、不比较，因此<strong>不能保证总是最优</strong>；贪心失效时改用 DP。</li>
+      </ul>
+
+      <h3>MST 的两个定理（必考证明）</h3>
+      <div class="callout key">
+        <p class="callout-h">定理 1（最优子结构）</p>
+        <p>令 T 为 G 的 MST，去掉边 (u,v) 把 T 分成 T<sub>1</sub>、T<sub>2</sub>；则 T<sub>1</sub> 是子图 <span class="m">G<sub>1</sub>=(V<sub>1</sub>,E<sub>1</sub>)</span> 的 MST。</p>
+        <p><strong>剪切粘贴（cut &amp; paste）</strong>：若 G<sub>1</sub> 有更小生成树 T<sub>1</sub>'，则 <span class="m">T' = {(u,v)} &cup; T<sub>1</sub>' &cup; T<sub>2</sub></span> 是 G 的生成树且权更小，与 T 最优矛盾。</p>
+      </div>
+      <div class="callout key">
+        <p class="callout-h">定理 2（贪心选择）</p>
+        <p>令 A &sub; V；若 (u,v) 是连接 <strong>A 与 V−A</strong> 的<strong>最小权边</strong>，则 (u,v) 必属于<strong>某棵</strong> MST（简化为边权互异时属于唯一 MST）。</p>
+        <p><strong>证明</strong>：假设 (u,v) ∉ T。T 中 u→v 的唯一简单路径必有一条边跨越割 (A, V−A)，记它 (x,y)。把 (u,v) 与 (x,y) 交换：仍是生成树，且因 <span class="m">w(u,v) &lt; w(x,y)</span> 而权更小，矛盾。</p>
+      </div>
+      <p><strong>Prim 算法</strong>：用优先队列 Q 维护 V−A，按「与 A 中顶点相连的最小边权」排序；从任一顶点出发，每次取 Q 中 key 最小者加入 A 并松弛邻边。复杂度 <span class="m">O(E lg V)</span>（二叉堆）或 <span class="m">O(V²)</span>（邻接矩阵）。</p>
+      <p><strong>PowerPoint 算例（8 顶点）</strong>：<span class="m">A–B:6, A–C:12, B–C:5, B–E:14, B–F:8, E–F:3, C–D:9, C–G:7, F–G:10, G–H:15</span>，MST 权 = <span class="m">53</span>（取 3,5,6,7,8,9,15）。</p>
+
+      <h3>四个贪心案例与贪心准则</h3>
+      <table class="tbl">
+        <thead>
+          <tr><th>问题</th><th>贪心准则</th><th>结论 / 复杂度</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>MST（Prim / Kruskal）</td><td>每次选跨割最小边 / 全局最小边</td><td>最优；O(E lg V)</td></tr>
+          <tr><td>活动选择</td><td>每次选<strong>结束时间最早</strong>的兼容活动</td><td>最优；O(n lg n)（排序）/ O(n)（已排序）</td></tr>
+          <tr><td>哈夫曼编码</td><td>每次合并<strong>频率最小</strong>的两个节点</td><td>最优前缀码；O(n lg n)</td></tr>
+          <tr><td>分数背包</td><td>按<strong>单位重量价值 v<sub>i</sub>/w<sub>i</sub> 降序</strong>装</td><td>最优；O(n lg n)</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout warn">
+        <p class="callout-h">贪心失效的两个经典反例</p>
+        <p><strong>顶点覆盖</strong>：每次取度数最大的顶点、删去被覆盖的边——<strong>不保证最优</strong>；顶点覆盖问题是 NP 完全的。</p>
+        <p><strong>0-1 背包</strong>：按单位价值贪心会错。反例：W=50，物品 (v,w) = (60,10), (100,20), (120,30)，单位价值 6,5,4；
+        贪心得 60+100=160，而最优是 100+120=220。<strong>分数背包可以贪心，0-1 背包必须 DP。</strong></p>
+      </div>
+      <p><strong>哈夫曼编码的度量</strong>：树 T 的编码费用 <span class="m">B(T) = &Sigma;<sub>c&isin;C</sub> f(c)·d<sub>T</sub>(c)</span>（f 频率、d<sub>T</sub> 叶深度）；
+      <strong>前缀码</strong>要求任一字符编码都不是其他编码的前缀（等价于二叉树叶子）。</p>
+    </section>
+
+    <section id="sec-quiz-index">
+      <h2>十二、各章自测题（课件配套测验）</h2>
+      <p>
+        各章末尾新增「<strong>本节自测（课件配套测验）</strong>」小节，共 <strong>36 题</strong>，
+        已按题库给出的<strong>知识点标签</strong>归入对应章节；每题都给了<strong>答案与解析</strong>，
+        解析里额外标出易错点与正文对应关系。
+      </p>
+      <table class="tbl">
+        <thead>
+          <tr><th>归入章节</th><th>题量</th><th>题型与考点</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><a href="deck2.html#sec-quiz">算法基础与分析（deck2）</a></td>
+            <td class="num">2</td>
+            <td>判断题：算法的定义（良定义的计算步骤）、自然语言表示的歧义</td>
+          </tr>
+          <tr>
+            <td><a href="deck3.html#sec-quiz">算法分析基础（deck3）</a></td>
+            <td class="num">1</td>
+            <td>单选题：渐进主项（T(N)=3N²+4NlogN+7 → 3N²）</td>
+          </tr>
+          <tr>
+            <td><a href="deck4.html#sec-quiz">线性时间排序（deck4）</a></td>
+            <td class="num">7</td>
+            <td>5 单选 + 2 判断：决策树叶子与叶子数、计数排序的稳定性、基数排序为何必须用稳定子过程、k 与 n 的关系</td>
+          </tr>
+          <tr>
+            <td><a href="deck5.html#sec-quiz">线性时间选择（deck5）</a></td>
+            <td class="num">7</td>
+            <td>单选题：选择问题目标、成对求最大最小 3⌊n/2⌋、划分 O(n)、最坏情况与递归式、随机选择「只走一边」、期望 Θ(n)</td>
+          </tr>
+          <tr>
+            <td><a href="deck7.html#sec-quiz">动态规划（deck7）</a></td>
+            <td class="num">6</td>
+            <td>4 多选 + 2 填空：钢条方案数与两种实现、LCS 备忘录与回溯、OBST 的 root 表、装配线 f* 计算（18）</td>
+          </tr>
+          <tr>
+            <td><a href="deck8.html#sec-quiz">贪心法（deck8）</a></td>
+            <td class="num">13</td>
+            <td>5 单选 + 5 多选 + 3 填空/计算：MST 目标、哈夫曼 O(n log n)、分数背包 vs 0-1、贪心两要素、活动兼容、Prim 的 V−A、哈夫曼合并代价 188、活动选择 4</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="callout tip">
+        <p class="callout-h">怎么用这批题</p>
+        <p>
+          每题标题后的标签都带 <strong>「原卷 N」</strong> 编号，可与测验卷逐题对照。先<b>遮住「答案」</b>自测一遍，再对照解析回正文对应小节复看。多选题尤其注意<b>漏选</b>：
+          例如 Prim 那道「最小跨割边可用于贪心选择」很容易漏掉；填空题注意<b>术语写全</b>，
+          如 OBST 的 <code>root[i][j]</code> 应写「根节点<b>索引 r</b>」而不只是「根节点」。
+        </p>
+      </div>
+    </section>
+
+    <section id="sec-howto">
+      <h2>使用说明</h2>
+      <ul>
+        <li><strong>离线可用</strong>：全部为静态文件，无外部依赖、无网络请求。直接双击 <code>index.html</code> 即可。</li>
+        <li><strong>动画</strong>：每个演示条上有「重置 / 上一步 / 下一步 / 播放」四个按钮，逐帧看算法状态变化。</li>
+        <li><strong>导航</strong>：左侧栏上半部分是九页互链，下半部分自动生成本页目录，并随滚动高亮。窄屏点左上角「☰ 目录」折叠。</li>
+        <li><strong>打印</strong>：浏览器打印时自动隐藏侧边栏与动画控制按钮，保留全部正文、代码与图，可直接导出 PDF。</li>
+        <li><strong>术语</strong>：中文术语后括注英文，便于对照英文教材（主要参考《算法导论》Introduction to Algorithms）。</li>
+      </ul>
+
+      <div class="callout warn">
+        <p class="callout-h">复习提示</p>
+        <p>
+          本手册以 PPT 的<strong>核心考点</strong>为主线，历史典故（算经十书、图灵奖得主等）只作简略提及。
+          代码采用「PPT 伪代码 + C++」双栏对照：左侧用于对照老师讲义的书写风格应付笔试，右侧用于上机验证。
+        </p>
+      </div>
+    </section>
+
+    <footer class="pagefoot">
+      内容依据课程 PPT《算法设计与分析》整理 · 仅供复习使用
+    </footer>
+  </main>
+</div>
+
+<script src="assets/handbook.js"></script>
+</body>
+</html>

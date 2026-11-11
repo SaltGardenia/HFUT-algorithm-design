@@ -1,0 +1,1055 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>L2 · 算法分析基础 · 算法复习手册</title>
+<link rel="stylesheet" href="assets/handbook.css">
+</head>
+<body>
+<header class="topbar">
+  <button class="nav-toggle" type="button" aria-controls="sidebar" aria-expanded="true">☰ 目录</button>
+  <span class="topbar-title">算法复习手册</span>
+  <span class="topbar-sub">第 2 讲 · 算法分析基础</span>
+</header>
+
+<div class="layout">
+  <nav class="sidebar" id="sidebar" aria-label="全站目录">
+    <p class="sidebar-h">全站导航</p>
+    <ul class="site-nav">
+      <li><a href="index.html">总目录</a></li>
+      <li><a href="deck1.html">L1 · 绪论与设计思维</a></li>
+      <li><a href="deck2.html">L1 · 算法基础与分析</a></li>
+      <li><a href="deck3.html" class="active" aria-current="page">L2 · 算法分析基础</a></li>
+      <li><a href="deck4.html">L3 · 线性时间排序</a></li>
+      <li><a href="deck5.html">L4 · 线性时间选择</a></li>
+      <li><a href="deck6.html">L5 · 递归与分治</a></li>
+      <li><a href="deck7.html">L6 · 动态规划</a></li>
+      <li><a href="deck8.html">L7 · 贪心法</a></li>
+    </ul>
+    <p class="sidebar-h">本页内容</p>
+    <ul class="toc" id="page-toc"><!-- 由 handbook.js 依据 <main> 里的 h2/h3 自动生成，勿手写 --></ul>
+  </nav>
+
+  <main class="content" id="content">
+    <h1>算法分析基础：渐近记号、求解递归式与循环不变式</h1>
+    <p class="lede">本讲围绕四件事：① 渐进复杂性的直观含义；② &Theta; / O / &Omega; / 小 o / 小 &omega; 五个渐近记号的严格定义与相互性质；③ 求解递归式的三种技术 —— 代换法、递归树、主方法；④ 用循环不变式证明插入排序的正确性。所有定义、取值与例题均按课程 PPT 的公式原图逐条核对。</p>
+
+    <!-- ================================================================ -->
+    <section id="sec-asymptotic">
+      <h2>1. 渐进复杂性：只看增长量级</h2>
+
+      <p>当输入规模大到"只与运行时间的<b>增长量级</b>有关"时，就需要研究算法的<b>渐进效率</b> (asymptotic efficiency)。从极限角度看，我们只关心算法运行时间如何随着输入规模的无限增长而增长；通常对不是很小的输入规模而言，<b>渐进意义上更有效的算法才是最佳选择</b>。</p>
+
+      <div class="callout key">
+        <p class="callout-h">定义：渐进性态 / 渐进复杂性</p>
+        <p>设 <span class="m">T(N)</span> 是算法 A 的复杂性函数。一般说来，当 N 单调增加且趋于 &infin; 时，T(N) 也将单调增加趋于 &infin;。如果存在 <span class="m">T&prime;(N)</span>，使得当 N&rarr;&infin; 时</p>
+        <p class="formula">( T(N) &minus; T&prime;(N) ) / T(N) &rarr; 0</p>
+        <p>那么就说 <span class="m">T&prime;(N)</span> 是 T(N) 当 N&rarr;&infin; 时的<b>渐进性态</b>，或称 <span class="m">T&prime;(N)</span> 为算法 A 当 N&rarr;&infin; 时的<b>渐进复杂性</b>。</p>
+      </div>
+
+      <p><b>直观理解</b>：<span class="m">T&prime;(N)</span> 是 <span class="m">T(N)</span> 中<b>略去低阶项所留下的主项</b>，形式更简洁，却抓住了增长的本质。</p>
+
+      <p>例：<span class="m">T(N) = 3N<sup>2</sup> + 4N&middot;logN + 7</span>，则 <span class="m">T&prime;(N) = 3N<sup>2</sup></span>。验算比值确实趋于 0：</p>
+      <p class="formula">(T(N) &minus; T&prime;(N)) / T(N) = ( 4N&middot;logN + 7 ) / ( 3N<sup>2</sup> + 4N&middot;logN + 7 ) &rarr; 0 &nbsp;(N&rarr;&infin;)</p>
+
+      <div class="callout tip">
+        <p class="callout-h">记忆</p>
+        <p>渐进分析只需两步：<b>先只保留增长最快的那一项，再丢掉它的常数系数</b>。低阶项与常数在 N 足够大时都会被"淹没"。</p>
+      </div>
+
+      <p>本讲的知识框架（对应 PPT 第 1 章 &sect;1.4～&sect;1.5）：<b>渐进复杂性</b> &rarr; <b>渐进记号</b>（&Theta; / O / &Omega; / o / &omega;）&rarr; <b>渐进表示法</b>（等式约定与运算规则）&rarr; <b>渐进函数</b>之间的比较性质；随后进入<b>求解递归式</b>（代换法 / 递归树 / 主方法）与<b>算法正确性证明</b>（循环不变式）。</p>
+    </section>
+
+    <!-- ================================================================ -->
+    <section id="sec-theta">
+      <h2>2. &Theta; 记号：渐进确界（紧致界）</h2>
+
+      <p>渐近记号用来表示算法的渐近运行时间，定义域为自然数集合 <b>N</b>（n 表示 Size），有时也扩展到实数或限制到自然数的某子集上。</p>
+
+      <div class="callout key">
+        <p class="callout-h">定义（&Theta; 记号，渐进确界 / 紧致界）</p>
+        <p>给定一个函数 g(n)，&Theta;(g(n)) 表示一个<b>函数的集合</b>：</p>
+        <p class="formula">&Theta;(g(n)) = { f(n) | &exist; 常数 c<sub>1</sub>, c<sub>2</sub>, n<sub>0</sub> &gt; 0，使得对所有的 n &ge; n<sub>0</sub> 有：<br>0 &le; c<sub>1</sub>g(n) &le; f(n) &le; c<sub>2</sub>g(n) }</p>
+        <p>即 f(n) &isin; &Theta;(g(n)) 表示：存在正常数 c<sub>1</sub>、c<sub>2</sub> 及足够大的 n<sub>0</sub>，使得 f(n) 被夹在 c<sub>1</sub>g(n) 和 c<sub>2</sub>g(n) 之间。</p>
+      </div>
+
+      <p>对所有的 n &ge; n<sub>0</sub>，函数 f(n) 在<b>一个常数因子范围内等于</b> g(n)，则称 g(n) 是 f(n) 的一个<b>渐近紧致界</b>，即 g(n) 既是 f(n) 的渐近上界，又是 f(n) 的渐近下界。这里 f(n) 是算法的计算时间，g(n) 是算法时间的数量级。</p>
+
+      <div class="callout warn">
+        <p class="callout-h">易错</p>
+        <p>① &Theta; 定义中要求 f(n) 和 g(n) 是<b>渐近非负</b>的，否则 &Theta;(g(n)) 是<b>空集</b>；<br>
+        ② 不同的输入实例，一个算法的计算时间 f(n) 不一定相同，所以"算法的计算时间"本身是一个<b>函数集合</b>，这正是要用集合记号的原因。</p>
+      </div>
+
+      <svg class="fig" viewBox="0 0 760 340" role="img" aria-label="Theta 记号示意图：f(n) 被 c1g(n) 与 c2g(n) 上下夹住，n 大于等于 n0 后成立">
+        <rect x="300" y="30" width="430" height="260" fill="var(--c-accent)" opacity="0.07"></rect>
+        <line x1="70" y1="290" x2="730" y2="290" stroke="var(--c-line)" stroke-width="1.5"></line>
+        <line x1="70" y1="290" x2="70" y2="30" stroke="var(--c-line)" stroke-width="1.5"></line>
+        <text x="738" y="295" class="tx-sm">n</text>
+        <text x="46" y="40" class="tx-sm">时间</text>
+        <line x1="300" y1="30" x2="300" y2="290" stroke="var(--c-accent)" stroke-width="1.4" stroke-dasharray="6 5"></line>
+        <text x="300" y="310" class="tx-sm" text-anchor="middle">n&#8320;</text>
+        <text x="88" y="58" class="tx-sm" fill="var(--c-accent)">有效区间 n &ge; n&#8320;： 0 &le; c&#8321;g(n) &le; f(n) &le; c&#8322;g(n)</text>
+        <path d="M85,150 Q390,58 715,40" fill="none" stroke="var(--c-hot)" stroke-width="2"></path>
+        <path d="M85,248 Q390,150 715,100" fill="none" stroke="var(--c-accent)" stroke-width="2.6"></path>
+        <path d="M85,282 Q390,220 715,178" fill="none" stroke="var(--c-accent-2)" stroke-width="2"></path>
+        <text x="706" y="32" class="tx" text-anchor="end" fill="var(--c-hot)">c&#8322;g(n)</text>
+        <text x="706" y="92" class="tx" text-anchor="end" fill="var(--c-accent)">f(n)</text>
+        <text x="706" y="170" class="tx" text-anchor="end" fill="var(--c-accent-2)">c&#8321;g(n)</text>
+        <text x="88" y="322" class="tx-sm">n &lt; n&#8320; 时三条曲线谁高谁低都可以，&Theta; 只约束 n &ge; n&#8320; 之后的形状</text>
+      </svg>
+      <p class="fig-cap">图 1 &nbsp;&Theta; 记号：g(n) 在一个常数因子范围内等于 f(n)，既是渐近上界又是渐近下界</p>
+
+      <h3>2.1 用定义验证两个小例子</h3>
+
+      <p><b>例 1</b>：<span class="m">f(n) = &frac12; n(n &minus; 1)</span>，证明 <span class="m">f(n) = &Theta;(n<sup>2</sup>)</span>。<br>
+      证明：令 <span class="m">g(n) = n<sup>2</sup></span>，就是要找到两个正常数 C<sub>1</sub> 和 C<sub>2</sub>，满足 <span class="m">C<sub>1</sub>g(n) &le; f(n) &le; C<sub>2</sub>g(n)</span>。取 <b>C<sub>1</sub> = 1/4、C<sub>2</sub> = 1/2、n<sub>0</sub> = 2</b>：当 n &ge; 2 时 &frac12;n(n&minus;1) &ge; &frac12;n&middot;(n/2) = n<sup>2</sup>/4，且 &frac12;n(n&minus;1) &lt; &frac12;n<sup>2</sup>，两式同时成立。</p>
+
+      <p><b>例 2</b>：<span class="m">f(n) = &frac12; n<sup>2</sup> &minus; 3n</span>，证明 <span class="m">f(n) = &Theta;(n<sup>2</sup>)</span>。<br>
+      证明：仍要证 <span class="m">C<sub>1</sub>n<sup>2</sup> &le; f(n) &le; C<sub>2</sub>n<sup>2</sup></span>。取 <b>C<sub>1</sub> = 1/4、C<sub>2</sub> = 1/2</b>：n &ge; 12 时 &frac12;n<sup>2</sup> &minus; 3n &ge; &frac12;n<sup>2</sup> &minus; n<sup>2</sup>/4 = n<sup>2</sup>/4；而 &frac12;n<sup>2</sup> &minus; 3n &le; &frac12;n<sup>2</sup> 恒成立。故 <span class="m">n<sub>0</sub> = 12</span> 即可。</p>
+
+      <h3>2.2 一般二次多项式：T(n) = an<sup>2</sup> + bn + c（a &gt; 0）</h3>
+
+      <p>PPT 给出结论 <span class="m">T(n) = &Theta;(n<sup>2</sup>)</span>，并直接给出了三个常数（务必记住这组取值）：</p>
+      <p class="formula">c<sub>1</sub> = a/4，&nbsp; c<sub>2</sub> = 7a/4，&nbsp; n<sub>0</sub> = 2&middot;max( |b|/a , &radic;(|c|/a) )</p>
+
+      <p><b>推导思路</b>（PPT 备注中的证明）：当 n &gt; n<sub>0</sub> 时，由 n<sub>0</sub> &ge; 2|b|/a 得 n &gt; 2|b|/a，即 <span class="m">an<sup>2</sup>/2 &gt; |b|n</span>；又由 n<sub>0</sub> &ge; 2&radic;(|c|/a) 得 n<sup>2</sup> &gt; 4|c|/a，即 <span class="m">an<sup>2</sup>/4 &gt; |c|n</span>。于是：</p>
+      <p class="formula">an<sup>2</sup> + bn + c &ge; an<sup>2</sup> &minus; |b|n &minus; |c| &ge; an<sup>2</sup> &minus; an<sup>2</sup>/2 &minus; an<sup>2</sup>/4 = <b>an<sup>2</sup>/4 = c<sub>1</sub>n<sup>2</sup></b></p>
+      <p class="formula">an<sup>2</sup> + bn + c &le; an<sup>2</sup> + |b|n + |c| &le; an<sup>2</sup> + an<sup>2</sup>/2 + an<sup>2</sup>/4 = <b>7an<sup>2</sup>/4 = c<sub>2</sub>n<sup>2</sup></b></p>
+      <p>两式合起来就是 <span class="m">0 &le; c<sub>1</sub>n<sup>2</sup> &le; an<sup>2</sup> + bn + c &le; c<sub>2</sub>n<sup>2</sup></span>，对所有的 n &ge; n<sub>0</sub> 成立，故 <span class="m">T(n) = &Theta;(n<sup>2</sup>)</span>。</p>
+
+      <div class="callout key">
+        <p class="callout-h">记号 &Theta;(1) 的含义</p>
+        <p>&Theta;(1) 表示算法的运行时间与问题规模 n <b>无关</b>；也可理解为 &Theta;(n<sup>0</sup>) —— 因为任何常数都是 0 次多项式。</p>
+      </div>
+    </section>
+
+    <!-- ================================================================ -->
+    <section id="sec-big-o">
+      <h2>3. O 记号：渐进上界</h2>
+
+      <div class="callout key">
+        <p class="callout-h">定义（O 记号，渐进上界）</p>
+        <p>给定一个函数 g(n)，O(g(n)) 表示一个函数的集合：</p>
+        <p class="formula">O(g(n)) = { f(n) | &exist; 常数 c, n<sub>0</sub> &gt; 0，使得对所有的 n &ge; n<sub>0</sub> 有：<br>0 &le; f(n) &le; c&middot;g(n) }</p>
+        <p>即在一个常数因子范围内 g(n) 是 f(n) 的渐近上界。<b>O(1) 表示常量。</b></p>
+      </div>
+
+      <svg class="fig" viewBox="0 0 760 340" role="img" aria-label="O 记号示意图：n 大于等于 n0 后 f(n) 始终不高于 c 乘 g(n)">
+        <rect x="330" y="30" width="400" height="260" fill="var(--c-accent)" opacity="0.07"></rect>
+        <line x1="70" y1="290" x2="730" y2="290" stroke="var(--c-line)" stroke-width="1.5"></line>
+        <line x1="70" y1="290" x2="70" y2="30" stroke="var(--c-line)" stroke-width="1.5"></line>
+        <text x="738" y="295" class="tx-sm">n</text>
+        <line x1="330" y1="30" x2="330" y2="290" stroke="var(--c-accent)" stroke-width="1.4" stroke-dasharray="6 5"></line>
+        <text x="330" y="310" class="tx-sm" text-anchor="middle">n&#8320;</text>
+        <path d="M85,190 Q400,64 715,38" fill="none" stroke="var(--c-hot)" stroke-width="2.4"></path>
+        <path d="M85,268 Q400,180 715,120" fill="none" stroke="var(--c-accent)" stroke-width="2.2"></path>
+        <text x="706" y="30" class="tx" text-anchor="end" fill="var(--c-hot)">c&middot;g(n)</text>
+        <text x="706" y="112" class="tx" text-anchor="end" fill="var(--c-accent)">f(n)</text>
+        <text x="88" y="56" class="tx-sm" fill="var(--c-accent)">n &ge; n&#8320; 时恒有 f(n) &le; c&middot;g(n)：O 只给"天花板"</text>
+        <text x="88" y="318" class="tx-sm">注意：g(n) 可以小于 f(n)。例 f(n)=an+b（b&gt;0）、g(n)=n：点态上 n &lt; an+b，但取 c=a+|b| 后 c&middot;g(n) 就在 f(n) 上方</text>
+      </svg>
+      <p class="fig-cap">图 2 &nbsp;O 记号：g(n) 是 f(n) 的渐近上界，但界可以是紧的，也可以很松</p>
+
+      <h3>3.1 两个证明示例（关键是把 c 和 n<sub>0</sub> 构造出来）</h3>
+
+      <p><b>例 3</b>：证明 <span class="m">f(n) = an + b = O(n)</span>，其中 a &gt; 0。<br>
+      证明：即要证存在正常数 C，使 <span class="m">f(n) = an + b &le; Cn</span>。取 <b>C = a + |b|</b>、<b>n<sub>0</sub> = 1</b>：对一切 n &ge; 1，有</p>
+      <p class="formula">an + b &le; an + |b| &le; an + |b|n = (a + |b|)n = Cn</p>
+      <p>故 <span class="m">f(n) = an + b = O(n)</span>。</p>
+
+      <p><b>例 4</b>：证明 <span class="m">f(n) = 2n<sup>2</sup> + n = O(n<sup>3</sup>)</span>。<br>
+      证明：即要找到一个正常数 C 使得 <span class="m">f(n) &le; Cn<sup>3</sup></span>。取 <b>C = 3</b>、<b>n<sub>0</sub> = 1</b>：当 n &ge; 1 时 n<sup>2</sup> &le; n<sup>3</sup> 且 n &le; n<sup>3</sup>，于是</p>
+      <p class="formula">2n<sup>2</sup> + n &le; 2n<sup>3</sup> + n<sup>3</sup> = 3n<sup>3</sup></p>
+      <p>故 <span class="m">2n<sup>2</sup> + n = O(n<sup>3</sup>)</span>。<b>注意这个上界并不紧</b>（真正的紧界是 n<sup>2</sup> 阶），大 O 允许"松"。</p>
+
+      <h3>3.2 &Theta; 强于 O，以及 O 与 &Theta; 的关键区别（常考）</h3>
+
+      <p>因为 <span class="m">&Theta;(g(n)) &sube; O(g(n))</span>，所以 <span class="m">f(n) = &Theta;(g(n)) &rArr; f(n) = O(g(n))</span>。即 <b>&Theta; 记号强于 O 记号</b>。</p>
+
+      <div class="callout warn">
+        <p class="callout-h">最容易被问倒的一点</p>
+        <p>· <b>O 描述上界</b>：当用于界定一个<b>最坏</b>运行时间时，蕴含着该算法在<b>任意输入</b>上的运行时间都囿于此界；<br>
+        · <b>&Theta; 则不然</b>：一个算法的最坏运行时间是 &Theta;(g(n))，<b>并不</b>蕴含该算法对每个输入实例的运行时间均囿于 &Theta;(g(n))。</p>
+      </div>
+
+      <p><b>最经典的例子 —— 插入排序</b>：当输入初始有序时，它的运行时间是 <span class="m">&Theta;(n)</span> 而不是 &Theta;(n<sup>2</sup>)，但 <span class="m">O(n<sup>2</sup>)</span> 对<b>任何</b>输入实例都成立。原因是：</p>
+      <p class="formula">n = O(n<sup>2</sup>) 且 n<sup>2</sup> = O(n<sup>2</sup>) 均成立；&nbsp;但&nbsp; n<sup>2</sup> = &Theta;(n<sup>2</sup>) 而 n &ne; &Theta;(n<sup>2</sup>)</p>
+      <p>所以当说"算法的运行时间上界是 O(n<sup>2</sup>)"时，往往指的就是它的<b>最坏</b>运行时间，无须修饰语 —— 这对那些最好、最坏、平均时间数量级不同的算法同样成立；而用 &Theta; 时则必须分开表达、加上"最好 / 最坏 / 平均"的修饰语。</p>
+    </section>
+
+    <!-- ================================================================ -->
+    <section id="sec-big-omega">
+      <h2>4. &Omega; 记号：渐进下界</h2>
+
+      <div class="callout key">
+        <p class="callout-h">定义（&Omega; 记号，渐进下界）</p>
+        <p>对给定函数 g(n)，&Omega;(g(n)) 是一个函数集合：</p>
+        <p class="formula">&Omega;(g(n)) = { f(n) | &exist; 常数 c, n<sub>0</sub> &gt; 0，使得对所有的 n &ge; n<sub>0</sub> 有：<br>0 &le; c&middot;g(n) &le; f(n) }</p>
+        <p>意义：对所有 n &ge; n<sub>0</sub>，f(n) 在 c&middot;g(n) 的<b>上方</b>，即在一个常数因子范围内 g(n) 是 f(n) 的<b>渐近下界</b>。</p>
+      </div>
+
+      <svg class="fig" viewBox="0 0 760 340" role="img" aria-label="Omega 记号示意图：n 大于等于 n0 后 f(n) 始终不低于 c 乘 g(n)">
+        <rect x="330" y="30" width="400" height="260" fill="var(--c-accent)" opacity="0.07"></rect>
+        <line x1="70" y1="290" x2="730" y2="290" stroke="var(--c-line)" stroke-width="1.5"></line>
+        <line x1="70" y1="290" x2="70" y2="30" stroke="var(--c-line)" stroke-width="1.5"></line>
+        <text x="738" y="295" class="tx-sm">n</text>
+        <line x1="330" y1="30" x2="330" y2="290" stroke="var(--c-accent)" stroke-width="1.4" stroke-dasharray="6 5"></line>
+        <text x="330" y="310" class="tx-sm" text-anchor="middle">n&#8320;</text>
+        <path d="M85,272 Q400,196 715,140" fill="none" stroke="var(--c-accent-2)" stroke-width="2.2"></path>
+        <path d="M85,200 Q400,72 715,40" fill="none" stroke="var(--c-hot)" stroke-width="2.4"></path>
+        <text x="706" y="132" class="tx" text-anchor="end" fill="var(--c-accent-2)">c&middot;g(n)</text>
+        <text x="706" y="32" class="tx" text-anchor="end" fill="var(--c-hot)">f(n)</text>
+        <text x="88" y="56" class="tx-sm" fill="var(--c-accent)">n &ge; n&#8320; 时恒有 c&middot;g(n) &le; f(n)：&Omega; 只给"地板"</text>
+        <text x="88" y="318" class="tx-sm">注意：g(n) 可以大于 f(n)，只要乘上足够小的正常数 c 后仍不超过 f(n) 即可</text>
+      </svg>
+      <p class="fig-cap">图 3 &nbsp;&Omega; 记号：g(n) 是 f(n) 的渐近下界</p>
+
+      <p><b>例 5</b>：证明 <span class="m">f(n) = 3n<sup>2</sup> = &Omega;(n)</span>。<br>
+      证明：即要证存在正常数 C 使 <span class="m">Cn &le; 3n<sup>2</sup></span>。取 <b>C = 1</b>、<b>n<sub>0</sub> = 1</b>：对一切 n &ge; 1 有 n &le; 3n<sup>2</sup>，成立，故 <span class="m">3n<sup>2</sup> = &Omega;(n)</span>。</p>
+
+      <div class="callout key">
+        <p class="callout-h">定理 1.1</p>
+        <p>对任意函数 f(n) 和 g(n)，<span class="m">f(n) = &Theta;(g(n))</span> <b>当且仅当</b> <span class="m">f(n) = O(g(n))</span> 且 <span class="m">f(n) = &Omega;(g(n))</span>。</p>
+        <p>即：g(n) 是 f(n) 的渐紧界，当且仅当 g(n) 既是 f(n) 的渐近上界又是 f(n) 的渐近下界。这条定理就是把"紧界"拆成"上界 + 下界"来证的标准套路。</p>
+      </div>
+
+      <p>当用 &Omega; 来界定一个算法<b>最好情况</b>下的运行时间时，蕴含着该算法在<b>任意输入</b>上的运行时间都囿于此界（不低于它）。</p>
+      <p><b>例</b>：插入排序的下界是 <span class="m">&Omega;(n)</span>，对任何实例成立（即插入排序的最好运行时间是 &Omega;(n)）。因为 <span class="m">n = &Omega;(n)</span>、<span class="m">n<sup>2</sup> = &Omega;(n)</span> 都成立，所以无论输入有序还是逆序，运行时间都不会低于 n 的量级。</p>
+    </section>
+
+    <!-- ================================================================ -->
+    <section id="sec-little-o">
+      <h2>5. 小 o 记号：渐近非紧上界</h2>
+
+      <div class="callout key">
+        <p class="callout-h">定义（小 o 记号，渐近非紧上界）</p>
+        <p class="formula">o(g(n)) = { f(n) | &forall; 常数 c &gt; 0，&exist; 常数 n<sub>0</sub> &gt; 0，使得对所有的 n &ge; n<sub>0</sub> 有：<br>0 &le; f(n) &lt; c&middot;g(n) }</p>
+        <p>注意这里常数 c 是<b>任意</b>的（&forall; 而不是 &exist;），这是小 o 与大 O 的唯一差别。</p>
+      </div>
+
+      <p>直观上，当 n&rarr;&infin; 时 f(n) 相对于 g(n) 是<b>可忽略的</b>，即 <span class="m">f(n) = o(g(n))</span> 蕴含着</p>
+      <p class="formula">lim<sub>n&rarr;&infin;</sub> f(n)/g(n) = 0</p>
+
+      <p>只要 n 足够大，g(n) 就是 f(n) 的上界；或者说 <b>f 和 g 的数量级不同</b> —— 否则不可能对任意常数 c 都有 c&middot;g(n) 严格大于 f(n)。</p>
+
+      <svg class="fig" viewBox="0 0 760 340" role="img" aria-label="小 o 记号示意图：任意常数 c 倍 g(n) 最终都严格高于 f(n)">
+        <rect x="360" y="30" width="370" height="260" fill="var(--c-accent)" opacity="0.07"></rect>
+        <line x1="70" y1="290" x2="730" y2="290" stroke="var(--c-line)" stroke-width="1.5"></line>
+        <line x1="70" y1="290" x2="70" y2="30" stroke="var(--c-line)" stroke-width="1.5"></line>
+        <text x="738" y="295" class="tx-sm">n</text>
+        <line x1="360" y1="30" x2="360" y2="290" stroke="var(--c-accent)" stroke-width="1.4" stroke-dasharray="6 5"></line>
+        <text x="360" y="310" class="tx-sm" text-anchor="middle">n&#8320;（随 c 变化）</text>
+        <path d="M85,120 Q400,44 715,30" fill="none" stroke="var(--c-warn)" stroke-width="1.8" stroke-dasharray="7 5"></path>
+        <path d="M85,176 Q400,72 715,48" fill="none" stroke="var(--c-hot)" stroke-width="1.8" stroke-dasharray="7 5"></path>
+        <path d="M85,238 Q400,110 715,74" fill="none" stroke="var(--c-accent-2)" stroke-width="1.8" stroke-dasharray="7 5"></path>
+        <path d="M85,284 Q400,234 715,206" fill="none" stroke="var(--c-accent)" stroke-width="2.6"></path>
+        <text x="706" y="26" class="tx-sm" text-anchor="end" fill="var(--c-warn)">4g(n)</text>
+        <text x="706" y="44" class="tx-sm" text-anchor="end" fill="var(--c-hot)">2g(n)</text>
+        <text x="706" y="70" class="tx-sm" text-anchor="end" fill="var(--c-accent-2)">g(n)</text>
+        <text x="706" y="200" class="tx" text-anchor="end" fill="var(--c-accent)">f(n)</text>
+        <text x="88" y="56" class="tx-sm" fill="var(--c-accent)">无论 c 取多大，f(n) 最终都在 c&middot;g(n) 之下 &rArr; f 与 g 数量级不同</text>
+        <text x="88" y="318" class="tx-sm">对比：2n = o(n&sup2;)（非紧），而 2n&sup2; &ne; o(n&sup2;)（同阶）</text>
+      </svg>
+      <p class="fig-cap">图 4 &nbsp;小 o 记号：任意常数倍都压不住 f(n)，说明 f 的量级严格小于 g</p>
+
+      <p><b>大 O 与小 o 的对比</b>：大 O 表示的渐近上界可以是渐近紧致的，也可以是渐近非紧的。</p>
+      <table class="tbl">
+        <thead><tr><th>等式</th><th>比值 f(n)/g(n)</th><th>界的性质</th></tr></thead>
+        <tbody>
+          <tr><td>2n<sup>2</sup> = O(n<sup>2</sup>)</td><td>2n<sup>2</sup>/n<sup>2</sup> &rarr; 2（常数）</td><td><b>紧致界</b>（其实 2n<sup>2</sup> = &Theta;(n<sup>2</sup>)）</td></tr>
+          <tr><td>2n = O(n<sup>2</sup>)</td><td>2n/n<sup>2</sup> &rarr; 0</td><td><b>非紧致界</b>（2n = o(n<sup>2</sup>)）</td></tr>
+        </tbody>
+      </table>
+      <p>所以：<span class="m">2n = o(n<sup>2</sup>)</span>，但 <span class="m">2n<sup>2</sup> &ne; o(n<sup>2</sup>)</span>。</p>
+    </section>
+
+    <!-- ================================================================ -->
+    <section id="sec-little-omega">
+      <h2>6. 小 &omega; 记号：渐近非紧下界</h2>
+
+      <div class="callout key">
+        <p class="callout-h">定义（小 &omega; 记号，渐近非紧下界）</p>
+        <p class="formula">&omega;(g(n)) = { f(n) | &forall; 常数 c &gt; 0，&exist; 常数 n<sub>0</sub> &gt; 0，使得对所有的 n &ge; n<sub>0</sub> 有：<br>0 &le; c&middot;g(n) &lt; f(n) }</p>
+        <p>即：对任意常数 c &gt; 0，c&middot;g(n) 对足够大的 n 都要<b>严格小于</b> f(n)。因此 g 和 f 必定不是同数量级，即 <b>f 的量级 &gt; g 的量级</b>。等价的极限形式：</p>
+        <p class="formula">f(n) = &omega;(g(n)) &rArr; lim<sub>n&rarr;&infin;</sub> f(n)/g(n) = &infin;</p>
+      </div>
+
+      <svg class="fig" viewBox="0 0 760 340" role="img" aria-label="小 omega 记号示意图：f(n) 最终严格高于任意常数倍的 g(n)">
+        <rect x="360" y="30" width="370" height="260" fill="var(--c-accent)" opacity="0.07"></rect>
+        <line x1="70" y1="290" x2="730" y2="290" stroke="var(--c-line)" stroke-width="1.5"></line>
+        <line x1="70" y1="290" x2="70" y2="30" stroke="var(--c-line)" stroke-width="1.5"></line>
+        <text x="738" y="295" class="tx-sm">n</text>
+        <line x1="360" y1="30" x2="360" y2="290" stroke="var(--c-accent)" stroke-width="1.4" stroke-dasharray="6 5"></line>
+        <text x="360" y="310" class="tx-sm" text-anchor="middle">n&#8320;（随 c 变化）</text>
+        <path d="M85,272 Q400,258 715,244" fill="none" stroke="var(--c-accent-2)" stroke-width="1.8" stroke-dasharray="7 5"></path>
+        <path d="M85,262 Q400,232 715,196" fill="none" stroke="var(--c-hot)" stroke-width="1.8" stroke-dasharray="7 5"></path>
+        <path d="M85,252 Q400,206 715,148" fill="none" stroke="var(--c-warn)" stroke-width="1.8" stroke-dasharray="7 5"></path>
+        <path d="M85,286 Q400,180 715,36" fill="none" stroke="var(--c-accent)" stroke-width="2.6"></path>
+        <text x="706" y="240" class="tx-sm" text-anchor="end" fill="var(--c-accent-2)">g(n)</text>
+        <text x="706" y="192" class="tx-sm" text-anchor="end" fill="var(--c-hot)">2g(n)</text>
+        <text x="706" y="140" class="tx-sm" text-anchor="end" fill="var(--c-warn)">4g(n)</text>
+        <text x="706" y="28" class="tx" text-anchor="end" fill="var(--c-accent)">f(n)</text>
+        <text x="88" y="56" class="tx-sm" fill="var(--c-accent)">无论 c 取多大，f(n) 最终都严格高于 c&middot;g(n) &rArr; f 的量级大于 g</text>
+        <text x="88" y="318" class="tx-sm">例：n&sup2;/2 = &omega;(n)，但 n&sup2;/2 &ne; &omega;(n&sup2;)</text>
+      </svg>
+      <p class="fig-cap">图 5 &nbsp;小 &omega; 记号：g 的任意常数倍最终都被 f 甩在下面</p>
+
+      <p>PPT 给出的例子：<span class="m">n<sup>2</sup>/2 = &omega;(n)</span>，但 <span class="m">n<sup>2</sup>/2 &ne; &omega;(n<sup>2</sup>)</span> —— 因为 lim (n<sup>2</sup>/2)/n = &infin;，而 lim (n<sup>2</sup>/2)/n<sup>2</sup> = 1/2（有限常数，同阶，属于 &Theta;）。</p>
+    </section>
+
+    <!-- ================================================================ -->
+    <section id="sec-compare">
+      <h2>7. 极限比较法与渐近记号的性质</h2>
+
+      <h3>7.1 利用极限比较函数间的增长速度</h3>
+
+      <p>对于函数 f(n)、g(n)，令 <span class="m">L = lim<sub>n&rarr;&infin;</sub> f(n)/g(n)</span>，则按下表判定：</p>
+
+      <table class="tbl">
+        <thead><tr><th>极限 L 的值</th><th>大小关系</th><th>渐近记号结论</th><th>含义</th></tr></thead>
+        <tbody>
+          <tr><td class="num">0</td><td>f(n) &lt; g(n)</td><td><b>f(n) = o(g(n))</b></td><td>f 增长得慢，数量级更小</td></tr>
+          <tr><td class="num">有限正常数 C</td><td>f(n) = g(n)（同阶）</td><td><b>f(n) = &Theta;(g(n))</b></td><td>只差一个常数因子</td></tr>
+          <tr><td class="num">&infin;</td><td>f(n) &gt; g(n)</td><td><b>f(n) = &omega;(g(n))</b></td><td>f 增长得快，数量级更大</td></tr>
+        </tbody>
+      </table>
+
+      <p><b>例 6</b>：<span class="m">f(n) = &frac12; n(n &minus; 1)</span>，<span class="m">g(n) = n<sup>2</sup></span>。因为 lim f(n)/g(n) = 1/2（有限正常数），故 <span class="m">f(n) = &Theta;(n<sup>2</sup>)</span> —— 与例 1 的结论一致。</p>
+      <p><b>例 7</b>：<span class="m">f(n) = lg n</span>，<span class="m">g(n) = &radic;n</span>。因为 lim lg n / &radic;n = 0，故 <span class="m">lg n = o(&radic;n)</span>。</p>
+
+      <h3>7.2 四条基本性质</h3>
+
+      <p>许多实数的关系性质都可以用到渐近比较上（以下假定 f(n) 和 g(n) 都是渐近正的）：</p>
+
+      <table class="tbl">
+        <thead><tr><th>性质</th><th>内容</th><th>附注</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><b>传递性</b></td>
+            <td>f(n) = &Theta;(g(n)) 且 g(n) = &Theta;(h(n)) &rArr; f(n) = &Theta;(h(n))<br>
+                f(n) = O(g(n)) 且 g(n) = O(h(n)) &rArr; f(n) = O(h(n))<br>
+                f(n) = &Omega;(g(n)) 且 g(n) = &Omega;(h(n)) &rArr; f(n) = &Omega;(h(n))<br>
+                f(n) = o(g(n)) 且 g(n) = <b>o</b>(h(n)) &rArr; f(n) = <b>o</b>(h(n))<br>
+                f(n) = &omega;(g(n)) 且 g(n) = &omega;(h(n)) &rArr; f(n) = &omega;(h(n))</td>
+            <td>第 4 条<b>全是小 o</b>（PPT 重点提示）；&Theta; 那条的注是"渐紧界"，o / &omega; 两条的注分别是"渐近非紧上界""渐近非紧下界"</td>
+          </tr>
+          <tr>
+            <td><b>自反性</b></td>
+            <td>f(n) = &Theta;(f(n))，f(n) = O(f(n))，f(n) = &Omega;(f(n))</td>
+            <td><b>渐近非紧界（小 o、小 &omega;）无自反性</b></td>
+          </tr>
+          <tr>
+            <td><b>对称性</b></td>
+            <td>f(n) = &Theta;(g(n)) <b>当且仅当</b> g(n) = &Theta;(f(n))</td>
+            <td>紧致界有对称性</td>
+          </tr>
+          <tr>
+            <td><b>转置对称性</b></td>
+            <td>f(n) = O(g(n)) <b>当且仅当</b> g(n) = &Omega;(f(n))<br>
+                f(n) = o(g(n)) <b>当且仅当</b> g(n) = &omega;(f(n))</td>
+            <td>大 O 与大 &Omega; 对调时 f、g 对称；g 是 f 的非紧上界，等价于 f 是 g 的非紧下界</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p>由上述 4 个性质，就可以把两个函数间的渐近比较<b>类比于两个实数间的比较</b>：</p>
+
+      <svg class="fig" viewBox="0 0 760 380" role="img" aria-label="渐近记号与实数比较的类比：O 类似小于等于，Omega 类似大于等于，Theta 类似等于，o 类似小于，omega 类似大于">
+        <text x="30" y="30" class="tx-b">渐近记号</text>
+        <text x="330" y="30" class="tx-b">实数区间上的位置</text>
+        <text x="620" y="30" class="tx-b" text-anchor="middle">实数关系</text>
+        <g>
+          <text x="34" y="76" class="tx">f(n) = O(g(n))</text>
+          <line x1="330" y1="72" x2="560" y2="72" stroke="var(--c-line)"></line>
+          <circle cx="380" cy="72" r="5" fill="var(--c-accent)"></circle>
+          <circle cx="500" cy="72" r="5" fill="var(--c-hot)"></circle>
+          <text x="380" y="94" class="tx-sm" text-anchor="middle">a</text>
+          <text x="500" y="94" class="tx-sm" text-anchor="middle">b</text>
+          <text x="620" y="76" class="tx-b" text-anchor="middle" fill="var(--c-accent)">a &le; b</text>
+        </g>
+        <g>
+          <text x="34" y="136" class="tx">f(n) = &Omega;(g(n))</text>
+          <line x1="330" y1="132" x2="560" y2="132" stroke="var(--c-line)"></line>
+          <circle cx="500" cy="132" r="5" fill="var(--c-accent)"></circle>
+          <circle cx="380" cy="132" r="5" fill="var(--c-hot)"></circle>
+          <text x="500" y="154" class="tx-sm" text-anchor="middle">a</text>
+          <text x="380" y="154" class="tx-sm" text-anchor="middle">b</text>
+          <text x="620" y="136" class="tx-b" text-anchor="middle" fill="var(--c-accent)">a &ge; b</text>
+        </g>
+        <g>
+          <text x="34" y="196" class="tx">f(n) = &Theta;(g(n))</text>
+          <line x1="330" y1="192" x2="560" y2="192" stroke="var(--c-line)"></line>
+          <circle cx="440" cy="192" r="5" fill="var(--c-accent)"></circle>
+          <circle cx="446" cy="192" r="5" fill="var(--c-hot)" opacity="0.75"></circle>
+          <text x="466" y="214" class="tx-sm">a、b 重合</text>
+          <text x="620" y="196" class="tx-b" text-anchor="middle" fill="var(--c-accent)">a = b</text>
+        </g>
+        <g>
+          <text x="34" y="256" class="tx">f(n) = o(g(n))</text>
+          <line x1="330" y1="252" x2="560" y2="252" stroke="var(--c-line)"></line>
+          <circle cx="368" cy="252" r="5" fill="var(--c-accent)"></circle>
+          <circle cx="520" cy="252" r="5" fill="var(--c-hot)"></circle>
+          <text x="368" y="274" class="tx-sm" text-anchor="middle">a</text>
+          <text x="520" y="274" class="tx-sm" text-anchor="middle">b</text>
+          <text x="620" y="256" class="tx-b" text-anchor="middle" fill="var(--c-accent)">a &lt; b</text>
+        </g>
+        <g>
+          <text x="34" y="316" class="tx">f(n) = &omega;(g(n))</text>
+          <line x1="330" y1="312" x2="560" y2="312" stroke="var(--c-line)"></line>
+          <circle cx="520" cy="312" r="5" fill="var(--c-accent)"></circle>
+          <circle cx="368" cy="312" r="5" fill="var(--c-hot)"></circle>
+          <text x="520" y="334" class="tx-sm" text-anchor="middle">a</text>
+          <text x="368" y="334" class="tx-sm" text-anchor="middle">b</text>
+          <text x="620" y="316" class="tx-b" text-anchor="middle" fill="var(--c-accent)">a &gt; b</text>
+        </g>
+        <text x="34" y="362" class="tx-sm">"&asymp;" 相似于 f ~ a、g ~ b：把两个函数看成两个实数 a、b 后，渐近记号就是它们的大小关系</text>
+      </svg>
+      <p class="fig-cap">图 6 &nbsp;渐近记号与实数比较的类比（O &asymp; &le;，&Omega; &asymp; &ge;，&Theta; &asymp; =，o &asymp; &lt;，&omega; &asymp; &gt;）</p>
+
+      <h3>7.3 并非所有函数都渐近可比较</h3>
+
+      <p>思考：是否所有函数都是渐近可比较的？<b>不是。</b>对某些 f(n) 和 g(n)，可能 <span class="m">f(n) = O(g(n))</span> 不成立，而且 <span class="m">f(n) = &Omega;(g(n))</span> 也不成立，从而由定理 1.1 得 <span class="m">f(n) &ne; &Theta;(g(n))</span>。</p>
+      <p><b>例</b>：函数 <span class="m">n</span> 和 <span class="m">n<sup>1+sin n</sup></span> 之间是无法渐进比较的。因为 <span class="m">1 + sin n &isin; [0, 2]</span>，即 <span class="m">n<sup>1+sin n</sup></span> 在 <span class="m">O(1)</span> ～ <span class="m">O(n<sup>2</sup>)</span> 之间不断波动，找不到固定的数量级。</p>
+    </section>
+
+    <!-- ================================================================ -->
+    <section id="sec-notation">
+      <h2>8. 渐进表示法：等式约定与运算规则</h2>
+
+      <h3>8.1 f(n) = O(g(n)) 的本质是 f(n) &isin; O(g(n))</h3>
+
+      <p>以大 O 符号为例：<span class="m">f(n) = O(g(n))</span> 的本质含义是 <span class="m">f(n) &isin; O(g(n))</span>（集合的属于关系）。例如：</p>
+      <ul>
+        <li><span class="m">an<sup>2</sup> + bn + c = O(n<sup>2</sup>)</span>，即 <span class="m">an<sup>2</sup> + bn + c &isin; O(n<sup>2</sup>)</span>；</li>
+        <li><span class="m">n = O(n<sup>2</sup>)</span>，即 <span class="m">n &isin; O(n<sup>2</sup>)</span>；</li>
+        <li><span class="m">2n<sup>2</sup> + 3n + 1 = 2n<sup>2</sup> + &Theta;(n)</span>，表示 <span class="m">2n<sup>2</sup> + 3n + 1 = 2n<sup>2</sup> + f(n)</span>，其中 f(n) 是某个属于集合 &Theta;(n) 的函数。</li>
+      </ul>
+      <p>渐近记号的这种用法有助于略去一个等式中无关紧要的细节。</p>
+
+      <div class="callout warn">
+        <p class="callout-h">易错：渐近记号出现在等式<b>左边</b>时</p>
+        <p>含义是：<b>无论等号左边渐近记号表示的匿名函数如何选择，总有办法选取等号右边的匿名函数使等式成立。</b></p>
+        <p>例：<span class="m">2n<sup>2</sup> + &Theta;(n) = &Theta;(n<sup>2</sup>)</span>，即对任意函数 f(n) &isin; &Theta;(n)，都存在函数 g(n) &isin; &Theta;(n<sup>2</sup>)，使得对所有的 n 有 <span class="m">2n<sup>2</sup> + f(n) = g(n)</span> 成立。</p>
+      </div>
+
+      <p>根据以上规则，可以得到一串关于渐进记号的等式：</p>
+      <p class="formula">2n<sup>2</sup> + 3n + 1 = 2n<sup>2</sup> + &Theta;(n) = &Theta;(n<sup>2</sup>)</p>
+
+      <h3>8.2 运算规则</h3>
+
+      <table class="tbl">
+        <thead><tr><th>规则</th><th>说明</th></tr></thead>
+        <tbody>
+          <tr><td class="num">O(f) + O(g) = O(max(f, g))</td><td>两项相加取量级大的那项</td></tr>
+          <tr><td class="num">O(f) + O(g) = O(f + g)</td><td>也可以直接写成和的记号</td></tr>
+          <tr><td class="num">O(f) &middot; O(g) = O(f&middot;g)</td><td>相乘时量级相乘</td></tr>
+          <tr><td class="num">若 g(N) = O(f(N))，则 O(f) + O(g) = O(f)</td><td>被吸收：小的那一项直接丢掉</td></tr>
+          <tr><td class="num">O(c&middot;f(N)) = O(f(N))，其中 c 是正常数</td><td>常数系数可以丢掉</td></tr>
+          <tr><td class="num">f = O(f)</td><td>自反性</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- ================================================================ -->
+    <section id="sec-substitution">
+      <h2>9. 求解递归式：代换法</h2>
+
+      <p>归并排序的分析需要求解一个递归式；求解递归式就像求解积分、微分方程一样，需要学会一些技巧。常用方法有三种：<b>代换法</b>、<b>递归树</b>、<b>主方法</b>。</p>
+
+      <div class="callout key">
+        <p class="callout-h">代换法（Substitution Method）—— 最通用的方法</p>
+        <p>① <b>猜测解的形式</b>；② <b>通过推导验证</b>；③ <b>解出常数</b>。</p>
+        <p>例：<span class="m">T(n) = 4T(n/2) + n</span>，假设 <span class="m">T(1) = &Theta;(1)</span>。先猜测 <span class="m">O(n<sup>3</sup>)</span>（分别证明 O 和 &Omega;）：假设对所有 k &lt; n 有 <span class="m">T(k) &le; ck<sup>3</sup></span>，通过推导证明 <span class="m">T(n) &le; cn<sup>3</sup></span>。</p>
+      </div>
+
+      <p><b>O(n<sup>3</sup>) 的完整推导</b>：</p>
+      <p class="formula">T(n) = 4T(n/2) + n &le; 4c(n/2)<sup>3</sup> + n = (c/2)n<sup>3</sup> + n = cn<sup>3</sup> &minus; ( (c/2)n<sup>3</sup> &minus; n ) &le; cn<sup>3</sup></p>
+      <p>这里 <span class="m">cn<sup>3</sup></span> 是"<b>期望</b>"，<span class="m">(c/2)n<sup>3</sup> &minus; n</span> 是"<b>余项</b>"。只要余项 <span class="m">(c/2)n<sup>3</sup> &minus; n &ge; 0</span>（例如 <b>c &ge; 2 且 n &ge; 1</b>），就有"期望 &minus; 余项 &le; 期望"，即 <span class="m">T(n) &le; cn<sup>3</sup></span>。</p>
+
+      <p><b>初始条件的处理</b>：必须保证推导在初始情况成立。当 n<sub>0</sub> 为适当常量时，对所有 <span class="m">n &lt; n<sub>0</sub></span> 有 <span class="m">T(n) = &Theta;(1)</span>；只要 c 选得足够大，对 <span class="m">1 &le; n &lt; n<sub>0</sub></span> 就有 <span class="m">&Theta;(1) &le; cn<sup>3</sup></span>。注意<b>这个界并不紧密</b>。</p>
+
+      <h3>9.1 猜一个更接近的上界 O(n<sup>2</sup>)：证明失败</h3>
+
+      <p>要证 <span class="m">T(n) = O(n<sup>2</sup>)</span>，假设对 k &lt; n 有 <span class="m">T(k) &le; ck<sup>2</sup></span>，代入：</p>
+      <p class="formula">T(n) = 4T(n/2) + n &le; 4c(n/2)<sup>2</sup> + n = cn<sup>2</sup> + n = cn<sup>2</sup> &minus; (&minus;n) &le; cn<sup>2</sup> ??</p>
+      <p>把它写成"期望 &minus; 余项"，余项是 <b>&minus;n</b>。要得到 <span class="m">T(n) &le; cn<sup>2</sup></span> 必须余项 &ge; 0，但 <b>没有任何 c &gt; 0 能满足</b>（&minus;n &lt; 0 对一切 n &ge; 1 成立）。所以这个证明是<b>错的</b>，不能据此得出 T(n) = O(n<sup>2</sup>)。</p>
+
+      <h3>9.2 补救思想：加强推导的假设（减一个低阶项）</h3>
+
+      <p>设对所有 k &lt; n 有 <span class="m">T(k) &le; c<sub>1</sub>k<sup>2</sup> &minus; c<sub>2</sub>k</span>，则</p>
+      <p class="formula">T(n) = 4( c<sub>1</sub>(n/2)<sup>2</sup> &minus; c<sub>2</sub>(n/2) ) + n = c<sub>1</sub>n<sup>2</sup> &minus; 2c<sub>2</sub>n + n = c<sub>1</sub>n<sup>2</sup> &minus; c<sub>2</sub>n &minus; ( c<sub>2</sub>n &minus; n )</p>
+      <p class="formula">只要 c<sub>2</sub> &ge; 1，就有 T(n) &le; c<sub>1</sub>n<sup>2</sup> &minus; c<sub>2</sub>n &le; c<sub>1</sub>n<sup>2</sup></p>
+      <p>剩余一步：<b>选择足够大的 c<sub>1</sub> 使初始条件成立</b>。于是 <span class="m">T(n) = O(n<sup>2</sup>)</span> 得证；再结合下界 <span class="m">T(n) &ge; n<sup>2</sup></span>，可得 <span class="m">T(n) = &Theta;(n<sup>2</sup>)</span>。</p>
+
+      <div class="demo" data-demo="substitution-fail">
+        <div class="demo-bar">
+          <span class="demo-title">代换法：T(n) = 4T(n/2) + n 猜 O(n²) 的失败与加强假设后的成功（8 步）</span>
+          <span class="demo-ctl">
+            <button type="button" data-act="reset">重置</button>
+            <button type="button" data-act="prev">上一步</button>
+            <button type="button" data-act="next">下一步</button>
+            <button type="button" data-act="play">播放</button>
+          </span>
+        </div>
+        <div class="demo-stage"></div>
+        <p class="demo-cap"></p>
+      </div>
+
+      <h3>9.3 代换法的实现骨架（伪代码 + C++）</h3>
+
+      <div class="code-pair">
+        <div class="code-col">
+          <p class="code-h">伪代码</p>
+          <pre class="code"><code>SUBSTITUTION-CHECK(n)                         // 代换法：验证 T(n)=4T(n/2)+n 的猜测是否成立
+1  guess &larr; c&middot;n&sup2;                                // ① 猜测解的形式：先猜 T(n) = O(n&sup2;)
+2  假设对所有 k &lt; n 有 T(k) &le; c&middot;k&sup2;            // 归纳假设：更小规模上猜测成立
+3  T(n) &larr; 4&middot;T(n/2) + n                         // 把猜测代入原递归式
+4  T(n) &le; 4c(n/2)&sup2; + n = c&middot;n&sup2; + n            // 用归纳假设替换 T(n/2)
+5  rem &larr; c&middot;n&sup2; &minus; T(n) = &minus;n                   // 余项 = 期望 &minus; 实际上界
+6  if rem &lt; 0 then return FAIL                  // 余项为负 &rArr; 没有 c&gt;0 可行 &rArr; 证明失败
+7  guess &larr; c&#8321;&middot;n&sup2; &minus; c&#8322;&middot;n                   // ③ 加强假设：减一个低阶项
+8  T(n) &le; 4(c&#8321;(n/2)&sup2; &minus; c&#8322;(n/2)) + n          // 把加强后的假设代入
+9  T(n) &le; c&#8321;n&sup2; &minus; c&#8322;n &minus; (c&#8322;n &minus; n)         // 整理成"期望 &minus; 余项"的形式
+10 if c&#8322; &ge; 1 then return SUCCESS             // 余项 c&#8322;n &minus; n &ge; 0 &rArr; 上界成立
+11 取足够大的 c&#8321; 使初始条件成立                  // ② 解出常数：兼顾初始情况
+12 return T(n) = O(n&sup2;)                       // 结论：紧界 O(n&sup2;)</code></pre>
+        </div>
+        <div class="code-col">
+          <p class="code-h">C++</p>
+          <pre class="code cpp"><code>#include &lt;cmath&gt;                                  // 用到 pow、fabs 等数学函数
+// 返回"期望 &minus; 实际上界"的余项：&ge;0 表示猜测可行
+double remainderWeak(double n, double c) {        // 弱假设 T(k) &le; c&middot;k&sup2; 的余项
+    double upper = 4.0 * c * (n / 2) * (n / 2) + n;   // 用归纳假设得 T(n) 的上界 c&middot;n&sup2;+n
+    return c * n * n - upper;                     // 期望 c&middot;n&sup2; 减去上界 &rArr; 余项 = &minus;n
+}                                                 // 结束 remainderWeak（弱假设余项）
+bool weakGuessFails(double n) {                   // 检验弱假设是否真的失败
+    for (double c = 0.1; c &lt; 1e6; c *= 10) {       // 枚举任意大的正数 c，逐一试探
+        if (remainderWeak(n, c) &gt;= 0) return false;    // 只要有一个 c 可行就不算失败
+    }                                             // 结束 c 枚举循环
+    return true;                                  // 全部 c 都失败 &rArr; 弱假设被否定
+}                                                 // 结束 weakGuessFails
+bool remainderStrong(double n, double c1, double c2) {  // 强假设的余项是否非负
+    double upper = 4.0 * (c1 * (n/2) * (n/2) - c2 * (n/2)) + n;  // 代入 T(k) &le; c&#8321;k&sup2; &minus; c&#8322;k
+    return upper &lt;= c1 * n * n - c2 * n;           // 等价于要求 c&#8322;n &minus; n &ge; 0
+}                                                 // 结束 remainderStrong（强假设余项）
+int main() {                                      // 主函数：打印两种假设的验证结果
+    double n = 10.0;                              // 取一个规模 n = 10 做数值验证
+    bool fail = weakGuessFails(n);                 // 弱假设：应输出失败
+    bool ok = remainderStrong(n, 4.0, 1.0);        // 强假设：c&#8321;=4、c&#8322;=1 应输出成功
+    return (fail &amp;&amp; ok) ? 0 : 1;                  // 两者都符合预期则返回 0
+}                                                 // 结束 main 函数（代换法验证演示）</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================ -->
+    <section id="sec-recursion-tree">
+      <h2>10. 递归树法</h2>
+
+      <p>递归树方法对算法<b>递归执行的花费（时间）建模</b>：把递归展开成一棵树，节点表示子问题的代价，逐层求和即得总代价。</p>
+      <ul>
+        <li>递归树方法可以用作<b>代换法之前的猜想</b>来源；</li>
+        <li>递归树方法<b>可能不是很可靠</b>（例如需要仔细处理叶子层的边界），然而它有很重要的<b>启发</b>作用。</li>
+      </ul>
+
+      <h3>10.1 例一：T(n) = T(n/4) + T(n/2) + n<sup>2</sup></h3>
+
+      <p>注意本例的两个子问题规模<b>不相等</b>（n/4 和 n/2），因此<b>不能用主方法</b>，递归树是首选工具。</p>
+
+      <svg class="fig" viewBox="0 0 980 430" role="img" aria-label="T(n)=T(n/4)+T(n/2)+n² 的递归树逐层展开图，右侧标注每层代价与几何级数求和">
+        <text x="30" y="28" class="tx-b">递归树逐层展开（节点内为该子问题的代价）</text>
+        <g>
+          <rect x="150" y="46" width="90" height="30" rx="6" fill="var(--c-key-bg)" stroke="var(--c-accent)"></rect>
+          <text x="195" y="66" class="tx" text-anchor="middle" fill="var(--c-accent)">n&sup2;</text>
+          <rect x="55" y="126" width="90" height="30" rx="6" fill="var(--c-panel-2)" stroke="var(--c-line)"></rect>
+          <text x="100" y="146" class="tx" text-anchor="middle">(n/4)&sup2;</text>
+          <rect x="245" y="126" width="90" height="30" rx="6" fill="var(--c-panel-2)" stroke="var(--c-line)"></rect>
+          <text x="290" y="146" class="tx" text-anchor="middle">(n/2)&sup2;</text>
+          <line x1="185" y1="76" x2="110" y2="126" stroke="var(--c-line)"></line>
+          <line x1="205" y1="76" x2="280" y2="126" stroke="var(--c-line)"></line>
+          <rect x="30" y="206" width="76" height="28" rx="6" fill="var(--c-panel-2)" stroke="var(--c-line)"></rect>
+          <text x="68" y="225" class="tx-sm" text-anchor="middle">(n/16)&sup2;</text>
+          <rect x="116" y="206" width="76" height="28" rx="6" fill="var(--c-panel-2)" stroke="var(--c-line)"></rect>
+          <text x="154" y="225" class="tx-sm" text-anchor="middle">(n/8)&sup2;</text>
+          <rect x="212" y="206" width="76" height="28" rx="6" fill="var(--c-panel-2)" stroke="var(--c-line)"></rect>
+          <text x="250" y="225" class="tx-sm" text-anchor="middle">(n/8)&sup2;</text>
+          <rect x="298" y="206" width="76" height="28" rx="6" fill="var(--c-panel-2)" stroke="var(--c-line)"></rect>
+          <text x="336" y="225" class="tx-sm" text-anchor="middle">(n/4)&sup2;</text>
+          <line x1="88" y1="156" x2="68" y2="206" stroke="var(--c-line)"></line>
+          <line x1="110" y1="156" x2="154" y2="206" stroke="var(--c-line)"></line>
+          <line x1="272" y1="156" x2="250" y2="206" stroke="var(--c-line)"></line>
+          <line x1="296" y1="156" x2="336" y2="206" stroke="var(--c-line)"></line>
+          <text x="205" y="268" class="tx-b" text-anchor="middle" fill="var(--c-ink-soft)">&#8942;</text>
+          <rect x="150" y="292" width="110" height="28" rx="6" fill="var(--c-panel-2)" stroke="var(--c-ok)"></rect>
+          <text x="205" y="311" class="tx" text-anchor="middle" fill="var(--c-ok)">&Theta;(1)</text>
+          <text x="205" y="344" class="tx-sm" text-anchor="middle">子问题规模下降到 &Theta;(1) 时停止</text>
+        </g>
+        <line x1="470" y1="30" x2="470" y2="400" stroke="var(--c-line-soft)"></line>
+        <g>
+          <text x="500" y="52" class="tx-b">每层代价</text>
+          <text x="500" y="86" class="tx">第 0 层：n&sup2;</text>
+          <text x="820" y="86" class="tx" text-anchor="end" fill="var(--c-accent)">n&sup2;</text>
+          <text x="500" y="126" class="tx">第 1 层：(n/4)&sup2; + (n/2)&sup2;</text>
+          <text x="820" y="126" class="tx" text-anchor="end" fill="var(--c-accent)">5n&sup2;/16</text>
+          <text x="500" y="166" class="tx">第 2 层：(1/16 + 1/4)&sup2; n&sup2;</text>
+          <text x="820" y="166" class="tx" text-anchor="end" fill="var(--c-accent)">25n&sup2;/256</text>
+          <text x="500" y="206" class="tx">第 3 层：乘公比 5/16 再降一次</text>
+          <text x="820" y="206" class="tx" text-anchor="end" fill="var(--c-accent)">125n&sup2;/4096</text>
+          <text x="500" y="238" class="tx-sm">&#8942; 公比 r = 5/16 &lt; 1，层代价迅速衰减</text>
+          <line x1="500" y1="256" x2="830" y2="256" stroke="var(--c-line)"></line>
+          <text x="500" y="288" class="tx-b">和 = n&sup2;( 1 + 5/16 + (5/16)&sup2; + (5/16)&sup3; + &hellip; )</text>
+          <text x="500" y="320" class="tx">= n&sup2; &middot; 1/(1 &minus; 5/16) = 16n&sup2;/11 &asymp; 1.4545n&sup2;</text>
+          <text x="500" y="360" class="tx-b" fill="var(--c-hot)">几何级数收敛 &rArr; T(n) = &Theta;(n&sup2;)</text>
+          <text x="500" y="392" class="tx-sm">下界由根代价 n&sup2; 给出：T(n) &ge; n&sup2;；上界由收敛级数给出</text>
+        </g>
+      </svg>
+      <p class="fig-cap">图 7 &nbsp;T(n) = T(n/4) + T(n/2) + n<sup>2</sup> 的递归树：每层代价是上层的 5/16 倍，构成公比小于 1 的几何级数</p>
+
+      <p>逐层求和的过程：<span class="m">n<sup>2</sup></span> → <span class="m">(n/4)<sup>2</sup> + (n/2)<sup>2</sup> = (1/16 + 1/4)n<sup>2</sup> = 5n<sup>2</sup>/16</span> → <span class="m">25n<sup>2</sup>/256</span> → &hellip;，公比 <b>5/16 &lt; 1</b>，故</p>
+      <p class="formula">和 = n<sup>2</sup>( 1 + 5/16 + (5/16)<sup>2</sup> + (5/16)<sup>3</sup> + &hellip; ) = n<sup>2</sup> &middot; 1/(1 &minus; 5/16) = 16n<sup>2</sup>/11 = &Theta;(n<sup>2</sup>)</p>
+
+      <div class="demo" data-demo="recursion-tree">
+        <div class="demo-bar">
+          <span class="demo-title">递归树 T(n) = T(n/4) + T(n/2) + n² 逐层生长（7 步）</span>
+          <span class="demo-ctl">
+            <button type="button" data-act="reset">重置</button>
+            <button type="button" data-act="prev">上一步</button>
+            <button type="button" data-act="next">下一步</button>
+            <button type="button" data-act="play">播放</button>
+          </span>
+        </div>
+        <div class="demo-stage"></div>
+        <p class="demo-cap"></p>
+      </div>
+
+      <h3>10.2 例二：T(n) = 3T(n/4) + cn<sup>2</sup></h3>
+
+      <p>这次子问题规模相同，可以用主方法（a = 3、b = 4，n<sup>log<sub>b</sub>a</sup> = n<sup>log<sub>4</sub>3</sup> &asymp; n<sup>0.793</sup>，而 f(n) = cn<sup>2</sup> 更大，属于情况 3），但用递归树看得更清楚。逐层展开的费用是：</p>
+      <table class="tbl">
+        <thead><tr><th>层次</th><th>节点数</th><th>该层总代价</th><th>化简</th></tr></thead>
+        <tbody>
+          <tr><td>第 0 层</td><td class="num">1</td><td class="num">cn<sup>2</sup></td><td class="num">cn<sup>2</sup></td></tr>
+          <tr><td>第 1 层</td><td class="num">3</td><td class="num">3 &middot; c(n/4)<sup>2</sup></td><td class="num">(3/16)cn<sup>2</sup></td></tr>
+          <tr><td>第 2 层</td><td class="num">3<sup>2</sup></td><td class="num">3<sup>2</sup> &middot; c(n/4<sup>2</sup>)<sup>2</sup></td><td class="num">(3/16)<sup>2</sup>cn<sup>2</sup></td></tr>
+          <tr><td>第 i 层</td><td class="num">3<sup>i</sup></td><td class="num">3<sup>i</sup> &middot; c(n/4<sup>i</sup>)<sup>2</sup></td><td class="num">(3/16)<sup>i</sup>cn<sup>2</sup></td></tr>
+          <tr><td>叶子层</td><td class="num">3<sup>log<sub>4</sub>n</sup> = n<sup>log<sub>4</sub>3</sup></td><td class="num">&Theta;(n<sup>log<sub>4</sub>3</sup>)</td><td class="num">&Theta;(n<sup>0.793</sup>)</td></tr>
+        </tbody>
+      </table>
+      <p>共 <b>log<sub>4</sub>n</b> 层，于是</p>
+      <p class="formula">T(n) = &sum;<sub>i=0</sub><sup>log<sub>4</sub>n &minus; 1</sup> (3/16)<sup>i</sup> cn<sup>2</sup> + &Theta;(n<sup>log<sub>4</sub>3</sup>)</p>
+      <p>因为 <b>3/16 &lt; 1</b>，几何级数收敛到常数倍 cn<sup>2</sup>（无穷和 = cn<sup>2</sup>/(1 &minus; 3/16) = 16cn<sup>2</sup>/13），而叶子层 &Theta;(n<sup>0.793</sup>) 是低阶项，故</p>
+      <p class="formula">T(n) = O(n<sup>2</sup>)&nbsp;&nbsp;（对应主方法情况 3：根层代价 f(n) = cn<sup>2</sup> 主导）</p>
+
+      <h3>10.3 例三：T(n) = T(n/3) + T(2n/3) + cn（主方法不适用）</h3>
+
+      <p>PPT 另外给出一个例子：<span class="m">T(n) = T(n/3) + T(2n/3) + cn</span>，并注明"<b>该问题的子问题规模不一样</b>"。此时 a = 2 但两个子问题规模不同（n/3 与 2n/3），不满足主方法"每个子问题规模都是 n/b"的前提。</p>
+      <p>用递归树分析：每一层的总代价都是 <b>cn</b>（同一层所有节点的规模之和恒为 n），而最长的递归路径沿着 2n/3 分支走，深度为 <b>log<sub>3/2</sub>n</b>，所以</p>
+      <p class="formula">T(n) = cn &middot; log<sub>3/2</sub>n + O(n) = &Theta;(n lg n)&nbsp;&nbsp;（补充结论，供参考）</p>
+
+      <h3>10.4 递归树求和的实现骨架（伪代码 + C++）</h3>
+
+      <div class="code-pair">
+        <div class="code-col">
+          <p class="code-h">伪代码</p>
+          <pre class="code"><code>RECURSION-TREE-SUM(n)                  // 递归树法：求 T(n)=T(n/4)+T(n/2)+n&sup2; 的总代价
+1  total &larr; n&sup2;                          // 第 0 层（根）的代价就是 n&sup2;
+2  level &larr; n&sup2;                          // level 记录"当前这一层"的总代价
+3  r &larr; 1/16 + 1/4 = 5/16                 // 每层的公比：(n/4)&sup2;+(n/2)&sup2; 相对 n&sup2; 的倍数
+4  for i &larr; 1 to &infin; do                    // 逐层向下累加，直到层代价可忽略
+5      level &larr; level &times; r                // 第 i 层代价 = 上一层代价 &times; 5/16
+6      total &larr; total + level              // 把该层代价累加进总和
+7      if level &lt; &epsilon;&middot;n&sup2; then break        // 层代价小于阈值就停止（公比 &lt; 1 保证收敛）
+8  return total = 16n&sup2;/11 = &Theta;(n&sup2;)        // 几何级数求和 &rArr; 得到紧界 &Theta;(n&sup2;)</code></pre>
+        </div>
+        <div class="code-col">
+          <p class="code-h">C++</p>
+          <pre class="code cpp"><code>// 用几何级数累加估算递归树的总代价（n 用 double 表示规模）
+double treeSum(double n, double eps) {           // eps 为停止阈值（相对 n&sup2; 的比例）
+    const double r = 5.0 / 16.0;                 // 每层代价的公比 5/16 &lt; 1
+    double total = n * n;                        // 第 0 层代价 n&sup2; 计入总和
+    double level = n * n;                        // 当前层代价，初值为根代价
+    for (int i = 1; i &lt; 10000; ++i) {            // 最多迭代 10000 层，防止死循环
+        level *= r;                              // 进入下一层：代价乘以公比
+        total += level;                          // 累加该层代价
+        if (level &lt; eps * n * n) break;          // 层代价足够小 &rArr; 收敛，提前结束
+    }                                             // 结束逐层累加循环
+    return total;                                // 返回值约为 1.4545&middot;n&sup2;
+}                                                 // 结束 treeSum（递归树求和）
+int main() {                                     // 主函数：验证收敛结果
+    double n = 100.0;                            // 取规模 n = 100 做数值实验
+    double t = treeSum(n, 1e-9);                 // 阈值取 n&sup2; 的 1e-9
+    return (t &lt; 1.46 * n * n &amp;&amp; t &gt; 1.45 * n * n) ? 0 : 1;  // 结果应落在 1.45~1.46 倍 n&sup2; 之间
+}                                                 // 结束 main 函数（递归树求和演示）</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================ -->
+    <section id="sec-master">
+      <h2>11. 主方法（Master Method）</h2>
+
+      <p>主方法给出求解如下形式递归式的方法：</p>
+      <p class="formula">T(n) = aT(n/b) + f(n)，&nbsp;其中 a &ge; 1、b &gt; 1 是常数，f(n) 是渐近正的函数</p>
+      <p>它描述了这样一类算法的运行时间：把规模为 n 的问题<b>划分为 a 个子问题</b>，每个子问题的规模为 n/b；每个子问题的求解时间为 T(n/b)，<b>划分与合并的时间为 f(n)</b>。</p>
+
+      <div class="callout key">
+        <p class="callout-h">比较基准</p>
+        <p>把 <b>n<sup>log<sub>b</sub>a</sup></b> 作为基准 —— 它就是递归树叶子层的总代价量级：叶子数为 a<sup>h</sup> = a<sup>log<sub>b</sub>n</sup> = n<sup>log<sub>b</sub>a</sup>，每个叶子的代价是 T(1) = &Theta;(1)。三种情况本质上就是比较 f(n) 与 n<sup>log<sub>b</sub>a</sup> 的大小关系。</p>
+      </div>
+
+      <h3>11.1 三种情况（条件与结论）</h3>
+
+      <table class="tbl">
+        <thead><tr><th>情况</th><th>条件</th><th>结论</th><th>递归树权重分布</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><b>情况 1</b></td>
+            <td>f(n) = O(n<sup>log<sub>b</sub>a &minus; &epsilon;</sup>)，常量 &epsilon; &gt; 0<br>
+                <span class="m">f(n) 比多项式 n<sup>log<sub>b</sub>a</sup> 增长得慢（慢 n<sup>&epsilon;</sup> 倍）</span></td>
+            <td class="num"><b>T(n) = &Theta;(n<sup>log<sub>b</sub>a</sup>)</b></td>
+            <td>加权从根到叶子<b>几何级数增长</b>，叶子在总权重中仅占常量部分</td>
+          </tr>
+          <tr>
+            <td><b>情况 2</b></td>
+            <td>f(n) = &Theta;(n<sup>log<sub>b</sub>a</sup>)<br>
+                <span class="m">即每层加权基本相同（f(n) = &Theta;(n<sup>log<sub>b</sub>a</sup> lg<sup>k</sup>n)，k = 0）</span></td>
+            <td class="num"><b>T(n) = &Theta;(n<sup>log<sub>b</sub>a</sup> lg n)<br>= &Theta;(f(n) lg n)</b></td>
+            <td><b>每层的加权基本相同</b>，共 log<sub>b</sub>n 层</td>
+          </tr>
+          <tr>
+            <td><b>情况 3</b></td>
+            <td>f(n) = &Omega;(n<sup>log<sub>b</sub>a + &epsilon;</sup>)，常量 &epsilon; &gt; 0<br>
+                <span class="m">f(n) 比 n<sup>log<sub>b</sub>a</sup> 增长得快（快 n<sup>&epsilon;</sup> 倍）</span><br>
+                <b>并且 f(n) 满足规定条件 a&middot;f(n/b) &le; c&middot;f(n)，常量 c &lt; 1</b></td>
+            <td class="num"><b>T(n) = &Theta;(f(n))</b></td>
+            <td>权重从根到叶子<b>几何级数递减</b>，根在整个权重中仅仅是常量部分</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="callout warn">
+        <p class="callout-h">情况 3 的两个条件缺一不可</p>
+        <p>光有 f(n) = &Omega;(n<sup>log<sub>b</sub>a + &epsilon;</sup>) 还不够，还必须验证<b>正则条件</b>（regularity condition）<span class="m">a&middot;f(n/b) &le; c&middot;f(n)</span>（常量 c &lt; 1）。它的含义是"每往下一层，加权至少缩小一个固定比例"，这样才能保证根层代价在总代价中占常数比例。</p>
+      </div>
+
+      <h3>11.2 主方法的思路：三种情况对应三种权重分布</h3>
+
+      <svg class="fig" viewBox="0 0 980 400" role="img" aria-label="主方法三种情况的递归树权重分布对比：情况1逐层递增，情况2每层均匀，情况3逐层递减">
+        <text x="30" y="28" class="tx-b">递归树各层加权（柱高 = 该层总代价）</text>
+        <g>
+          <text x="180" y="64" class="tx-b" text-anchor="middle" fill="var(--c-accent)">情况 1：逐层递增</text>
+          <line x1="60" y1="240" x2="300" y2="240" stroke="var(--c-line)"></line>
+          <rect x="76" y="232" width="42" height="8" rx="3" fill="var(--c-accent)"></rect>
+          <rect x="132" y="222" width="42" height="18" rx="3" fill="var(--c-accent)"></rect>
+          <rect x="188" y="200" width="42" height="40" rx="3" fill="var(--c-accent)"></rect>
+          <rect x="244" y="154" width="42" height="86" rx="3" fill="var(--c-accent)"></rect>
+          <text x="97" y="256" class="tx-sm" text-anchor="middle">f(n)</text>
+          <text x="153" y="256" class="tx-sm" text-anchor="middle">af(n/b)</text>
+          <text x="209" y="256" class="tx-sm" text-anchor="middle">a&sup2;f(n/b&sup2;)</text>
+          <text x="265" y="256" class="tx-sm" text-anchor="middle">叶子</text>
+          <text x="180" y="286" class="tx" text-anchor="middle">叶子占常数比例 &rArr; 叶子主导</text>
+          <text x="180" y="316" class="tx-b" text-anchor="middle" fill="var(--c-hot)">T(n) = &Theta;(n^(log_b a))</text>
+        </g>
+        <line x1="330" y1="40" x2="330" y2="370" stroke="var(--c-line-soft)"></line>
+        <g>
+          <text x="490" y="64" class="tx-b" text-anchor="middle" fill="var(--c-accent-2)">情况 2：每层均匀</text>
+          <line x1="370" y1="240" x2="610" y2="240" stroke="var(--c-line)"></line>
+          <rect x="386" y="200" width="42" height="40" rx="3" fill="var(--c-accent-2)"></rect>
+          <rect x="442" y="200" width="42" height="40" rx="3" fill="var(--c-accent-2)"></rect>
+          <rect x="498" y="200" width="42" height="40" rx="3" fill="var(--c-accent-2)"></rect>
+          <rect x="554" y="200" width="42" height="40" rx="3" fill="var(--c-accent-2)"></rect>
+          <text x="407" y="256" class="tx-sm" text-anchor="middle">f(n)</text>
+          <text x="463" y="256" class="tx-sm" text-anchor="middle">af(n/b)</text>
+          <text x="519" y="256" class="tx-sm" text-anchor="middle">a&sup2;f(n/b&sup2;)</text>
+          <text x="575" y="256" class="tx-sm" text-anchor="middle">叶子</text>
+          <text x="490" y="286" class="tx" text-anchor="middle">每层相同 &rArr; 叠加 log_b n 层</text>
+          <text x="490" y="316" class="tx-b" text-anchor="middle" fill="var(--c-hot)">T(n) = &Theta;(n^(log_b a) &middot; lg n)</text>
+        </g>
+        <line x1="640" y1="40" x2="640" y2="370" stroke="var(--c-line-soft)"></line>
+        <g>
+          <text x="800" y="64" class="tx-b" text-anchor="middle" fill="var(--c-warn)">情况 3：逐层递减</text>
+          <line x1="680" y1="240" x2="920" y2="240" stroke="var(--c-line)"></line>
+          <rect x="696" y="154" width="42" height="86" rx="3" fill="var(--c-warn)"></rect>
+          <rect x="752" y="200" width="42" height="40" rx="3" fill="var(--c-warn)"></rect>
+          <rect x="808" y="222" width="42" height="18" rx="3" fill="var(--c-warn)"></rect>
+          <rect x="864" y="232" width="42" height="8" rx="3" fill="var(--c-warn)"></rect>
+          <text x="717" y="256" class="tx-sm" text-anchor="middle">f(n)</text>
+          <text x="773" y="256" class="tx-sm" text-anchor="middle">af(n/b)</text>
+          <text x="829" y="256" class="tx-sm" text-anchor="middle">a&sup2;f(n/b&sup2;)</text>
+          <text x="885" y="256" class="tx-sm" text-anchor="middle">叶子</text>
+          <text x="800" y="286" class="tx" text-anchor="middle">根占常数比例 &rArr; 根主导</text>
+          <text x="800" y="316" class="tx-b" text-anchor="middle" fill="var(--c-hot)">T(n) = &Theta;(f(n))</text>
+        </g>
+        <text x="30" y="358" class="tx-sm">三种情况的分界点都是基准 n^(log_b a)：f(n) 多项式地小于它 / 与它同阶 / 多项式地大于它（且满足 a&middot;f(n/b) &le; c&middot;f(n)，c &lt; 1）</text>
+        <text x="30" y="382" class="tx-sm">上图用 a = 3、b = 3 示意；实际 a、b 任意，柱高只表示各层加权的相对量级</text>
+      </svg>
+      <p class="fig-cap">图 8 &nbsp;主方法三种情况对应的递归树权重分布：递增 / 均匀 / 递减</p>
+
+      <div class="demo" data-demo="master-three-cases">
+        <div class="demo-bar">
+          <span class="demo-title">主方法三种情况的切换演示（10 步）</span>
+          <span class="demo-ctl">
+            <button type="button" data-act="reset">重置</button>
+            <button type="button" data-act="prev">上一步</button>
+            <button type="button" data-act="next">下一步</button>
+            <button type="button" data-act="play">播放</button>
+          </span>
+        </div>
+        <div class="demo-stage"></div>
+        <p class="demo-cap"></p>
+      </div>
+
+      <h3>11.3 四个必会例题</h3>
+
+      <table class="tbl">
+        <thead><tr><th>递归式</th><th>n<sup>log<sub>b</sub>a</sup> 与 f(n)</th><th>判定</th><th>结论</th></tr></thead>
+        <tbody>
+          <tr>
+            <td class="num">T(n) = 4T(n/2) + n</td>
+            <td class="num">a = 4、b = 2 &rArr; n<sup>log<sub>b</sub>a</sup> = n<sup>2</sup>；f(n) = n</td>
+            <td>情况 1：f(n) = O(n<sup>2&minus;&epsilon;</sup>)，取 &epsilon; = 1</td>
+            <td class="num"><b>T(n) = &Theta;(n<sup>2</sup>)</b></td>
+          </tr>
+          <tr>
+            <td class="num">T(n) = 4T(n/2) + n<sup>2</sup></td>
+            <td class="num">n<sup>log<sub>b</sub>a</sup> = n<sup>2</sup>；f(n) = n<sup>2</sup></td>
+            <td>情况 2：f(n) = &Theta;(n<sup>2</sup>lg<sup>0</sup>n)，即 k = 0</td>
+            <td class="num"><b>T(n) = &Theta;(n<sup>2</sup> lg n)</b></td>
+          </tr>
+          <tr>
+            <td class="num">T(n) = 4T(n/2) + n<sup>3</sup></td>
+            <td class="num">n<sup>log<sub>b</sub>a</sup> = n<sup>2</sup>；f(n) = n<sup>3</sup></td>
+            <td>情况 3：f(n) = &Omega;(n<sup>2+&epsilon;</sup>)，取 &epsilon; = 1；正则条件 4(cn/2)<sup>3</sup> &le; cn<sup>3</sup> 取 c = 1/2 成立</td>
+            <td class="num"><b>T(n) = &Theta;(n<sup>3</sup>)</b></td>
+          </tr>
+          <tr>
+            <td class="num">T(n) = 4T(n/2) + n<sup>2</sup>/lg n</td>
+            <td class="num">n<sup>log<sub>b</sub>a</sup> = n<sup>2</sup>；f(n) = n<sup>2</sup>/lg n</td>
+            <td>三种情况都不满足</td>
+            <td class="num"><b>这时主方法不适用</b></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p>最后一个例子的原因值得单独记：<span class="m">f(n) = n<sup>2</sup>/lg n</span> 虽然比 n<sup>2</sup> 小，但只小了 lg n 倍，<b>不是多项式地小</b> —— 找不到任何 &epsilon; &gt; 0 使 <span class="m">f(n) = O(n<sup>2&minus;&epsilon;</sup>)</span>，所以情况 1 不成立；f(n) &ne; &Theta;(n<sup>2</sup>)，情况 2 不成立；f(n) 也不比 n<sup>2</sup> 大，情况 3 不成立。<b>这时只能改用递归树或代换法。</b>（补充：该递归式的解为 T(n) = &Theta;(n<sup>2</sup> lg lg n)，PPT 未给出，仅供参考。）</p>
+
+      <h3>11.4 主方法的判定骨架（伪代码 + C++）</h3>
+
+      <div class="code-pair">
+        <div class="code-col">
+          <p class="code-h">伪代码</p>
+          <pre class="code"><code>MASTER-METHOD(a, b, f, n)                 // 主方法：判定 T(n)=aT(n/b)+f(n) 属于哪种情况
+1  if a &lt; 1 or b &le; 1 then return 不适用        // 前提：a &ge; 1、b &gt; 1 且 f 渐近正
+2  base &larr; n<sup>log_b a</sup>                        // 比较基准 = 递归树叶子层的总代价量级
+3  if f = O(n^(log_b a &minus; &epsilon;)) (&epsilon; &gt; 0) then   // 情况 1：f 比基准多项式地慢
+4      return &Theta;(n<sup>log_b a</sup>)                  // 叶子层主导
+5  if f = &Theta;(n<sup>log_b a</sup>) then                 // 情况 2：f 与基准同阶
+6      return &Theta;(n<sup>log_b a</sup> &middot; lg n)             // 共 log_b n 层，每层同阶
+7  if f = &Omega;(n^(log_b a + &epsilon;)) (&epsilon; &gt; 0) then    // 情况 3：f 比基准多项式地快
+8      if a&middot;f(n/b) &le; c&middot;f(n) (c &lt; 1) then          // 还必须满足正则条件
+9          return &Theta;(f(n))                     // 根层主导
+10 return 不适用                                  // 三种情况都不满足 &rArr; 换递归树 / 代换法</code></pre>
+        </div>
+        <div class="code-col">
+          <p class="code-h">C++</p>
+          <pre class="code cpp"><code>#include &lt;cmath&gt;                                // 需要 pow、log 计算基准 n^(log_b a)
+#include &lt;string&gt;                               // 返回中文结论用 std::string
+// 判断 f(n) 相对基准 n^(log_b a) 的关系（用 double 近似 &epsilon; 比较）
+std::string masterMethod(double a, double b, double n,   // a 为子问题个数，b 为每层规模缩小因子
+                         double (*f)(double), double (*fDivB)(double)) {  // fDivB 即 f(n/b)
+    if (a &lt; 1.0 || b &lt;= 1.0) return "不适用：要求 a &ge; 1 且 b &gt; 1";        // 前提检查
+    double base = std::pow(n, std::log(a) / std::log(b));  // 基准 n^(log_b a)
+    double fv = f(n);                                    // 当前 f(n) 的数值
+    if (fv * std::pow(n, 0.5) &lt;= base)                   // 取 &epsilon; = 0.5 试探情况 1 的条件
+        return "情况1：T(n) = &Theta;(n^(log_b a))";        // f 多项式地小于基准
+    if (fv &lt;= 2.0 * base &amp;&amp; fv &gt;= 0.5 * base)           // 常数因子范围内相等即同阶
+        return "情况2：T(n) = &Theta;(n^(log_b a) lg n)";  // 情况 2：每层同阶
+    if (fv &gt;= base * std::pow(n, 0.5)) {                 // 取 &epsilon; = 0.5 试探情况 3 的条件
+        double c = a * fDivB(n) / fv;                    // 正则条件中的比值 a&middot;f(n/b) / f(n)
+        if (c &lt; 1.0) return "情况3：T(n) = &Theta;(f(n))"; // 比值小于 1 才能用情况 3
+    }                                             // 结束情况 3 的条件判断块
+    return "主方法不适用：改用递归树或代换法";              // 落到这里说明三种情况都不满足
+}                                                 // 结束 masterMethod 函数</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================ -->
+    <section id="sec-loop-invariant">
+      <h2>12. 循环不变式与算法正确性证明</h2>
+
+      <p><b>循环不变式</b> (loop invariant) 方法：先确定算法的循环不变式，然后检查此循环不变式在算法执行期间是否满足以下三个条件：</p>
+
+      <div class="callout key">
+        <p class="callout-h">三个条件</p>
+        <p>① <b>初始状态</b> (Initialization)：循环前循环不变式为真。<br>
+        ② <b>保持状态</b> (Maintenance)：如果本次循环前循环不变式为真，则本次循环后依然为真。<br>
+        ③ <b>终止状态</b> (Termination)：退出循环时，循环不变式为真。</p>
+      </div>
+
+      <p>前两个性质成立时，就能保障循环不变式在循环的<b>每一轮迭代开始前</b>都是正确的 —— 这<b>与数学归纳法类似</b>：初始状态对应归纳基础，保持状态对应归纳步骤；而第三条把不变式"翻译"回算法的正确性结论。</p>
+
+      <svg class="fig" viewBox="0 0 980 300" role="img" aria-label="插入排序循环不变式示意图：子数组 A[1..j-1] 已排好序，A[j] 是待插入的关键字，其余部分未排序">
+        <text x="30" y="30" class="tx-b">数组 A（下标从 1 开始）</text>
+        <g>
+          <rect x="60" y="52" width="70" height="44" rx="5" fill="var(--c-tip-bg)" stroke="var(--c-ok)" stroke-width="1.6"></rect>
+          <rect x="132" y="52" width="70" height="44" rx="5" fill="var(--c-tip-bg)" stroke="var(--c-ok)" stroke-width="1.6"></rect>
+          <rect x="204" y="52" width="70" height="44" rx="5" fill="var(--c-tip-bg)" stroke="var(--c-ok)" stroke-width="1.6"></rect>
+          <rect x="276" y="52" width="70" height="44" rx="5" fill="var(--c-hot)" stroke="var(--c-hot)" stroke-width="2"></rect>
+          <rect x="348" y="52" width="70" height="44" rx="5" fill="var(--c-panel-2)" stroke="var(--c-line)"></rect>
+          <rect x="420" y="52" width="70" height="44" rx="5" fill="var(--c-panel-2)" stroke="var(--c-line)"></rect>
+          <rect x="500" y="52" width="60" height="44" rx="5" fill="var(--c-panel-2)" stroke="var(--c-line)" stroke-dasharray="5 4"></rect>
+          <rect x="580" y="52" width="70" height="44" rx="5" fill="var(--c-panel-2)" stroke="var(--c-line)"></rect>
+          <text x="95" y="80" class="tx" text-anchor="middle">a&#8321;</text>
+          <text x="167" y="80" class="tx" text-anchor="middle">a&#8322;</text>
+          <text x="239" y="80" class="tx" text-anchor="middle">a&#8323;</text>
+          <text x="311" y="80" class="tx" text-anchor="middle" fill="var(--c-hot)">a&#8324;</text>
+          <text x="383" y="80" class="tx" text-anchor="middle">a&#8325;</text>
+          <text x="455" y="80" class="tx" text-anchor="middle">a&#8326;</text>
+          <text x="530" y="80" class="tx-sm" text-anchor="middle">&hellip;</text>
+          <text x="615" y="80" class="tx" text-anchor="middle">a&#8345;</text>
+          <text x="95" y="118" class="tx-sm" text-anchor="middle">1</text>
+          <text x="167" y="118" class="tx-sm" text-anchor="middle">2</text>
+          <text x="239" y="118" class="tx-sm" text-anchor="middle">3</text>
+          <text x="311" y="118" class="tx-sm" text-anchor="middle">4</text>
+          <text x="383" y="118" class="tx-sm" text-anchor="middle">5</text>
+          <text x="455" y="118" class="tx-sm" text-anchor="middle">6</text>
+          <text x="615" y="118" class="tx-sm" text-anchor="middle">n</text>
+        </g>
+        <line x1="60" y1="134" x2="347" y2="134" stroke="var(--c-ok)" stroke-width="2.4"></line>
+        <text x="200" y="158" class="tx-b" text-anchor="middle" fill="var(--c-ok)">A[1..j&#8722;1]：已排好序（循环不变式）</text>
+        <line x1="348" y1="134" x2="488" y2="134" stroke="var(--c-hot)" stroke-width="2.4"></line>
+        <text x="418" y="158" class="tx-b" text-anchor="middle" fill="var(--c-hot)">A[j..n]：尚未排序</text>
+        <line x1="276" y1="44" x2="311" y2="20" stroke="var(--c-hot)"></line>
+        <text x="316" y="18" class="tx" fill="var(--c-hot)">key = A[j]（本轮待插入的关键字）</text>
+        <line x1="239" y1="44" x2="239" y2="20" stroke="var(--c-accent)"></line>
+        <text x="234" y="18" class="tx-sm" text-anchor="end" fill="var(--c-accent)">i = j&#8722;1</text>
+        <g>
+          <rect x="60" y="196" width="150" height="40" rx="6" fill="var(--c-panel-2)" stroke="var(--c-line)"></rect>
+          <text x="135" y="222" class="tx-sm" text-anchor="middle">Temp 槽</text>
+          <rect x="226" y="196" width="60" height="40" rx="6" fill="var(--c-warn-bg)" stroke="var(--c-warn)"></rect>
+          <text x="256" y="222" class="tx" text-anchor="middle" fill="var(--c-warn)">X</text>
+          <text x="300" y="222" class="tx-sm">从 A[j] 取出关键字暂存到 Temp，再把比它大的元素依次后移</text>
+        </g>
+        <text x="60" y="272" class="tx-sm">终止时 j = n + 1，不变式变成 A[1..n] 有序 &rArr; 整个数组排好序，算法正确</text>
+      </svg>
+      <p class="fig-cap">图 9 &nbsp;插入排序的循环不变式：子数组 A[1..j&#8722;1] 始终有序，Temp 槽存放本轮待插入的关键字</p>
+
+      <h3>12.1 插入排序：伪代码 + C++（逐行注释）</h3>
+
+      <div class="code-pair">
+        <div class="code-col">
+          <p class="code-h">伪代码（PPT 写法）</p>
+          <pre class="code"><code>INSERTION-SORT(A)                       // 对数组 A[1..n] 做直接插入排序（升序）
+1  for j = 2 to A.length                // j 从第 2 个元素开始，逐个把 A[j] 插入前面的有序区
+2      key = A[j]                        // 取出本轮待插入的关键字，放进 Temp 槽
+3      i = j - 1                         // i 指向已排序子数组 A[1..j-1] 的最后一个元素
+4      while i &gt; 0 and A[i] &gt; key         // 从右往左找插入位置：凡比 key 大的都要右移
+5          A[i+1] = A[i]                 // 把 A[i] 后移到 A[i+1]，为 key 腾出空位
+6          i = i - 1                     // i 继续左移，继续与 key 比较
+7      A[i+1] = key                      // 空出来的位置就是 key 的归宿，插入之</code></pre>
+        </div>
+        <div class="code-col">
+          <p class="code-h">C++</p>
+          <pre class="code cpp"><code>void insertionSort(int A[], int n) {          // 直接插入排序：把 A[0..n-1] 升序排列
+    for (int j = 1; j &lt; n; ++j) {             // 对应伪代码 for j = 2 to A.length（C++ 下标从 0 起）
+        int key = A[j];                       // 取出待插入的关键字 A[j]
+        int i = j - 1;                        // i 指向已排序区间 A[0..j-2] 的末尾
+        while (i &gt;= 0 &amp;&amp; A[i] &gt; key) {       // 从右往左扫描，找第一个不大于 key 的位置
+            A[i + 1] = A[i];                  // 把比 key 大的元素整体后移一位
+            --i;                              // 继续向左比较
+        }                                         // 结束 while：插入位置已找到
+        A[i + 1] = key;                       // 把 key 放到正确位置，有序区扩充为 A[0..j-1]
+    }                                         // 每轮结束后不变式"A[0..j-1] 有序"都成立
+}                                             // 结束 insertionSort 函数</code></pre>
+        </div>
+      </div>
+
+      <h3>12.2 插入排序的正确性证明（完整三步）</h3>
+
+      <p><b>循环不变式</b>：子数组 <span class="m">A[1..j&minus;1]</span> 始终为<b>排好序的状态</b>。</p>
+
+      <p><b>① 初始状态</b> (Initialization)：<br>
+      &because; 循环开始前 <span class="m">j = 2</span>；<br>
+      &there4; 进入循环前子数组 <span class="m">A[1..j&minus;1] = A[1..1]</span> 只有一个元素，此时子数组为排好序的状态。不变式成立。</p>
+
+      <p><b>② 保持状态</b> (Maintenance)：<br>
+      &because; while 循环前 <span class="m">i = j&minus;1</span>，若子数组 <span class="m">A[1..i] = A[1..j&minus;1]</span> 为真（即前 j&minus;1 个元素有序）；循环开始时，插入排序的过程是依次后移 <span class="m">A[j&minus;1]、A[j&minus;2]、&hellip;</span> 并把新的关键字 key = A[j] 插入到合适的位置，此时子数组 <span class="m">A[1..j&minus;1]</span> 扩充为 <span class="m">A[1..j]</span> 且为排好序的状态；<br>
+      &there4; <span class="m">j++</span> 后循环不变式 <span class="m">A[1..j&minus;1]</span>（此时是 A[1..j]）为真。</p>
+
+      <p><b>③ 终止状态</b> (Termination)：退出循环时，<br>
+      &because; <span class="m">j = n+1</span>，此时子数组 <span class="m">A[1..j&minus;1] = A[1..n]</span> 包含所有元素且为排好序的状态；<br>
+      &there4; 循环不变式为真，即整个数组已经有序 —— <b>算法正确</b>。</p>
+
+      <div class="callout tip">
+        <p class="callout-h">答题模板</p>
+        <p>写正确性证明时固定用三段：<b>初始 &rarr; 保持 &rarr; 终止</b>。前两段说明"不变式在每轮开始前都成立"（归纳），第三段把不变式与"退出条件"合起来推出最终结论。注意③不能省 —— 前两条只保证"过程中一直对"，只有终止条件才能说明"结束时算法目标达成"。</p>
+      </div>
+    </section>
+
+    <!-- ================================================================ -->
+    <section id="sec-summary">
+      <h2>13. 收尾：好的算法与本章框架</h2>
+
+      <p><b>好的算法</b> = <b>提高求解问题的效率</b> + <b>节省存储空间</b>。围绕"评价"这件事，问题–算法–问题类的研究呈现四层递进：</p>
+
+      <table class="tbl">
+        <thead><tr><th>层次</th><th>对象</th><th>研究内容</th></tr></thead>
+        <tbody>
+          <tr><td>第一层</td><td>问题</td><td>寻找求解算法 —— <b>算法设计技术</b></td></tr>
+          <tr><td>第二层</td><td>算法</td><td>算法的评价 —— <b>算法分析方法</b></td></tr>
+          <tr><td>第三层</td><td>算法类</td><td>问题复杂度的评价 —— <b>问题复杂性分析</b></td></tr>
+          <tr><td>第四层</td><td>问题类</td><td>能够求解的边界 —— <b>计算复杂性理论</b></td></tr>
+        </tbody>
+      </table>
+
+      <p>本章（第 1 章 算法基础）知识点：&sect;1.1 算法的基本概念、&sect;1.2 算法描述、&sect;1.3 算法分析、&sect;1.4 算法复杂性的表示法、&sect;1.5 算法分析的计算基础（略）。本页对应 &sect;1.4 与 &sect;1.3 中的"求解递归式"和"算法正确性证明"。</p>
+
+      <div class="callout key">
+        <p class="callout-h">考前速记清单</p>
+        <ol>
+          <li><b>渐进复杂性</b>：略去低阶项后的主项；<span class="m">T(N)=3N<sup>2</sup>+4NlogN+7 &rarr; T&prime;(N)=3N<sup>2</sup></span>。</li>
+          <li><b>五个记号</b>：&Theta;（&exist;c<sub>1</sub>,c<sub>2</sub>，夹住，紧致界）、O（&exist;c，上界）、&Omega;（&exist;c，下界）、o（&forall;c，非紧上界）、&omega;（&forall;c，非紧下界）。</li>
+          <li><b>定理 1.1</b>：&Theta; &hArr; O 且 &Omega;；&Theta; 强于 O（&Theta;(g) &sube; O(g)）。</li>
+          <li><b>二次多项式</b>：<span class="m">an<sup>2</sup>+bn+c = &Theta;(n<sup>2</sup>)</span>，取 c<sub>1</sub>=a/4、c<sub>2</sub>=7a/4、n<sub>0</sub>=2max(|b|/a, &radic;(|c|/a))。</li>
+          <li><b>极限比较</b>：0 &rarr; o；有限正常数 &rarr; &Theta;；&infin; &rarr; &omega;。</li>
+          <li><b>四条性质</b>：传递性（小 o 那条全是小 o）、自反性（非紧界无自反性）、对称性（&Theta;）、转置对称性（O&hArr;&Omega;、o&hArr;&omega;）&rarr; 类比实数比较。</li>
+          <li><b>代换法</b>：猜 &rarr; 验 &rarr; 定常数；余项必须 &ge; 0；猜 n<sup>2</sup> 会失败（余项 &minus;n），加强假设 <span class="m">c<sub>1</sub>k<sup>2</sup>&minus;c<sub>2</sub>k</span> 后成功（c<sub>2</sub> &ge; 1）。</li>
+          <li><b>递归树</b>：逐层求和；<span class="m">T(n)=T(n/4)+T(n/2)+n<sup>2</sup></span> 公比 5/16 &lt; 1 &rArr; &Theta;(n<sup>2</sup>)；<span class="m">T(n)=3T(n/4)+cn<sup>2</sup></span> 每层 (3/16)<sup>i</sup>cn<sup>2</sup>，3/16 &lt; 1 &rArr; O(n<sup>2</sup>)。</li>
+          <li><b>主方法</b>：基准 n<sup>log<sub>b</sub>a</sup>；情况 1 &Theta;(n<sup>log<sub>b</sub>a</sup>)、情况 2 &Theta;(n<sup>log<sub>b</sub>a</sup>lg n)、情况 3 &Theta;(f(n))（需 a&middot;f(n/b) &le; c&middot;f(n)，c &lt; 1）。</li>
+          <li><b>主方法不适用</b>：<span class="m">T(n)=4T(n/2)+n<sup>2</sup>/lg n</span>（非多项式地小）、<span class="m">T(n)=T(n/3)+T(2n/3)+cn</span>（子问题规模不同）。</li>
+          <li><b>循环不变式三条件</b>：初始 / 保持 / 终止；插入排序的不变式是 <span class="m">A[1..j&minus;1]</span> 始终有序，终止时 j = n+1 得 A[1..n] 有序。</li>
+        </ol>
+      </div>
+    </section>
+
+
+    <section id="sec-quiz">
+      <h2>本节自测（课件配套测验）</h2>
+      <p>本题取自课程配套测验（算法分析基础部分），考的是「渐进复杂性 = 略去低阶项后的主项」这一核心概念。</p>
+
+      <h3>一、单项选择题</h3>
+
+      <div class="quiz">
+        <p class="quiz-q">1. T(N) = 3N² + 4N log N + 7 的渐进主项是什么？<span class="quiz-tag">算法分析基础 · 原卷 4</span></p>
+        <ul class="quiz-opt">
+          <li>A. 4N log N</li>
+          <li>B. 3N²</li>
+          <li>C. 7</li>
+          <li>D. N</li>
+        </ul>
+        <p class="quiz-a"><b>答案：B</b>　渐进复杂性 <span class="m">T′(N)</span> 是 <span class="m">T(N)</span> <b>略去低阶项后留下的主项</b>：当 N→∞ 时 <span class="m">(T(N)−T′(N))/T(N) → 0</span>。这里三项的量级分别是 <span class="m">N²</span>（最高阶）、<span class="m">N log N</span>（介于 N 与 N² 之间）、<span class="m">7</span>（常数，最低阶），所以主项是 <span class="m">3N²</span>，即 <span class="m">T(N)=Θ(N²)</span>。</p>
+        <p class="quiz-note">易错：主项只砍「阶」，<b>不砍系数</b> —— 所以是 3N² 而不是 N²；等到用 Θ 记号时才丢掉系数。</p>
+      </div>
+    </section>
+
+    <footer class="pagefoot">内容依据课程 PPT 整理 · 仅供复习</footer>
+  </main>
+</div>
+
+<script src="assets/handbook.js"></script>
+<script src="assets/demos-deck3.js"></script>
+</body>
+</html>
