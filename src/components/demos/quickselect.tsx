@@ -172,8 +172,8 @@ export function build(): Frame[] {
 }
 
 function View({ frame: s }: { frame: Frame }) {
-  /* 代码高亮行 */
-  const hlY = s.ln >= 0 && s.ln < QS_CODE.length ? 34 + s.ln * 22 - 13 : null;
+  /* 代码高亮行：ln 直接对应 QS_CODE[ln]，高亮框对准该行文字（行距 22，文字基线 = 行顶 + 14） */
+  const hlY = s.ln >= 0 && s.ln < QS_CODE.length ? 34 + s.ln * 22 : null;
 
   /* 区间标记（r >= p 时显示） */
   const rangeMark = s.r >= s.p ? { x1: CELL_X(s.p), x2: CELL_X(s.r) + BOX_W } : null;
@@ -206,7 +206,9 @@ function View({ frame: s }: { frame: Frame }) {
       {/* 顶部代码区 */}
       {box(12, 16, 596, 22 + QS_CODE.length * 22 + 8, 'var(--code-bg)', 'var(--c-line)', 8)}
       {hlY != null && box(16, hlY, 588, 22, 'var(--warn-bg)', 'var(--c-warn)', 4)}
-      {QS_CODE.map((line, ci) => tCode(28, 34 + ci * 22 + 14, line, 'var(--code-ink)', false, 'start', 12))}
+      {QS_CODE.map((line, ci) => (
+        <g key={ci}>{tCode(28, 34 + ci * 22 + 14, line, 'var(--code-ink)', false, 'start', 12)}</g>
+      ))}
 
       {/* 数组区 */}
       {tSans(28, ARR_Y - 30, '数组 A（上排为下标，下排为元素值）', 'var(--ink-2)', true, 'start', 11.5)}

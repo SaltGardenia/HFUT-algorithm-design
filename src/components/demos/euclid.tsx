@@ -100,8 +100,8 @@ function pill(x: number, label: string, sub: string, value: string, valueColor: 
 }
 
 function View({ frame: s }: { frame: Frame }) {
-  /* 代码高亮行 */
-  const hlY = s.ln >= 1 && s.ln <= EUC_CODE.length ? 30 + (s.ln - 1) * 24 : null;
+  /* 代码高亮行：ln 即 EUC_CODE[ln] 的行号（含标题行），高亮框对准该行文字 */
+  const hlY = s.ln >= 1 && s.ln <= EUC_CODE.length ? 30 + s.ln * 24 : null;
 
   /* 历史区 */
   const lastHist = s.hist.length ? s.hist[s.hist.length - 1] : '';
@@ -121,7 +121,9 @@ function View({ frame: s }: { frame: Frame }) {
         伪代码
       </text>
       {hlY != null && box(18, hlY, 250, 22, 'var(--warn-bg)', 'var(--c-warn)', 4)}
-      {EUC_CODE.map((line, i) => tCode(30, 30 + i * 24 + 15, line, 'var(--code-ink)'))}
+      {EUC_CODE.map((line, i) => (
+        <g key={i}>{tCode(30, 30 + i * 24 + 15, line, 'var(--code-ink)')}</g>
+      ))}
 
       {/* 右侧状态面板 */}
       {box(286, 14, 260, 178, 'var(--c-panel-2)', 'var(--c-line)', 8)}
