@@ -416,7 +416,7 @@ const deck: DeckData = {
                 <h3 id="sec-selection-h2b">特殊情况：输入数据全是整数</h3>
                 <p>
                   当输入全是（取值范围有限的）整数时，可以完全绕开「比较」：使用<strong>线性时间排序算法</strong>
-                  （计数排序、基数排序，见第 3 讲）先排好序再取第 <span class="m">k</span> 个，运行时间
+                  （计数排序、基数排序，见第 4 讲）先排好序再取第 <span class="m">k</span> 个，运行时间
                   <span class="m">Θ(n + k)</span>。也就是说，特殊情形下选择问题可以被排序「顺带」解决，而且代价是线性的。
                 </p>
           

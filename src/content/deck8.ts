@@ -5,7 +5,7 @@ const deck: DeckData = {
   id: 'deck8',
   no: "",
   title: "L7 · 贪心法",
-  subtitle: "第 7 讲 · 贪心法",
+  subtitle: "第 8 讲 · 贪心法",
   lede: `
   贪心法 (greedy algorithm) 的诱人之处是「每一步都做当前看起来最好的选择，且永不反悔」；危险之处也在这里 —— <b>局部的贪心凭什么等于全局的最优？</b>本讲先用最小生成树（MST）把这个问题彻底讲清：<b>最优子结构</b>（optimal substructure）+ <b>贪心选择特性</b>（greedy-choice property）两个定理加上剪切粘贴（cut &amp; paste）证明，才使 Prim 算法（MST 权值 <span class="m">53</span>）站得住脚。随后用四个案例检验这把刀：Prim、活动选择、哈夫曼编码、分数背包都能切，而<b>顶点覆盖</b>（NP 完全）与 <b>0-1 背包</b>会崩刃 —— 后者恰好是动态规划的战场。
 `,

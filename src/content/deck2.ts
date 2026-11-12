@@ -3,9 +3,9 @@ import type { DeckData } from './types';
 
 const deck: DeckData = {
   id: 'deck2',
-  no: "第1讲",
+  no: "第2讲",
   title: "算法基础与分析原则",
-  subtitle: "第1讲 · 算法基础与分析原则",
+  subtitle: "第 2 讲 · 算法基础与分析原则",
   lede: `
   从“算法是什么”到“算法好不好”：算法的定义、三条性质、三种表示，插入排序与选择排序的完整推导，以及算法分析的三条原则与渐近记号 &Theta; / <span class="m">O</span> / &Omega;。所有数字与结论均取自课程 PPT《算法设计与分析》绪论（L1）。
 `,

@@ -13,13 +13,13 @@ const deck: DeckData = {
   toc: [
     { id: 'sec-map', text: "八讲内容地图", level: 2 },
     { id: 'sec-map-h1', text: "第 1 讲 · 绪论与算法设计思维", level: 3 },
-    { id: 'sec-map-h2', text: "第 1 讲 · 算法基础与分析原则", level: 3 },
-    { id: 'sec-map-h3', text: "第 2 讲 · 算法分析基础", level: 3 },
-    { id: 'sec-map-h4', text: "第 3 讲 · 线性时间排序", level: 3 },
-    { id: 'sec-map-h5', text: "第 4 讲 · 线性时间选择", level: 3 },
-    { id: 'sec-map-h6', text: "第 5 讲 · 递归与分治法", level: 3 },
-    { id: 'sec-map-h7', text: "第 6 讲 · 动态规划", level: 3 },
-    { id: 'sec-map-h8', text: "第 7 讲 · 贪心法", level: 3 },
+    { id: 'sec-map-h2', text: "第 2 讲 · 算法基础与分析原则", level: 3 },
+    { id: 'sec-map-h3', text: "第 3 讲 · 算法分析基础", level: 3 },
+    { id: 'sec-map-h4', text: "第 4 讲 · 线性时间排序", level: 3 },
+    { id: 'sec-map-h5', text: "第 5 讲 · 线性时间选择", level: 3 },
+    { id: 'sec-map-h6', text: "第 6 讲 · 递归与分治法", level: 3 },
+    { id: 'sec-map-h7', text: "第 7 讲 · 动态规划", level: 3 },
+    { id: 'sec-map-h8', text: "第 8 讲 · 贪心法", level: 3 },
     { id: 'sec-cheatsheet', text: "考点速查表", level: 2 },
     { id: 'sec-cheatsheet-h1', text: "一、算法的三大性质", level: 3 },
     { id: 'sec-cheatsheet-h2', text: "二、算法分析的三条原则", level: 3 },
@@ -34,16 +34,16 @@ const deck: DeckData = {
     { id: 'sec-linear-h4', text: "三种排序的复杂度对照", level: 3 },
     { id: 'sec-linear-h5', text: "计数排序的四段循环", level: 3 },
     { id: 'sec-linear-h6', text: "基数排序（LSD）", level: 3 },
-    { id: 'sec-select', text: "八、线性时间选择（第 4 讲）速查", level: 2 },
+    { id: 'sec-select', text: "八、线性时间选择（第 5 讲）速查", level: 2 },
     { id: 'sec-select-h1', text: "五种解法层次", level: 3 },
-    { id: 'sec-dc', text: "九、递归与分治（第 5 讲）速查", level: 2 },
+    { id: 'sec-dc', text: "九、递归与分治（第 6 讲）速查", level: 2 },
     { id: 'sec-dc-h1', text: "递归与分治要点", level: 3 },
     { id: 'sec-dc-h2', text: "本讲六个例子的递归式与结论", level: 3 },
-    { id: 'sec-dp', text: "十、动态规划（第 6 讲）速查", level: 2 },
+    { id: 'sec-dp', text: "十、动态规划（第 7 讲）速查", level: 2 },
     { id: 'sec-dp-h1', text: "四步设计法（必背）", level: 3 },
     { id: 'sec-dp-h2', text: "五个经典问题对照", level: 3 },
     { id: 'sec-dp-h3', text: "PPT 关键算例（数字要记）", level: 3 },
-    { id: 'sec-greedy', text: "十一、贪心法（第 7 讲）速查", level: 2 },
+    { id: 'sec-greedy', text: "十一、贪心法（第 8 讲）速查", level: 2 },
     { id: 'sec-greedy-h1', text: "MST 的两个定理（必考证明）", level: 3 },
     { id: 'sec-greedy-h2', text: "四个贪心案例与贪心准则", level: 3 },
     { id: 'sec-quiz-index', text: "十二、各章自测题（课件配套测验）", level: 2 },
@@ -67,21 +67,21 @@ const deck: DeckData = {
                     </p>
                   </a>
                   <a class="card" href="deck2.html">
-                    <h3 id="sec-map-h2">第 1 讲 · 算法基础与分析原则</h3>
+                    <h3 id="sec-map-h2">第 2 讲 · 算法基础与分析原则</h3>
                     <p>
                       算法的由来与定义、三大性质（有穷性 / 确定性 / 可行性）、三种表示法对比；
                       插入排序与选择排序全过程；算法分析三原则；渐近记号 Θ / O / Ω 与时间复杂度。
                     </p>
                   </a>
                   <a class="card" href="deck3.html">
-                    <h3 id="sec-map-h3">第 2 讲 · 算法分析基础</h3>
+                    <h3 id="sec-map-h3">第 3 讲 · 算法分析基础</h3>
                     <p>
                       渐近记号的严格定义与五种记号（Θ / O / Ω / o / ω）、性质与极限比较法；
                       求解递归式三法：代换法、递归树、主方法；循环不变式与正确性证明。
                     </p>
                   </a>
                   <a class="card" href="deck4.html">
-                    <h3 id="sec-map-h4">第 3 讲 · 线性时间排序</h3>
+                    <h3 id="sec-map-h4">第 4 讲 · 线性时间排序</h3>
                     <p>
                       用决策树模型证明<strong>比较排序的下界 Ω(n lg n)</strong>；
                       逆序数与「相邻交换」排序的 Ω(N²) 下界，解释希尔排序为何能突破；
@@ -89,7 +89,7 @@ const deck: DeckData = {
                     </p>
                   </a>
                   <a class="card" href="deck5.html">
-                    <h3 id="sec-map-h5">第 4 讲 · 线性时间选择</h3>
+                    <h3 id="sec-map-h5">第 5 讲 · 线性时间选择</h3>
                     <p>
                       找第 k 小元素：特殊情形（同时求最大最小 3⌊n/2⌋ 次比较）、五种解法层次；
                       快速排序三种情况分析；<strong>RANDOMIZED-SELECT</strong>（只递归一边，期望 Θ(n)）与
@@ -97,21 +97,21 @@ const deck: DeckData = {
                     </p>
                   </a>
                   <a class="card" href="deck6.html">
-                    <h3 id="sec-map-h6">第 5 讲 · 递归与分治法</h3>
+                    <h3 id="sec-map-h6">第 6 讲 · 递归与分治法</h3>
                     <p>
                       递归两要素（边界条件+递归方程）与优缺点；分治基本思想、四个适用条件、三步骤；
                       求幂、Hanoi、归并排序、二分查找、硬币问题、整数划分、矩阵相乘与 <strong>Strassen</strong>、VLSI 布局。
                     </p>
                   </a>
                   <a class="card" href="deck7.html">
-                    <h3 id="sec-map-h7">第 6 讲 · 动态规划</h3>
+                    <h3 id="sec-map-h7">第 7 讲 · 动态规划</h3>
                     <p>
                       表格法而非「写程序」；四步设计法、两要素（最优子结构 + 重叠子问题）、备忘 vs 自底向上；
                       <strong>五个经典问题</strong>：钢条切割、矩阵链乘法、LCS、装配线调度、最优二叉搜索树。
                     </p>
                   </a>
                   <a class="card" href="deck8.html">
-                    <h3 id="sec-map-h8">第 7 讲 · 贪心法</h3>
+                    <h3 id="sec-map-h8">第 8 讲 · 贪心法</h3>
                     <p>
                       贪心两要素与与 DP 的差别；<strong>MST 的最优子结构与贪心选择定理</strong>（剪切粘贴证明）与 Prim；
                       活动选择（最早结束）、<strong>哈夫曼编码</strong>（前缀码、贪心合并）；
@@ -409,7 +409,7 @@ const deck: DeckData = {
     },
     {
       id: 'sec-select',
-      heading: "八、线性时间选择（第 4 讲）速查",
+      heading: "八、线性时间选择（第 5 讲）速查",
       blocks: [
         { type: 'html', html: `
           <p>核心命题：<strong>找第 k 小元素不必排序</strong>——每次划分后只递归「目标所在的那一侧」，就能做到线性时间。</p>
@@ -456,7 +456,7 @@ const deck: DeckData = {
     },
     {
       id: 'sec-dc',
-      heading: "九、递归与分治（第 5 讲）速查",
+      heading: "九、递归与分治（第 6 讲）速查",
       blocks: [
         { type: 'html', html: `
           <h3 id="sec-dc-h1">递归与分治要点</h3>
@@ -500,7 +500,7 @@ const deck: DeckData = {
     },
     {
       id: 'sec-dp',
-      heading: "十、动态规划（第 6 讲）速查",
+      heading: "十、动态规划（第 7 讲）速查",
       blocks: [
         { type: 'html', html: `
           <p>
@@ -579,7 +579,7 @@ const deck: DeckData = {
     },
     {
       id: 'sec-greedy',
-      heading: "十一、贪心法（第 7 讲）速查",
+      heading: "十一、贪心法（第 8 讲）速查",
       blocks: [
         { type: 'html', html: `
           <p class="formula">贪心可行的两个要素：最优子结构（optimal substructure）+ 贪心选择特性（greedy-choice property）</p>

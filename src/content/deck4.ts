@@ -5,7 +5,7 @@ const deck: DeckData = {
   id: 'deck4',
   no: "",
   title: "L3 · 线性时间排序",
-  subtitle: "第 3 讲 · 线性时间排序",
+  subtitle: "第 4 讲 · 线性时间排序",
   lede: `
   本讲回答一个尖锐的问题 —— <b>O(n lg n) 是不是排序能做到的极限？</b>围绕它展开三块内容：① 用<b>决策树模型</b>分析基于比较的排序方法的时间复杂度下界；② <b>计数排序</b>（各项之间不进行比较）；③ <b>基数排序</b>（按位切割、最低位优先）。所有定义、算例与逐帧状态均按课程 PPT 原图核对：比较排序下界 <span class="m">&Omega;(n lg n)</span>、相邻交换下界 <span class="m">&Omega;(N<sup>2</sup>)</span>、计数排序算例 <span class="m">A = &lang;4, 1, 3, 4, 3&rang;</span>（k = 4）、基数排序算例 329 / 457 / 657 / 839 / 436 / 720 / 355。
 `,

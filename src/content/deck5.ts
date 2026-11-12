@@ -5,7 +5,7 @@ const deck: DeckData = {
   id: 'deck5',
   no: "",
   title: "L4 · 线性时间选择",
-  subtitle: "第 4 讲 · 线性时间选择",
+  subtitle: "第 5 讲 · 线性时间选择",
   lede: `
   本讲回答一个尖锐的问题 —— <b>能不能在 O(n) 时间里找出第 k 小的元素？</b>三块内容层层递进：① 特殊情况（k=1、k=n、同时求最大最小）与一般情况的 5 种解法层次；② 以快速排序为模型的 <b>RANDOMIZED-SELECT</b>（期望 <span class="m">&Theta;(n)</span>，最坏 <span class="m">&Theta;(n<sup>2</sup>)</span>）；③ <b>中位数之中位数</b> (median of medians, BFPRT)，最坏也是 <span class="m">&Theta;(n)</span>。所有算例与数字均按课程 PPT 核对：同时求最大最小 <span class="m">3&lfloor;n/2&rfloor;</span> 次比较、划分算例 <span class="m">&lang;6,10,13,5,8,3,2,11&rang;</span>（q = 4）、23 个数据找第 8 小（答案 8）、<span class="m">T(n) &le; T(n/5) + T(7n/10) + O(n)</span>。
 `,

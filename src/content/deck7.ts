@@ -5,7 +5,7 @@ const deck: DeckData = {
   id: 'deck7',
   no: "",
   title: "L6 · 动态规划",
-  subtitle: "第 6 讲 · 动态规划",
+  subtitle: "第 7 讲 · 动态规划",
   lede: `
   本讲对应课程 PPT 第 15 章（97 页，全书内容最多的一讲）。核心是一条主线：<b>动态规划 = 分治思想 + 解决冗余</b>，靠<b>表格</b>把重复子问题的解存起来，用<b>逆拓扑序</b>把表填满。围绕这条主线依次解决五个问题：<b>钢条切割</b>（<span class="m">r<sub>4</sub> = 10</span>）、<b>矩阵链乘法</b>（<span class="m">m(1,6) = 15125</span>）、<b>最长公共子序列</b>（<span class="m">c[7,6] = 4</span>，LCS 为 <code>BCBA</code>）、<b>装配线调度</b>（<span class="m">f* = 38</span>）、<b>最优二叉搜索树</b>（<span class="m">e(1,5) = 2.75</span>）。五个问题的递归式、算例表格全部按 PPT 原图还原，并对每一格做了独立复算。
 `,

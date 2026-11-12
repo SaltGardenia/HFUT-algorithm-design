@@ -5,7 +5,7 @@ const deck: DeckData = {
   id: 'deck6',
   no: "",
   title: "L5 · 递归与分治法",
-  subtitle: "第 5 讲 · 递归与分治法",
+  subtitle: "第 6 讲 · 递归与分治法",
   lede: `
   分治法 (divide and conquer) 只有三个动作 —— <b>分解、求解、合并</b>，却能从求幂一路做到 Strassen 矩阵相乘和 VLSI 布局。本页按课程 PPT 的 43 页顺序整理：先说清递归的两个要素与分治的四个适用条件，再把七个例子（求幂、Hanoi 塔、归并排序、二分查找、硬币问题、整数划分、矩阵相乘）与 VLSI 布局逐个过一遍，每个例子都给<b>递归式 + 解 + 具体数字</b>：<span class="m">x<sup>20</sup></span> 的 19 次乘法压到 <b>5 次</b>、Hanoi 塔 <span class="m">T(n)=2<sup>n</sup>&minus;1</span>（n=3 是 7 次、n=64 约 1.84&times;10<sup>19</sup> 次）、二分查找 <span class="m">&Theta;(lg n)</span>（7 个元素查 3 次）、整数划分 <span class="m">p(6)=11</span>、Strassen 用 <b>7 乘 18 加减</b>换到 <span class="m">&Theta;(n<sup>lg 7</sup>)&asymp;&Theta;(n<sup>2.81</sup>)</span>。
 `,
